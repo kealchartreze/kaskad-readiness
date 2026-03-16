@@ -951,6 +951,7 @@ function toggleAdmin() {
     document.body.classList.add('readonly');
     document.getElementById('adminBtn').textContent = '🔒 Admin';
     document.getElementById('adminBtn').classList.remove('unlocked');
+    setTimeout(renderTargetDate, 50);
   } else {
     // Show password prompt
     document.getElementById('authOverlay').classList.add('open');
@@ -968,6 +969,7 @@ function confirmAuth() {
     document.getElementById('adminBtn').innerHTML = '🔓 Admin';
     document.getElementById('adminBtn').classList.add('unlocked');
     closeAuth();
+    setTimeout(renderTargetDate, 50);
   } else {
     document.getElementById('authError').style.display = 'block';
     document.getElementById('authInput').select();
@@ -1142,12 +1144,7 @@ function saveData() {
   touchLastUpdated();
 }
 
-// ── PATCH toggleAdmin to re-render target date on lock/unlock ──
-const _origToggleAdmin = toggleAdmin;
-function toggleAdmin() {
-  _origToggleAdmin();
-  setTimeout(renderTargetDate, 50);
-}
+// toggleAdmin already defined above — re-render target date after state change handled via renderTargetDate calls in confirmAuth and the lock branch below
 
 // ── INIT ──
 loadState();
