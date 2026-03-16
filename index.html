@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaskad — Mainnet Readiness</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', system-ui, sans-serif; background: #F5F0E8; color: #1A1A1A; min-height: 100vh; }
+
+/* ── NAV ── */
+.nav { background: #1A2E2A; border-bottom: 1px solid rgba(0,0,0,0.1); padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 0; }
+.nav-logo { font-size: 18px; font-weight: 700; color: #fff; }
+.nav-logo span { color: #00B896; }
+.nav-right { display: flex; align-items: center; gap: 6px; }
+.nav-tab { background: none; border: none; color: rgba(255,255,255,0.45); font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; padding: 6px 14px; border-radius: 8px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+.nav-tab:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.75); }
+.nav-tab.active { background: rgba(0,184,150,0.18); color: #00B896; }
+
+/* ── LAYOUT ── */
+.page { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+/* ── HEADER ── */
+.hd { text-align: center; margin-bottom: 48px; }
+.hd-title { font-size: 26px; font-weight: 800; color: #1A1A1A; margin-bottom: 6px; }
+.hd-sub { font-size: 14px; color: #6B7280; }
+
+/* ── SCORE RING ── */
+.score-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 52px; }
+.score-ring-container { position: relative; width: 220px; height: 220px; }
+.score-ring-container svg { transform: rotate(-90deg); }
+.score-track { fill: none; stroke: #E5DDD0; stroke-width: 14; }
+.score-fill { fill: none; stroke-width: 14; stroke-linecap: round; transition: stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1), stroke 0.4s; }
+.score-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
+.score-num { font-size: 52px; font-weight: 800; line-height: 1; }
+.score-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #9CA3AF; margin-top: 4px; }
+.score-verdict { margin-top: 14px; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; padding: 5px 16px; border-radius: 20px; }
+
+/* ── SECTION GRID ── */
+.section-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 48px; }
+.sec-card { background: #fff; border: 1px solid rgba(0,0,0,0.07); border-radius: 14px; padding: 18px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.sec-card:hover { border-color: rgba(0,184,150,0.3); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+.sec-card.active { border-color: #00B896; box-shadow: 0 0 0 1px #00B896; }
+.sc-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.sc-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.sc-name { font-size: 13px; font-weight: 700; color: #1A1A1A; }
+.sc-count { font-size: 11px; color: #9CA3AF; margin-top: 1px; }
+.sc-bar-track { background: #F0EAE0; border-radius: 9999px; height: 5px; margin-bottom: 10px; }
+.sc-bar-fill { height: 5px; border-radius: 9999px; transition: width 0.5s cubic-bezier(.4,0,.2,1); }
+.sc-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.sc-stat { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
+.done-chip  { background: rgba(0,184,150,0.10); color: #00875A; }
+.prog-chip  { background: rgba(255,166,0,0.10); color: #B45309; }
+.none-chip  { background: rgba(0,0,0,0.05); color: #9CA3AF; }
+
+/* ── MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
+.modal-overlay.open { display: flex; }
+.modal { background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 16px; width: 100%; max-width: 680px; padding: 28px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+.modal-close { position: absolute; top: 16px; right: 16px; background: #F5F0E8; border: none; color: #6B7280; width: 28px; height: 28px; border-radius: 7px; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { color: #1A1A1A; background: #E5DDD0; }
+.modal-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; color: #1A1A1A; }
+.modal-sub { font-size: 12px; color: #9CA3AF; margin-bottom: 20px; }
+.modal-score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding: 12px 16px; background: #F5F0E8; border-radius: 10px; }
+.ms-pct { font-size: 26px; font-weight: 800; }
+.ms-label { font-size: 11px; color: #9CA3AF; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+.ms-bar-track { flex: 1; background: #E5DDD0; border-radius: 9999px; height: 6px; }
+.ms-bar-fill { height: 6px; border-radius: 9999px; transition: width 0.5s; }
+
+/* ── SUBSECTION ── */
+.subsection-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9CA3AF; margin: 18px 0 8px; padding-bottom: 6px; border-bottom: 1px solid #F0EAE0; }
+.subsection-label:first-of-type { margin-top: 0; }
+
+/* ── ITEM ── */
+.item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; margin-bottom: 4px; background: #FAFAF8; border: 1px solid rgba(0,0,0,0.06); }
+.item-text { flex: 1; font-size: 13px; color: #374151; line-height: 1.4; }
+.item-select { appearance: none; background: #fff; border: 1px solid #D1C9BD; color: #374151; font-size: 11px; font-weight: 600; font-family: 'Inter', sans-serif; padding: 4px 28px 4px 10px; border-radius: 7px; cursor: pointer; outline: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239CA3AF'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; min-width: 108px; transition: border-color 0.15s; }
+.item-select:focus { border-color: #00B896; }
+.item-select.done { border-color: #00B896; color: #00875A; background-color: rgba(0,184,150,0.06); }
+.item-select.progress { border-color: #F59E0B; color: #B45309; background-color: rgba(245,158,11,0.06); }
+.item-select.not-started { border-color: #D1C9BD; color: #9CA3AF; }
+.item-del { background: none; border: none; color: #D1C9BD; font-size: 15px; cursor: pointer; padding: 2px 4px; border-radius: 5px; line-height: 1; flex-shrink: 0; transition: color 0.12s, background 0.12s; }
+.item-del:hover { color: #DC2626; background: rgba(220,38,38,0.07); }
+
+/* ── ADD ITEM ── */
+.add-item-row { display: flex; gap: 8px; margin-top: 10px; }
+.add-item-input { flex: 1; background: #fff; border: 1px dashed #D1C9BD; color: #374151; font-size: 13px; font-family: 'Inter', sans-serif; padding: 9px 12px; border-radius: 10px; outline: none; transition: border-color 0.15s; }
+.add-item-input:focus { border-color: #00B896; border-style: solid; }
+.add-item-input::placeholder { color: #9CA3AF; }
+.add-item-btn { background: #00B896; color: #fff; border: none; border-radius: 10px; padding: 9px 16px; font-size: 12px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; flex-shrink: 0; transition: background 0.12s; }
+.add-item-btn:hover { background: #00A080; }
+.add-subsection-wrap { margin-top: 4px; }
+
+/* ── COLORS ── */
+.c-audit    { background: rgba(188,100,255,0.12); }
+.c-mm       { background: rgba(0,184,150,0.12); }
+.c-tge      { background: rgba(255,166,0,0.12); }
+.c-sc       { background: rgba(59,130,246,0.12); }
+.c-ui       { background: rgba(236,72,153,0.12); }
+.c-oracle   { background: rgba(34,197,94,0.12); }
+.c-docs     { background: rgba(251,191,36,0.12); }
+
+.bar-audit   { background: #BC64FF; }
+.bar-mm      { background: #00B896; }
+.bar-tge     { background: #F59E0B; }
+.bar-sc      { background: #3B82F6; }
+.bar-ui      { background: #EC4899; }
+.bar-oracle  { background: #22C55E; }
+.bar-docs    { background: #FBBF24; }
+
+.num-audit   { color: #BC64FF; }
+.num-mm      { color: #00B896; }
+.num-tge     { color: #B45309; }
+.num-sc      { color: #3B82F6; }
+.num-ui      { color: #EC4899; }
+.num-oracle  { color: #22C55E; }
+.num-docs    { color: #B45309; }
+
+/* ── PILLAR COLORS ── */
+.c-p1 { background: rgba(0,184,150,0.12); }
+.c-p2 { background: rgba(99,102,241,0.12); }
+.c-p3 { background: rgba(251,146,60,0.12); }
+.bar-p1 { background: #00B896; }
+.bar-p2 { background: #6366F1; }
+.bar-p3 { background: #FB923C; }
+.num-p1 { color: #00875A; }
+.num-p2 { color: #6366F1; }
+.num-p3 { color: #EA580C; }
+
+/* ── SAVE BANNER ── */
+.save-banner { position: fixed; bottom: 24px; right: 24px; background: #fff; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 12px 18px; font-size: 13px; color: #6B7280; display: none; gap: 12px; align-items: center; z-index: 200; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.save-banner.show { display: flex; }
+.save-btn { background: #00B896; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-logo">Kaskad<span>.</span></div>
+  <div class="nav-right">
+    <button class="nav-tab active" onclick="switchTab('launch')">🚀 Launch Readiness</button>
+    <button class="nav-tab" onclick="switchTab('pillars')">⚡ Strategic Pillars</button>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- TAB: LAUNCH -->
+  <div id="tab-launch">
+  <div class="hd">
+    <div class="hd-title">Mainnet Deployment Readiness</div>
+    <div class="hd-sub">Track all launch requirements across every team. Click any section to review items.</div>
+  </div>
+
+  <!-- SCORE RING -->
+  <div class="score-wrap">
+    <div class="score-ring-container">
+      <svg width="220" height="220" viewBox="0 0 220 220">
+        <circle class="score-track" cx="110" cy="110" r="96"/>
+        <circle class="score-fill" id="ringFill" cx="110" cy="110" r="96"
+          stroke="#00B896"
+          stroke-dasharray="603.2"
+          stroke-dashoffset="603.2"/>
+      </svg>
+      <div class="score-center">
+        <div class="score-num" id="scoreNum" style="color:#00B896">0</div>
+        <div class="score-label">/ 100</div>
+      </div>
+    </div>
+    <div class="score-verdict" id="scoreVerdict" style="background:rgba(125,133,144,0.12);color:#7D8590">Not Started</div>
+  </div>
+
+  <!-- SECTION CARDS -->
+  <div class="section-grid" id="sectionGrid"></div>
+  </div><!-- /tab-launch -->
+
+  <!-- TAB: PILLARS -->
+  <div id="tab-pillars" style="display:none">
+  <div class="hd">
+    <div class="hd-title">Strategic Pillars</div>
+    <div class="hd-sub">Long-term product roadmap across Oracle, Agentic DeFi, and Kaspa L1. Click any pillar to review items.</div>
+  </div>
+  <div class="score-wrap">
+    <div class="score-ring-container">
+      <svg width="220" height="220" viewBox="0 0 220 220">
+        <circle class="score-track" cx="110" cy="110" r="96"/>
+        <circle class="score-fill" id="ringFillP" cx="110" cy="110" r="96"
+          stroke="#6366F1" stroke-dasharray="603.2" stroke-dashoffset="603.2"/>
+      </svg>
+      <div class="score-center">
+        <div class="score-num" id="scoreNumP" style="color:#6366F1">0</div>
+        <div class="score-label">/ 100</div>
+      </div>
+    </div>
+    <div class="score-verdict" id="scoreVerdictP" style="background:rgba(125,133,144,0.12);color:#9CA3AF">Not Started</div>
+  </div>
+  <div class="section-grid" id="pillarGrid"></div>
+  </div><!-- /tab-pillars -->
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-sub" id="modalSub"></div>
+    <div class="modal-score-row">
+      <div>
+        <div class="ms-pct" id="modalPct">0%</div>
+        <div class="ms-label">Complete</div>
+      </div>
+      <div class="ms-bar-track"><div class="ms-bar-fill" id="modalBar"></div></div>
+    </div>
+    <div id="modalItems"></div>
+  </div>
+</div>
+
+<!-- SAVE BANNER -->
+<div class="save-banner" id="saveBanner">
+  Unsaved changes
+  <button class="save-btn" onclick="saveData()">Save</button>
+</div>
+
+<script>
+// ── DATA ──
+const SECTIONS = [
+  {
+    id: 'audit', label: 'Audit', icon: '🔍', colorClass: 'c-audit', barClass: 'bar-audit', numClass: 'num-audit',
+    sub: 'Security audit status and critical finding resolution',
+    items: [
+      { text: 'Sherlock findings received and accessible' },
+      { text: 'All Critical findings resolved' },
+      { text: 'All High findings resolved' },
+      { text: 'Medium findings triaged (accepted/resolved)' },
+      { text: 'Second audit / external verification completed' },
+    ]
+  },
+  {
+    id: 'mm', label: 'Market Making', icon: '📈', colorClass: 'c-mm', barClass: 'bar-mm', numClass: 'num-mm',
+    sub: 'Market maker setup and liquidity deployment',
+    items: [
+      { text: 'MM partner identified and contracted' },
+      { text: 'MM TGE launch strategy approved' },
+      { text: 'MM liquidity deployed on MEXC' },
+      { text: 'MM alert thresholds configured' },
+      { text: 'Contingency plan for price floor breach documented' },
+    ]
+  },
+  {
+    id: 'tge', label: 'KSKD TGE Event', icon: '🚀', colorClass: 'c-tge', barClass: 'bar-tge', numClass: 'num-tge',
+    sub: 'Token generation event preparation and launch execution',
+    items: [
+      { text: 'Vesting module fully operational' },
+      { text: 'Mainnet launch date set' },
+      { text: 'Pre-mainnet campaign with MEXC activated' },
+      { text: 'Selling pressure management with MEXC negotiated' },
+    ]
+  },
+  {
+    id: 'sc', label: 'dApp — Smart Contracts', icon: '⛓️', colorClass: 'c-sc', barClass: 'bar-sc', numClass: 'num-sc',
+    sub: 'Contract deployment and on-chain configuration',
+    subsections: [
+      {
+        label: 'Testnet',
+        items: [
+          { text: 'All SC interactions working on testnet' },
+          { text: 'Default gas fee issue fixed' },
+          { text: 'Liquidation bots working' },
+          { text: 'Platform fee capture and routing to DAO/Operational Treasury working' },
+          { text: 'Vesting module fully working on testnet' },
+          { text: 'Emergency pause tested on testnet config' },
+        ]
+      },
+      {
+        label: 'Mainnet',
+        items: [
+          { text: 'All 19 contracts deployed to Igra mainnet' },
+          { text: 'Admin roles confirmed on-chain (DEFAULT_ADMIN_ROLE, canPause)' },
+          { text: 'Caravel multisig deployed on Igra and holding admin keys' },
+          { text: 'Emergency pause tested on mainnet config' },
+          { text: 'Epoch synchronization verified (all contracts share same START_TIMESTAMP)' },
+          { text: 'Emission parameters locked on-chain (emission_vault_pct=0.39, 36mo)' },
+          { text: 'KSKD genesis supply minted, emission vault funded' },
+          { text: 'Parameter bounds match governance doc on-chain' },
+          { text: 'USDC live on Igra mainnet (Hyperlane)' },
+          { text: 'WETH live on Igra mainnet (Hyperlane)' },
+          { text: 'Monitoring stack live (OZ Defender replacement)' },
+          { text: 'Incident response plan written and team trained' },
+          { text: 'Circuit breaker drill completed on mainnet' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'ui', label: 'dApp — UI', icon: '🖥️', colorClass: 'c-ui', barClass: 'bar-ui', numClass: 'num-ui',
+    sub: 'Frontend flows, UX quality and user-facing correctness',
+    items: [
+      { text: 'Supply flow end-to-end functional' },
+      { text: 'Borrow flow end-to-end functional' },
+      { text: 'Repay flow end-to-end functional' },
+      { text: 'Withdraw flow end-to-end functional' },
+      { text: 'Stake KSKD functional' },
+      { text: 'Unstake KSKD functional' },
+      { text: 'KSKD Claim Center functional (correct amounts per epoch)' },
+      { text: 'Voting / governance flow functional' },
+      { text: 'Health Factor display live and accurate' },
+      { text: 'Liquidation price per asset displayed' },
+      { text: 'Health Factor color coding (green/yellow/red)' },
+      { text: 'Warning messages on unsafe HF pre-tx' },
+      { text: 'Fee aggregation → DAO/Ops treasury split correct' },
+      { text: 'Voting parameters apply to next epoch (not current)' },
+      { text: 'All tx pass with standard default fees on Igra mainnet' },
+      { text: 'MetaMask RPC config documented for users' },
+      { text: 'Mobile responsive layout verified' },
+    ]
+  },
+  {
+    id: 'oracle', label: 'Oracle', icon: '🔮', colorClass: 'c-oracle', barClass: 'bar-oracle', numClass: 'num-oracle',
+    sub: 'Price feed reliability, security and roadmap alignment',
+    items: [
+      { text: 'A V1 oracle deployed and functional on mainnet' },
+      { text: 'Staleness checks implemented on all oracle calls' },
+      { text: 'Zero-price revert implemented (no silent slippage bypass)' },
+      { text: 'Oracle fallback mechanism in place' },
+      { text: 'Oracle manipulation resistance validated' },
+      { text: 'Price feed coverage: all supported assets' },
+      { text: "Eliott's COB/DAN model integration scoped (Phase 1 spec agreed)" },
+    ]
+  },
+  {
+    id: 'docs', label: 'Documentation', icon: '📄', colorClass: 'c-docs', barClass: 'bar-docs', numClass: 'num-docs',
+    sub: 'External-facing documentation and legal coverage',
+    items: [
+      { text: 'Whitepaper published and up to date' },
+      { text: 'Technical docs (contract interfaces, ABIs) published' },
+      { text: 'User guide (how to supply/borrow/stake/claim)' },
+      { text: 'Tokenomics doc finalized and published' },
+      { text: 'Governance parameter bounds documented' },
+      { text: 'Terms of service / disclaimer live on dApp' },
+      { text: 'Public announcement ready for mainnet launch' },
+    ]
+  },
+];
+
+// ── PILLARS DATA ──
+const PILLARS = [
+  {
+    id: 'p1', label: 'Pillar 1 — Oracle COB/DAN', icon: '🔮', colorClass: 'c-p1', barClass: 'bar-p1', numClass: 'num-p1',
+    sub: "Eliott's Consolidated Order Book oracle integration roadmap",
+    items: []  // blank — user adds items
+  },
+  {
+    id: 'p2', label: 'Pillar 2 — Agentic Readiness', icon: '🤖', colorClass: 'c-p2', barClass: 'bar-p2', numClass: 'num-p2',
+    sub: 'MCP server, AI advisor API, and agentic token standard',
+    items: [
+      { text: 'AI Position Advisor API spec reviewed by Anton + Yuliya' },
+      { text: '/api/advisor/epoch-context endpoint implemented (Pierrick)' },
+      { text: '/api/advisor/signals endpoint implemented (Pierrick)' },
+      { text: 'Both endpoints tested against testnet data' },
+      { text: 'MCP server (read-only) scaffolded — protocol state + position data' },
+      { text: 'MCP server deployed and accessible to external agents' },
+      { text: 'Human-facing AI toggle live on dApp (position analysis panel)' },
+      { text: 'Scoped agent approvals spec drafted (new token standard)' },
+      { text: 'Scoped agent approvals reviewed by Anton' },
+    ]
+  },
+  {
+    id: 'p3', label: 'Pillar 3 — Road to Kaskad L1', icon: '⛓️', colorClass: 'c-p3', barClass: 'bar-p3', numClass: 'num-p3',
+    sub: 'Kaspa covenant integration, Kasia notifications, and L1 PoC',
+    items: [
+      { text: 'Jack + Anton sync on covenant/vProg tooling state (Kaspa TN12)' },
+      { text: 'SilverScript PoC scope agreed — minimal lending covenant defined' },
+      { text: 'SilverScript lending vault PoC built on TN12' },
+      { text: 'PoC: collateral lockup with destination restriction (covenant)' },
+      { text: 'PoC: repayment condition enforced at script level' },
+      { text: 'PoC: timelock liquidation path' },
+      { text: 'Covenant PoC demo / technical writeup published' },
+      { text: 'Kasia integration: Anton + Yuliya assess complexity (Plane #53)' },
+      { text: 'Kasia: protocol message format confirmed with Kasia team' },
+      { text: 'Kasia: on-chain notification triggers implemented' },
+      { text: 'Kasia: liquidation price alert live for users' },
+      { text: 'Kaspa covenants hard fork shipped (target May 5 2026)' },
+      { text: 'Post-HF: mainnet covenant deployment scoped' },
+    ]
+  },
+];
+
+// ── STATE ──
+let state = {};
+let dirty = false;
+const STORAGE_KEY = 'kaskad_readiness_v1';
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) state = JSON.parse(saved);
+  } catch(e) {}
+  // init missing keys
+  [...SECTIONS, ...PILLARS].forEach(sec => {
+    const allItems = getAllItems(sec);
+    allItems.forEach((item, idx) => {
+      const key = `${sec.id}_${idx}`;
+      if (!state[key]) state[key] = 'not-started';
+    });
+  });
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  dirty = false;
+  document.getElementById('saveBanner').classList.remove('show');
+}
+
+function getAllItems(sec) {
+  if (sec.subsections) {
+    return sec.subsections.flatMap(ss => ss.items);
+  }
+  return sec.items;
+}
+
+function getSectionScore(sec) {
+  const items = getAllItems(sec);
+  if (!items.length) return 0;
+  const done = items.filter((_, idx) => state[`${sec.id}_${idx}`] === 'done').length;
+  const prog = items.filter((_, idx) => state[`${sec.id}_${idx}`] === 'progress').length;
+  return Math.round((done + prog * 0.5) / items.length * 100);
+}
+
+function getTotalScore() {
+  const scores = SECTIONS.map(s => getSectionScore(s));
+  return Math.round(scores.reduce((a, b) => a + b, 0) / SECTIONS.length);
+}
+
+function getStatusCounts(sec) {
+  const items = getAllItems(sec);
+  const done = items.filter((_, i) => state[`${sec.id}_${i}`] === 'done').length;
+  const prog = items.filter((_, i) => state[`${sec.id}_${i}`] === 'progress').length;
+  const none = items.filter((_, i) => state[`${sec.id}_${i}`] === 'not-started').length;
+  return { done, prog, none, total: items.length };
+}
+
+// ── RENDER CARDS ──
+function renderCards() {
+  const grid = document.getElementById('sectionGrid');
+  grid.innerHTML = '';
+  SECTIONS.forEach(sec => {
+    const score = getSectionScore(sec);
+    const { done, prog, none, total } = getStatusCounts(sec);
+    const card = document.createElement('div');
+    card.className = 'sec-card';
+    card.id = `card_${sec.id}`;
+    card.onclick = () => openModal(sec.id);
+    card.innerHTML = `
+      <div class="sc-top">
+        <div class="sc-icon ${sec.colorClass}">${sec.icon}</div>
+        <div>
+          <div class="sc-name">${sec.label}</div>
+          <div class="sc-count">${total} items</div>
+        </div>
+        <div style="margin-left:auto;font-size:18px;font-weight:800;" class="${sec.numClass}">${score}%</div>
+      </div>
+      <div class="sc-bar-track">
+        <div class="sc-bar-fill ${sec.barClass}" style="width:${score}%"></div>
+      </div>
+      <div class="sc-stats">
+        <span class="sc-stat done-chip">✓ ${done} done</span>
+        ${prog ? `<span class="sc-stat prog-chip">⟳ ${prog} in progress</span>` : ''}
+        ${none ? `<span class="sc-stat none-chip">◯ ${none} not started</span>` : ''}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ── RENDER SCORE ──
+function renderScore() {
+  const score = getTotalScore();
+  const circumference = 603.2;
+  const offset = circumference - (score / 100) * circumference;
+  const fill = document.getElementById('ringFill');
+  const num = document.getElementById('scoreNum');
+  const verdict = document.getElementById('scoreVerdict');
+
+  fill.style.strokeDashoffset = offset;
+
+  let color, label, bg;
+  if (score < 20)      { color = '#9CA3AF'; label = 'Not Started';    bg = 'rgba(0,0,0,0.05)'; }
+  else if (score < 40) { color = '#DC2626'; label = 'Early Stage';    bg = 'rgba(220,38,38,0.08)'; }
+  else if (score < 60) { color = '#B45309'; label = 'In Progress';    bg = 'rgba(245,158,11,0.10)'; }
+  else if (score < 80) { color = '#00875A'; label = 'Near Ready';     bg = 'rgba(0,184,150,0.10)'; }
+  else if (score < 100){ color = '#00875A'; label = 'Almost Ready';   bg = 'rgba(0,184,150,0.12)'; }
+  else                  { color = '#00875A'; label = '🚀 Launch Ready'; bg = 'rgba(0,184,150,0.15)'; }
+
+  fill.style.stroke = color;
+  num.textContent = score;
+  num.style.color = color;
+  verdict.textContent = label;
+  verdict.style.background = bg;
+  verdict.style.color = color;
+}
+
+// ── MODAL ──
+let currentSec = null;
+function openModal(secId) {
+  currentSec = SECTIONS.find(s => s.id === secId);
+  if (!currentSec) return;
+  document.getElementById('modalTitle').textContent = currentSec.label;
+  document.getElementById('modalTitle').style.color = getComputedStyle(document.querySelector(`.${currentSec.numClass}`)).color;
+  document.getElementById('modalSub').textContent = currentSec.sub;
+  renderModalItems();
+  document.getElementById('modalOverlay').classList.add('open');
+  document.querySelectorAll('.sec-card').forEach(c => c.classList.remove('active'));
+  document.getElementById(`card_${secId}`)?.classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.querySelectorAll('.sec-card').forEach(c => c.classList.remove('active'));
+  currentSec = null;
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+function renderModalItems() {
+  const sec = currentSec;
+  const score = getSectionScore(sec);
+
+  document.getElementById('modalPct').textContent = score + '%';
+  const bar = document.getElementById('modalBar');
+  bar.style.width = score + '%';
+  bar.className = `ms-bar-fill ${sec.barClass}`;
+
+  const container = document.getElementById('modalItems');
+  container.innerHTML = '';
+
+  let globalIdx = 0;
+
+  const renderItem = (item, idx, ssRef) => {
+    const key = `${sec.id}_${idx}`;
+    const val = state[key] || 'not-started';
+    const div = document.createElement('div');
+    div.className = 'item';
+    const capturedIdx = idx;
+    const capturedSsRef = ssRef;
+    div.innerHTML = `
+      <div class="item-text">${item.text}</div>
+      <select class="item-select ${val}" data-key="${key}" onchange="handleChange(this)">
+        <option value="not-started" ${val==='not-started'?'selected':''}>Not started</option>
+        <option value="progress"    ${val==='progress'?'selected':''}>In progress</option>
+        <option value="done"        ${val==='done'?'selected':''}>Done ✓</option>
+      </select>
+      <button class="item-del" title="Remove item">✕</button>
+    `;
+    div.querySelector('.item-del').onclick = () => deleteItem(sec, capturedIdx, capturedSsRef);
+    container.appendChild(div);
+  };
+
+  const renderAddRow = (ssRef) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'add-item-row add-subsection-wrap';
+    wrap.innerHTML = `
+      <input class="add-item-input" type="text" placeholder="Add item…" />
+      <button class="add-item-btn">+ Add</button>
+    `;
+    const input = wrap.querySelector('input');
+    const btn = wrap.querySelector('button');
+    const capturedSsRef = ssRef;
+    const submit = () => {
+      const text = input.value.trim();
+      if (!text) return;
+      addItem(sec, text, capturedSsRef);
+      input.value = '';
+    };
+    btn.onclick = submit;
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+    container.appendChild(wrap);
+  };
+
+  if (sec.subsections) {
+    sec.subsections.forEach(ss => {
+      const lbl = document.createElement('div');
+      lbl.className = 'subsection-label';
+      lbl.textContent = ss.label;
+      container.appendChild(lbl);
+      ss.items.forEach((item) => {
+        renderItem(item, globalIdx, ss);
+        globalIdx++;
+      });
+      renderAddRow(ss);
+    });
+  } else {
+    sec.items.forEach((item, idx) => renderItem(item, idx, null));
+    renderAddRow(null);
+  }
+}
+
+function handleChange(select) {
+  const key = select.dataset.key;
+  state[key] = select.value;
+  select.className = `item-select ${select.value}`;
+  dirty = true;
+  document.getElementById('saveBanner').classList.add('show');
+  // re-render score + cards
+  renderScore();
+  renderCards();
+  if (currentSec) {
+    const score = getSectionScore(currentSec);
+    document.getElementById('modalPct').textContent = score + '%';
+    document.getElementById('modalBar').style.width = score + '%';
+  }
+}
+
+// ── ADD / DELETE ITEMS ──
+function addItem(sec, text, ssRef) {
+  const newItem = { text };
+  if (ssRef) {
+    ssRef.items.push(newItem);
+  } else {
+    sec.items.push(newItem);
+  }
+  // init state for new item (it gets the next global index)
+  const allItems = getAllItems(sec);
+  const newIdx = allItems.length - 1;
+  state[`${sec.id}_${newIdx}`] = 'not-started';
+  dirty = true;
+  document.getElementById('saveBanner').classList.add('show');
+  renderModalItems();
+  renderCards();
+  renderScore();
+}
+
+function deleteItem(sec, globalIdx, ssRef) {
+  // remove item from data
+  const allItems = getAllItems(sec);
+  if (ssRef) {
+    // find local index within subsection
+    let offset = 0;
+    for (const ss of sec.subsections) {
+      if (ss === ssRef) break;
+      offset += ss.items.length;
+    }
+    const localIdx = globalIdx - offset;
+    ssRef.items.splice(localIdx, 1);
+  } else {
+    sec.items.splice(globalIdx, 1);
+  }
+  // rebuild state keys for this section (indices shifted)
+  const newAllItems = getAllItems(sec);
+  const newState = {};
+  // carry over other sections
+  Object.keys(state).forEach(k => {
+    if (!k.startsWith(sec.id + '_')) newState[k] = state[k];
+  });
+  // re-index this section: shift keys down after deleted index
+  newAllItems.forEach((_, i) => {
+    const oldKey = `${sec.id}_${i >= globalIdx ? i + 1 : i}`;
+    newState[`${sec.id}_${i}`] = state[oldKey] || 'not-started';
+  });
+  state = newState;
+  dirty = true;
+  document.getElementById('saveBanner').classList.add('show');
+  renderModalItems();
+  renderCards();
+  renderScore();
+}
+
+// ── TAB SWITCHING ──
+let activeTab = 'launch';
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tab-launch').style.display = tab === 'launch' ? '' : 'none';
+  document.getElementById('tab-pillars').style.display = tab === 'pillars' ? '' : 'none';
+  document.querySelectorAll('.nav-tab').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && tab === 'launch') || (i === 1 && tab === 'pillars'));
+  });
+  closeModal();
+}
+
+// ── PILLAR SCORES ──
+function getPillarScore(sec) {
+  const items = getAllItems(sec);
+  if (!items.length) return 0;
+  const done = items.filter((_, i) => state[`${sec.id}_${i}`] === 'done').length;
+  const prog = items.filter((_, i) => state[`${sec.id}_${i}`] === 'progress').length;
+  return Math.round((done + prog * 0.5) / items.length * 100);
+}
+
+function getTotalPillarScore() {
+  const scores = PILLARS.map(s => getPillarScore(s));
+  const withItems = PILLARS.filter(s => getAllItems(s).length > 0);
+  if (!withItems.length) return 0;
+  return Math.round(withItems.reduce((a, s) => a + getPillarScore(s), 0) / withItems.length);
+}
+
+function getPillarStatusCounts(sec) {
+  const items = getAllItems(sec);
+  const done = items.filter((_, i) => state[`${sec.id}_${i}`] === 'done').length;
+  const prog = items.filter((_, i) => state[`${sec.id}_${i}`] === 'progress').length;
+  const none = items.filter((_, i) => state[`${sec.id}_${i}`] === 'not-started').length;
+  return { done, prog, none, total: items.length };
+}
+
+function renderPillarCards() {
+  const grid = document.getElementById('pillarGrid');
+  grid.innerHTML = '';
+  PILLARS.forEach(sec => {
+    const score = getPillarScore(sec);
+    const { done, prog, none, total } = getPillarStatusCounts(sec);
+    const card = document.createElement('div');
+    card.className = 'sec-card';
+    card.id = `card_${sec.id}`;
+    card.onclick = () => openModal(sec.id, true);
+    card.innerHTML = `
+      <div class="sc-top">
+        <div class="sc-icon ${sec.colorClass}">${sec.icon}</div>
+        <div>
+          <div class="sc-name">${sec.label}</div>
+          <div class="sc-count">${total} items</div>
+        </div>
+        <div style="margin-left:auto;font-size:18px;font-weight:800;" class="${sec.numClass}">${score}%</div>
+      </div>
+      <div class="sc-bar-track">
+        <div class="sc-bar-fill ${sec.barClass}" style="width:${score}%"></div>
+      </div>
+      <div class="sc-stats">
+        <span class="sc-stat done-chip">✓ ${done} done</span>
+        ${prog ? `<span class="sc-stat prog-chip">⟳ ${prog} in progress</span>` : ''}
+        ${none ? `<span class="sc-stat none-chip">◯ ${none} not started</span>` : ''}
+        ${!total ? `<span class="sc-stat none-chip">No items yet</span>` : ''}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function renderPillarScore() {
+  const score = getTotalPillarScore();
+  const circumference = 603.2;
+  const offset = circumference - (score / 100) * circumference;
+  const fill = document.getElementById('ringFillP');
+  const num = document.getElementById('scoreNumP');
+  const verdict = document.getElementById('scoreVerdictP');
+  if (!fill) return;
+
+  fill.style.strokeDashoffset = offset;
+
+  let color, label, bg;
+  if (score < 20)      { color = '#9CA3AF'; label = 'Not Started';  bg = 'rgba(0,0,0,0.05)'; }
+  else if (score < 40) { color = '#DC2626'; label = 'Early Stage';  bg = 'rgba(220,38,38,0.08)'; }
+  else if (score < 60) { color = '#B45309'; label = 'In Progress';  bg = 'rgba(245,158,11,0.10)'; }
+  else if (score < 80) { color = '#6366F1'; label = 'On Track';     bg = 'rgba(99,102,241,0.10)'; }
+  else if (score < 100){ color = '#6366F1'; label = 'Near Complete';bg = 'rgba(99,102,241,0.12)'; }
+  else                  { color = '#00875A'; label = '✦ All Pillars Ready'; bg = 'rgba(0,184,150,0.12)'; }
+
+  fill.style.stroke = color;
+  num.textContent = score;
+  num.style.color = color;
+  verdict.textContent = label;
+  verdict.style.background = bg;
+  verdict.style.color = color;
+}
+
+// ── PATCH openModal to support pillars ──
+const _origOpenModal = openModal;
+function openModal(secId, isPillar) {
+  const dataset = isPillar ? PILLARS : SECTIONS;
+  currentSec = dataset.find(s => s.id === secId);
+  if (!currentSec) return;
+  currentIsPillar = !!isPillar;
+  document.getElementById('modalTitle').textContent = currentSec.label;
+  document.getElementById('modalTitle').style.color = getComputedStyle(document.querySelector(`.${currentSec.numClass}`) || document.body).color || '#1A1A1A';
+  document.getElementById('modalSub').textContent = currentSec.sub;
+  renderModalItems();
+  document.getElementById('modalOverlay').classList.add('open');
+  document.querySelectorAll('.sec-card').forEach(c => c.classList.remove('active'));
+  document.getElementById(`card_${secId}`)?.classList.add('active');
+}
+
+// ── PATCH handleChange to support pillars ──
+const _origHandleChange = handleChange;
+function handleChange(select) {
+  const key = select.dataset.key;
+  state[key] = select.value;
+  select.className = `item-select ${select.value}`;
+  dirty = true;
+  document.getElementById('saveBanner').classList.add('show');
+  renderScore();
+  renderCards();
+  renderPillarScore();
+  renderPillarCards();
+  if (currentSec) {
+    const score = currentIsPillar ? getPillarScore(currentSec) : getSectionScore(currentSec);
+    document.getElementById('modalPct').textContent = score + '%';
+    document.getElementById('modalBar').style.width = score + '%';
+  }
+}
+
+// ── PATCH addItem / deleteItem to support pillars ──
+const _origAddItem = addItem;
+function addItem(sec, text, ssRef) {
+  const newItem = { text };
+  if (ssRef) { ssRef.items.push(newItem); } else { sec.items.push(newItem); }
+  const allItems = getAllItems(sec);
+  const newIdx = allItems.length - 1;
+  state[`${sec.id}_${newIdx}`] = 'not-started';
+  dirty = true;
+  document.getElementById('saveBanner').classList.add('show');
+  renderModalItems();
+  renderCards(); renderScore();
+  renderPillarCards(); renderPillarScore();
+}
+
+const _origDeleteItem = deleteItem;
+function deleteItem(sec, globalIdx, ssRef) {
+  if (ssRef) {
+    let offset = 0;
+    for (const ss of sec.subsections) { if (ss === ssRef) break; offset += ss.items.length; }
+    ssRef.items.splice(globalIdx - offset, 1);
+  } else { sec.items.splice(globalIdx, 1); }
+  const newAllItems = getAllItems(sec);
+  const newState = {};
+  Object.keys(state).forEach(k => { if (!k.startsWith(sec.id + '_')) newState[k] = state[k]; });
+  newAllItems.forEach((_, i) => {
+    const oldKey = `${sec.id}_${i >= globalIdx ? i + 1 : i}`;
+    newState[`${sec.id}_${i}`] = state[oldKey] || 'not-started';
+  });
+  state = newState;
+  dirty = true;
+  document.getElementById('saveBanner').classList.add('show');
+  renderModalItems();
+  renderCards(); renderScore();
+  renderPillarCards(); renderPillarScore();
+}
+
+let currentIsPillar = false;
+
+// ── INIT ──
+loadState();
+renderCards();
+renderScore();
+renderPillarCards();
+renderPillarScore();
+</script>
+</body>
+</html>

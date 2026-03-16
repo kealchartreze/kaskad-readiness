@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["nginx"]
+
+[start]
+cmd = "nginx -g 'daemon off;'"
