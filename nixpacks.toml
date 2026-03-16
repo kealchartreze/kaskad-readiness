@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["nginx"]
+nixPkgs = ["python3"]
 
 [start]
-cmd = "nginx -g 'daemon off;'"
+cmd = "cd /app && python3 -m http.server 80"
