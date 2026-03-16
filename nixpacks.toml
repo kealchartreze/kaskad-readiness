@@ -1,5 +1,0 @@
-[phases.setup]
-nixPkgs = ["python3"]
-
-[start]
-cmd = "cd /app && python3 -m http.server 80"
