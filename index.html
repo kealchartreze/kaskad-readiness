@@ -132,6 +132,27 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #F5F0E8; color: 
 .save-banner { position: fixed; bottom: 24px; right: 24px; background: #fff; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 12px 18px; font-size: 13px; color: #6B7280; display: none; gap: 12px; align-items: center; z-index: 200; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
 .save-banner.show { display: flex; }
 .save-btn { background: #00B896; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; }
+
+/* ── ADMIN LOCK ── */
+.admin-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.55); font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; padding: 5px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.15s, color 0.15s; }
+.admin-btn:hover { background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.85); }
+.admin-btn.unlocked { background: rgba(0,184,150,0.18); border-color: rgba(0,184,150,0.35); color: #00B896; }
+/* hide edit controls in read-only mode */
+body.readonly .item-del { display: none !important; }
+body.readonly .add-item-row { display: none !important; }
+body.readonly .item-select { pointer-events: none; opacity: 0.7; }
+/* auth modal */
+.auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; display: none; align-items: center; justify-content: center; }
+.auth-overlay.open { display: flex; }
+.auth-box { background: #fff; border-radius: 16px; padding: 28px 28px 24px; width: 100%; max-width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.auth-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: #1A1A1A; }
+.auth-sub { font-size: 12px; color: #9CA3AF; margin-bottom: 18px; }
+.auth-input { width: 100%; border: 1px solid #D1C9BD; border-radius: 10px; padding: 10px 14px; font-size: 14px; font-family: 'Inter', sans-serif; outline: none; margin-bottom: 10px; }
+.auth-input:focus { border-color: #00B896; }
+.auth-error { font-size: 12px; color: #DC2626; margin-bottom: 10px; display: none; }
+.auth-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.auth-cancel { background: #F5F0E8; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; }
+.auth-confirm { background: #00B896; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; }
 </style>
 </head>
 <body>
@@ -140,8 +161,23 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #F5F0E8; color: 
   <div class="nav-right">
     <button class="nav-tab active" onclick="switchTab('launch')">🚀 Launch Readiness</button>
     <button class="nav-tab" onclick="switchTab('pillars')">⚡ Strategic Pillars</button>
+    <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()">🔒 Admin</button>
   </div>
 </nav>
+
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-title">Admin Access</div>
+    <div class="auth-sub">Enter the admin password to enable editing.</div>
+    <input class="auth-input" type="password" id="authInput" placeholder="Password" onkeydown="if(event.key==='Enter')confirmAuth()">
+    <div class="auth-error" id="authError">Incorrect password.</div>
+    <div class="auth-actions">
+      <button class="auth-cancel" onclick="closeAuth()">Cancel</button>
+      <button class="auth-confirm" onclick="confirmAuth()">Unlock</button>
+    </div>
+  </div>
+</div>
 
 <div class="page">
 
@@ -837,8 +873,57 @@ function deleteItem(sec, globalIdx, ssRef) {
 
 let currentIsPillar = false;
 
+// ── ADMIN AUTH ──
+const ADMIN_HASH = '7a3f9b2e1d8c6f4a0e5b7d2c9f1a4e8b3d6c0f2e5a8b1d4c7f0e3a6b9d2c5f8'; // placeholder
+let adminUnlocked = false;
+
+function _hashPassword(pw) {
+  // simple djb2-style hash encoded as hex — not crypto, just obfuscation
+  let h = 5381;
+  for (let i = 0; i < pw.length; i++) h = ((h << 5) + h) ^ pw.charCodeAt(i);
+  return (h >>> 0).toString(16).padStart(8, '0');
+}
+
+// Pre-computed hash for the password
+const _PW_HASH = _hashPassword('96bcltl!\u0026\u002B5y');
+
+function toggleAdmin() {
+  if (adminUnlocked) {
+    // Lock
+    adminUnlocked = false;
+    document.body.classList.add('readonly');
+    document.getElementById('adminBtn').textContent = '🔒 Admin';
+    document.getElementById('adminBtn').classList.remove('unlocked');
+  } else {
+    // Show password prompt
+    document.getElementById('authOverlay').classList.add('open');
+    document.getElementById('authInput').value = '';
+    document.getElementById('authError').style.display = 'none';
+    setTimeout(() => document.getElementById('authInput').focus(), 100);
+  }
+}
+
+function confirmAuth() {
+  const pw = document.getElementById('authInput').value;
+  if (_hashPassword(pw) === _PW_HASH) {
+    adminUnlocked = true;
+    document.body.classList.remove('readonly');
+    document.getElementById('adminBtn').innerHTML = '🔓 Admin';
+    document.getElementById('adminBtn').classList.add('unlocked');
+    closeAuth();
+  } else {
+    document.getElementById('authError').style.display = 'block';
+    document.getElementById('authInput').select();
+  }
+}
+
+function closeAuth() {
+  document.getElementById('authOverlay').classList.remove('open');
+}
+
 // ── INIT ──
 loadState();
+document.body.classList.add('readonly'); // read-only by default
 renderCards();
 renderScore();
 renderPillarCards();
