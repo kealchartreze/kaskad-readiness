@@ -146,6 +146,19 @@ body { font-family: 'Inter', system-ui, sans-serif; background: #F5F0E8; color: 
 .blocker-card.info .blocker-badge { background: rgba(99,102,241,0.1); color: #6366F1; }
 .blocker-text { font-size: 13px; font-weight: 600; color: #1A1A1A; line-height: 1.4; }
 .blocker-owner { font-size: 12px; color: #9CA3AF; }
+.blocker-del { background: none; border: none; color: #D1C9BD; font-size: 14px; cursor: pointer; padding: 2px 4px; border-radius: 5px; align-self: flex-start; margin-left: auto; transition: color 0.12s; }
+.blocker-del:hover { color: #DC2626; }
+.blocker-card-top { display: flex; align-items: flex-start; gap: 6px; }
+.add-blocker-row { display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 8px; margin-top: 14px; }
+.add-blocker-input { background: #fff; border: 1px dashed #D1C9BD; color: #374151; font-size: 13px; font-family: 'Inter', sans-serif; padding: 9px 12px; border-radius: 10px; outline: none; transition: border-color 0.15s; }
+.add-blocker-input:focus { border-color: #00B896; border-style: solid; }
+.add-blocker-input::placeholder { color: #9CA3AF; }
+.add-blocker-select { background: #fff; border: 1px dashed #D1C9BD; color: #374151; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; padding: 9px 12px; border-radius: 10px; outline: none; cursor: pointer; }
+.add-blocker-btn { background: #DC2626; color: #fff; border: none; border-radius: 10px; padding: 9px 16px; font-size: 12px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; white-space: nowrap; }
+.add-blocker-btn:hover { background: #B91C1C; }
+/* hide blocker edit controls in readonly */
+body.readonly .blocker-del { display: none !important; }
+body.readonly .add-blocker-row { display: none !important; }
 
 /* ── ADMIN LOCK ── */
 .admin-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.55); font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif; padding: 5px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.15s, color 0.15s; }
@@ -940,7 +953,8 @@ function closeAuth() {
 }
 
 // ── BLOCKERS ──
-const BLOCKER_DEFS = [
+const BLOCKER_STORAGE_KEY = 'kaskad-blockers-v1';
+const BLOCKER_DEFAULTS = [
   { text: 'Sherlock audit findings not yet accessible (judging phase)', owner: 'Jack → follow up with Sherlock', severity: 'critical' },
   { text: 'Confirm which criticals/highs fixed in Feb 9 merge', owner: 'Anton + Yuliya', severity: 'critical' },
   { text: 'Market making partner not confirmed', owner: 'Jack', severity: 'critical' },
@@ -950,18 +964,57 @@ const BLOCKER_DEFS = [
   { text: 'Whitepaper & public docs not finalized', owner: 'Jack + Quentin', severity: 'info' },
 ];
 
+let blockers = JSON.parse(localStorage.getItem(BLOCKER_STORAGE_KEY) || 'null') || BLOCKER_DEFAULTS.map(b => ({...b}));
+
+function saveBlockers() {
+  localStorage.setItem(BLOCKER_STORAGE_KEY, JSON.stringify(blockers));
+}
+
+function deleteBlocker(idx) {
+  blockers.splice(idx, 1);
+  saveBlockers();
+  renderBlockers();
+}
+
+function addBlocker() {
+  const textEl = document.getElementById('newBlockerText');
+  const ownerEl = document.getElementById('newBlockerOwner');
+  const sevEl = document.getElementById('newBlockerSev');
+  const text = textEl.value.trim();
+  const owner = ownerEl.value.trim();
+  if (!text) return;
+  blockers.push({ text, owner: owner || '—', severity: sevEl.value });
+  saveBlockers();
+  textEl.value = ''; ownerEl.value = '';
+  renderBlockers();
+}
+
 function renderBlockers() {
   const el = document.getElementById('blockersSection');
   if (!el) return;
+  const severityLabel = { critical: 'Critical', warn: 'Watch', info: 'Info' };
   el.innerHTML = `
     <div class="blockers-title">⚠ Key Blockers</div>
     <div class="blockers-grid">
-      ${BLOCKER_DEFS.map(b => `
+      ${blockers.map((b, i) => `
         <div class="blocker-card ${b.severity === 'warn' ? 'warn' : b.severity === 'info' ? 'info' : ''}">
-          <div class="blocker-badge">${b.severity === 'critical' ? 'Critical' : b.severity === 'warn' ? 'Watch' : 'Info'}</div>
+          <div class="blocker-card-top">
+            <div class="blocker-badge">${severityLabel[b.severity] || 'Critical'}</div>
+            <button class="blocker-del" onclick="deleteBlocker(${i})" title="Remove">✕</button>
+          </div>
           <div class="blocker-text">${b.text}</div>
           <div class="blocker-owner">→ ${b.owner}</div>
         </div>`).join('')}
+    </div>
+    <div class="add-blocker-row">
+      <input class="add-blocker-input" id="newBlockerText" placeholder="Blocker description…" onkeydown="if(event.key==='Enter')addBlocker()">
+      <input class="add-blocker-input" id="newBlockerOwner" placeholder="Owner…" onkeydown="if(event.key==='Enter')addBlocker()">
+      <select class="add-blocker-select" id="newBlockerSev">
+        <option value="critical">Critical</option>
+        <option value="warn">Watch</option>
+        <option value="info">Info</option>
+      </select>
+      <button class="add-blocker-btn" onclick="addBlocker()">+ Add</button>
     </div>`;
 }
 
