@@ -1184,10 +1184,11 @@ async function saveToServer() {
   }
 }
 
-// Patch saveData to also persist to server
-const _origSaveData2 = saveData;
+// saveData already patched above (line 501 original + line 1142 timestamp patch)
+// add server persistence to the existing patch chain
+const _origSaveData3 = saveData;
 function saveData() {
-  _origSaveData2();
+  _origSaveData3();
   saveToServer();
 }
 
