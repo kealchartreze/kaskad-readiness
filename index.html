@@ -288,6 +288,126 @@ body.readonly .item-select { pointer-events: none; opacity: 0.7; }
 .auth-cancel { background: #F5F0E8; border: none; border-radius: 10px; padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; color: #6B7280; }
 .auth-confirm { background: linear-gradient(135deg,#00B896,#00D4A8); color: #fff; border: none; border-radius: 10px; padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; box-shadow: 0 4px 14px rgba(0,184,150,0.28); }
 
+
+/* EVENT TICKER */
+.ticker-wrap {
+  background: #1A2E2A;
+  border-bottom: 1px solid rgba(0,184,150,0.2);
+  height: 36px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+}
+.ticker-label {
+  flex-shrink: 0;
+  background: #00B896;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0 14px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+  white-space: nowrap;
+}
+.ticker-track {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.ticker-inner {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: ticker-scroll 30s linear infinite;
+  gap: 0;
+}
+.ticker-inner:hover { animation-play-state: paused; }
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-event {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 32px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+.ticker-event-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #00B896;
+  flex-shrink: 0;
+}
+.ticker-event-dot.soon { background: #F59E0B; }
+.ticker-event-dot.today { background: #F87171; animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.ticker-event-date {
+  font-size: 11px;
+  font-weight: 700;
+  color: #00B896;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.ticker-event-date.soon { color: #FBBF24; }
+.ticker-event-date.today { color: #F87171; }
+.ticker-event-label { color: rgba(255,255,255,0.75); }
+.ticker-empty {
+  padding: 0 24px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
+  font-style: italic;
+}
+/* Admin event editor */
+.ticker-admin {
+  position: fixed; bottom: 80px; right: 24px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 16px;
+  padding: 18px 20px;
+  width: 420px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  z-index: 200;
+  display: none;
+}
+.ticker-admin.open { display: block; }
+.ticker-admin-title { font-size: 13px; font-weight: 700; color: #111827; margin-bottom: 12px; }
+.ticker-event-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; max-height: 200px; overflow-y: auto; }
+.ticker-event-row { display: flex; align-items: center; gap: 8px; background: #FAFAF8; border: 1px solid rgba(0,0,0,0.07); border-radius: 10px; padding: 8px 12px; }
+.ticker-event-row-date { font-size: 11px; font-weight: 700; color: #00875A; min-width: 70px; }
+.ticker-event-row-label { flex: 1; font-size: 12px; color: #374151; }
+.ticker-event-del { background: none; border: none; color: #D1C9BD; cursor: pointer; font-size: 14px; padding: 0 2px; transition: color 0.12s; }
+.ticker-event-del:hover { color: #DC2626; }
+.ticker-add-row { display: grid; grid-template-columns: 130px 1fr auto; gap: 8px; }
+.ticker-add-date { background: #fff; border: 1px solid #D1C9BD; color: #374151; font-size: 12px; font-family: 'Inter', sans-serif; padding: 8px 10px; border-radius: 9px; outline: none; }
+.ticker-add-date:focus { border-color: #00B896; }
+.ticker-add-label { background: #fff; border: 1px solid #D1C9BD; color: #374151; font-size: 12px; font-family: 'Inter', sans-serif; padding: 8px 10px; border-radius: 9px; outline: none; }
+.ticker-add-label:focus { border-color: #00B896; }
+.ticker-add-btn { background: linear-gradient(135deg,#00B896,#00D4A8); color: #fff; border: none; border-radius: 9px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+body.readonly .ticker-admin { display: none !important; }
+.ticker-toggle-btn {
+  flex-shrink: 0;
+  background: none; border: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 11px; font-weight: 600;
+  cursor: pointer; padding: 0 12px;
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.05em;
+  transition: color 0.15s;
+  display: none;
+}
+.ticker-toggle-btn:hover { color: #00B896; }
+body:not(.readonly) .ticker-toggle-btn { display: flex; align-items: center; }
+
 </style>
 </head>
 <body>
@@ -299,6 +419,29 @@ body.readonly .item-select { pointer-events: none; opacity: 0.7; }
     <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()"> Admin</button>
   </div>
 </nav>
+
+<!-- EVENT TICKER -->
+<div class="ticker-wrap" id="tickerWrap">
+  <div class="ticker-label">Live Events</div>
+  <div class="ticker-track">
+    <div class="ticker-inner" id="tickerInner">
+      <div class="ticker-empty">No upcoming events — admin can add events below</div>
+    </div>
+  </div>
+  <button class="ticker-toggle-btn" onclick="toggleTickerAdmin()" title="Manage events">+ Edit</button>
+</div>
+
+<!-- EVENT ADMIN PANEL -->
+<div class="ticker-admin" id="tickerAdmin">
+  <div class="ticker-admin-title">Upcoming Events</div>
+  <div class="ticker-event-list" id="tickerEventList"></div>
+  <div class="ticker-add-row">
+    <input class="ticker-add-date" type="date" id="tickerAddDate">
+    <input class="ticker-add-label" type="text" id="tickerAddLabel" placeholder="Event description..." onkeydown="if(event.key==='Enter')addTickerEvent()">
+    <button class="ticker-add-btn" onclick="addTickerEvent()">+ Add</button>
+  </div>
+</div>
+
 
 <!-- AUTH MODAL -->
 <div class="auth-overlay" id="authOverlay">
@@ -1282,7 +1425,7 @@ function touchLastUpdated() {
 
 // ── SERVER PERSISTENCE ──
 const API_BASE = '/api/state';
-const STATE_KEYS = ['kaskad-readiness-v1', 'kaskad-sections-v1', 'kaskad-pillars-v1', 'kaskad-blockers-v1', 'kaskad-target-date-v1', 'kaskad-last-updated-v1'];
+const STATE_KEYS = ['kaskad-readiness-v1', 'kaskad-sections-v1', 'kaskad-pillars-v1', 'kaskad-events-v1', 'kaskad-blockers-v1', 'kaskad-target-date-v1', 'kaskad-last-updated-v1'];
 
 async function loadFromServer() {
   try {
@@ -1381,10 +1524,152 @@ function renderPillarCards() {
   });
 }
 
+
+// ── EVENT TICKER ──
+const EVENTS_KEY = 'kaskad-events-v1';
+let tickerEvents = [];
+
+function loadTickerEvents() {
+  try {
+    var raw = localStorage.getItem(EVENTS_KEY);
+    if (raw) tickerEvents = JSON.parse(raw);
+  } catch(e) { tickerEvents = []; }
+  if (!Array.isArray(tickerEvents)) tickerEvents = [];
+}
+
+function saveTickerEvents() {
+  localStorage.setItem(EVENTS_KEY, JSON.stringify(tickerEvents));
+  // persist to server alongside other state
+  var allState = {};
+  var keys = [STORAGE_KEY, SECTIONS_KEY, PILLARS_KEY, EVENTS_KEY, 'kaskad-blockers-v1', 'kaskad-target-date-v1', 'kaskad-last-updated-v1'];
+  keys.forEach(function(k) {
+    var v = localStorage.getItem(k);
+    if (v !== null) allState[k] = v;
+  });
+  fetch('/api/state', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ state: allState })
+  }).catch(function(){});
+}
+
+function getDotClass(dateStr) {
+  var today = new Date(); today.setHours(0,0,0,0);
+  var d = new Date(dateStr + 'T00:00:00');
+  var diff = Math.round((d - today) / 86400000);
+  if (diff === 0) return 'today';
+  if (diff <= 3) return 'soon';
+  return '';
+}
+
+function formatEventDate(dateStr) {
+  var d = new Date(dateStr + 'T00:00:00');
+  var today = new Date(); today.setHours(0,0,0,0);
+  var diff = Math.round((d - today) / 86400000);
+  if (diff === 0) return 'TODAY';
+  if (diff === 1) return 'TOMORROW';
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase();
+}
+
+function renderTicker() {
+  var inner = document.getElementById('tickerInner');
+  if (!inner) return;
+
+  // filter: only upcoming + today, sorted by date
+  var today = new Date(); today.setHours(0,0,0,0);
+  var upcoming = tickerEvents
+    .filter(function(e) { return new Date(e.date + 'T00:00:00') >= today; })
+    .sort(function(a, b) { return a.date.localeCompare(b.date); });
+
+  if (!upcoming.length) {
+    inner.innerHTML = '<div class="ticker-empty">No upcoming events</div>';
+    return;
+  }
+
+  // Build items — duplicate for seamless loop
+  var items = upcoming.map(function(e) {
+    var cls = getDotClass(e.date);
+    return '<div class="ticker-event">' +
+      '<div class="ticker-event-dot ' + cls + '"></div>' +
+      '<span class="ticker-event-date ' + cls + '">' + formatEventDate(e.date) + '</span>' +
+      '<span class="ticker-event-label">' + e.label + '</span>' +
+    '</div>';
+  }).join('');
+
+  // Duplicate so the scroll loops seamlessly
+  inner.innerHTML = items + items;
+
+  // Adjust animation speed based on content width
+  var totalWidth = inner.scrollWidth / 2;
+  var speed = Math.max(15, totalWidth / 40); // ~40px per second
+  inner.style.animationDuration = speed + 's';
+}
+
+function renderTickerAdmin() {
+  var list = document.getElementById('tickerEventList');
+  if (!list) return;
+  if (!tickerEvents.length) {
+    list.innerHTML = '<div style="font-size:12px;color:#9CA3AF;padding:4px 0">No events yet</div>';
+    return;
+  }
+  var today = new Date(); today.setHours(0,0,0,0);
+  var sorted = tickerEvents.slice().sort(function(a,b){ return a.date.localeCompare(b.date); });
+  list.innerHTML = sorted.map(function(e, i) {
+    var d = new Date(e.date + 'T00:00:00');
+    var dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    var isPast = d < today;
+    return '<div class="ticker-event-row" style="' + (isPast ? 'opacity:0.45' : '') + '">' +
+      '<span class="ticker-event-row-date">' + dateStr + '</span>' +
+      '<span class="ticker-event-row-label">' + e.label + '</span>' +
+      '<button class="ticker-event-del" onclick="deleteTickerEvent(' + tickerEvents.indexOf(e) + ')" title="Remove">×</button>' +
+    '</div>';
+  }).join('');
+}
+
+function addTickerEvent() {
+  var dateEl = document.getElementById('tickerAddDate');
+  var labelEl = document.getElementById('tickerAddLabel');
+  var date = dateEl.value;
+  var label = labelEl.value.trim();
+  if (!date || !label) return;
+  tickerEvents.push({ date: date, label: label });
+  saveTickerEvents();
+  dateEl.value = '';
+  labelEl.value = '';
+  renderTicker();
+  renderTickerAdmin();
+}
+
+function deleteTickerEvent(idx) {
+  tickerEvents.splice(idx, 1);
+  saveTickerEvents();
+  renderTicker();
+  renderTickerAdmin();
+}
+
+function toggleTickerAdmin() {
+  var panel = document.getElementById('tickerAdmin');
+  if (panel) panel.classList.toggle('open');
+  renderTickerAdmin();
+}
+
+// Close ticker admin when clicking outside
+document.addEventListener('click', function(e) {
+  var panel = document.getElementById('tickerAdmin');
+  var btn = document.querySelector('.ticker-toggle-btn');
+  if (panel && panel.classList.contains('open')) {
+    if (!panel.contains(e.target) && e.target !== btn) {
+      panel.classList.remove('open');
+    }
+  }
+});
+
 // ── INIT ──
 document.body.classList.add('readonly'); // read-only by default
 loadFromServer().then(() => {
   loadState();
+  loadTickerEvents();
+  renderTicker();
   renderBlockers();
   renderTargetDate();
   renderLastUpdated();
