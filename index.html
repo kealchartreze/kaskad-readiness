@@ -481,9 +481,35 @@ const PILLARS = [
 // ── STATE ──
 let state = {};
 let dirty = false;
-const STORAGE_KEY = 'kaskad_readiness_v1';
+const STORAGE_KEY = 'kaskad-readiness-v1';
+const SECTIONS_KEY = 'kaskad-sections-v1';
+const PILLARS_KEY = 'kaskad-pillars-v1';
 
 function loadState() {
+  // Restore custom sections/pillars (added/deleted items) FIRST
+  try {
+    const savedSections = localStorage.getItem(SECTIONS_KEY);
+    if (savedSections) {
+      const parsed = JSON.parse(savedSections);
+      parsed.forEach((saved, i) => {
+        if (SECTIONS[i]) {
+          if (saved.items) SECTIONS[i].items = saved.items;
+          if (saved.subsections) SECTIONS[i].subsections = saved.subsections;
+        }
+      });
+    }
+    const savedPillars = localStorage.getItem(PILLARS_KEY);
+    if (savedPillars) {
+      const parsed = JSON.parse(savedPillars);
+      parsed.forEach((saved, i) => {
+        if (PILLARS[i]) {
+          if (saved.items) PILLARS[i].items = saved.items;
+          if (saved.subsections) PILLARS[i].subsections = saved.subsections;
+        }
+      });
+    }
+  } catch(e) {}
+  // Then restore status state
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) state = JSON.parse(saved);
@@ -499,17 +525,23 @@ function loadState() {
 }
 
 function saveData() {
-  // localStorage FIRST (blocking)
+  // 1. Save status state
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  // 2. Save sections/pillars structure (custom items/deletions)
+  const sectionsData = SECTIONS.map(s => ({ items: s.items, subsections: s.subsections }));
+  const pillarsData = PILLARS.map(s => ({ items: s.items, subsections: s.subsections }));
+  localStorage.setItem(SECTIONS_KEY, JSON.stringify(sectionsData));
+  localStorage.setItem(PILLARS_KEY, JSON.stringify(pillarsData));
+  // 3. Timestamp
   const now = new Date();
   const str = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) +
     ' at ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   localStorage.setItem('kaskad-last-updated-v1', str);
   
-  // server persistence AFTER localStorage is guaranteed written
-  const STATE_KEYS = ['kaskad-readiness-v1', 'kaskad-blockers-v1', 'kaskad-target-date-v1', 'kaskad-last-updated-v1'];
+  // 4. Server persistence — all keys
+  const ALL_KEYS = [STORAGE_KEY, SECTIONS_KEY, PILLARS_KEY, 'kaskad-blockers-v1', 'kaskad-target-date-v1', 'kaskad-last-updated-v1'];
   const s = {};
-  for (const key of STATE_KEYS) {
+  for (const key of ALL_KEYS) {
     const val = localStorage.getItem(key);
     if (val !== null) s[key] = val;
   }
@@ -519,7 +551,7 @@ function saveData() {
     body: JSON.stringify({ state: s })
   }).then(() => console.log('State saved to server'));
   
-  // UI updates
+  // 5. UI updates
   dirty = false;
   document.getElementById('saveBanner').classList.remove('show');
   closeModal();
