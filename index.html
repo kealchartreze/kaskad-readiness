@@ -1146,16 +1146,63 @@ function saveData() {
 
 // toggleAdmin already defined above — re-render target date after state change handled via renderTargetDate calls in confirmAuth and the lock branch below
 
+// ── SERVER PERSISTENCE ──
+const API_BASE = '/api/state';
+const STATE_KEYS = ['kaskad-readiness-v1', 'kaskad-blockers-v1', 'kaskad-target-date-v1', 'kaskad-last-updated-v1'];
+
+async function loadFromServer() {
+  try {
+    const res = await fetch(API_BASE);
+    const data = await res.json();
+    if (data.ok && data.state) {
+      for (const key of STATE_KEYS) {
+        if (data.state[key] !== undefined) {
+          const val = typeof data.state[key] === 'string' ? data.state[key] : JSON.stringify(data.state[key]);
+          localStorage.setItem(key, val);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Server load failed, using localStorage:', e);
+  }
+}
+
+async function saveToServer() {
+  try {
+    const state = {};
+    for (const key of STATE_KEYS) {
+      const val = localStorage.getItem(key);
+      if (val !== null) state[key] = val;
+    }
+    await fetch(API_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ state })
+    });
+  } catch (e) {
+    console.warn('Server save failed:', e);
+  }
+}
+
+// Patch saveData to also persist to server
+const _origSaveData2 = saveData;
+function saveData() {
+  _origSaveData2();
+  saveToServer();
+}
+
 // ── INIT ──
-loadState();
 document.body.classList.add('readonly'); // read-only by default
-renderBlockers();
-renderTargetDate();
-renderLastUpdated();
-renderCards();
-renderScore();
-renderPillarCards();
-renderPillarScore();
+loadFromServer().then(() => {
+  loadState();
+  renderBlockers();
+  renderTargetDate();
+  renderLastUpdated();
+  renderCards();
+  renderScore();
+  renderPillarCards();
+  renderPillarScore();
+});
 </script>
 </body>
 </html>
