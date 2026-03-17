@@ -499,10 +499,31 @@ function loadState() {
 }
 
 function saveData() {
+  // localStorage
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   dirty = false;
   document.getElementById('saveBanner').classList.remove('show');
   closeModal();
+  // timestamp
+  const now = new Date();
+  const str = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) +
+    ' at ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  localStorage.setItem('kaskad-last-updated-v1', str);
+  renderLastUpdated();
+  // server persistence
+  const STATE_KEYS = ['kaskad-readiness-v1', 'kaskad-blockers-v1', 'kaskad-target-date-v1', 'kaskad-last-updated-v1'];
+  try {
+    const s = {};
+    for (const key of STATE_KEYS) {
+      const val = localStorage.getItem(key);
+      if (val !== null) s[key] = val;
+    }
+    fetch('/api/state', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ state: s })
+    });
+  } catch (e) { console.warn('Server save failed:', e); }
 }
 
 function getAllItems(sec) {
@@ -1137,13 +1158,6 @@ function touchLastUpdated() {
   renderLastUpdated();
 }
 
-// ── PATCH saveData to touch timestamp ──
-const _origSaveData = saveData;
-function saveData() {
-  _origSaveData();
-  touchLastUpdated();
-}
-
 // toggleAdmin already defined above — re-render target date after state change handled via renderTargetDate calls in confirmAuth and the lock branch below
 
 // ── SERVER PERSISTENCE ──
@@ -1185,13 +1199,6 @@ async function saveToServer() {
 }
 
 // saveData already patched above (line 501 original + line 1142 timestamp patch)
-// add server persistence to the existing patch chain
-const _origSaveData3 = saveData;
-function saveData() {
-  _origSaveData3();
-  saveToServer();
-}
-
 // ── INIT ──
 document.body.classList.add('readonly'); // read-only by default
 loadFromServer().then(() => {
