@@ -499,31 +499,31 @@ function loadState() {
 }
 
 function saveData() {
-  // localStorage
+  // localStorage FIRST (blocking)
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  dirty = false;
-  document.getElementById('saveBanner').classList.remove('show');
-  closeModal();
-  // timestamp
   const now = new Date();
   const str = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) +
     ' at ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   localStorage.setItem('kaskad-last-updated-v1', str);
-  renderLastUpdated();
-  // server persistence
+  
+  // server persistence AFTER localStorage is guaranteed written
   const STATE_KEYS = ['kaskad-readiness-v1', 'kaskad-blockers-v1', 'kaskad-target-date-v1', 'kaskad-last-updated-v1'];
-  try {
-    const s = {};
-    for (const key of STATE_KEYS) {
-      const val = localStorage.getItem(key);
-      if (val !== null) s[key] = val;
-    }
-    fetch('/api/state', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ state: s })
-    });
-  } catch (e) { console.warn('Server save failed:', e); }
+  const s = {};
+  for (const key of STATE_KEYS) {
+    const val = localStorage.getItem(key);
+    if (val !== null) s[key] = val;
+  }
+  fetch('/api/state', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ state: s })
+  }).then(() => console.log('State saved to server'));
+  
+  // UI updates
+  dirty = false;
+  document.getElementById('saveBanner').classList.remove('show');
+  closeModal();
+  renderLastUpdated();
 }
 
 function getAllItems(sec) {
