@@ -295,7 +295,7 @@ body.readonly .item-select { pointer-events: none; opacity: 0.7; }
   <div class="nav-logo">Kaskad<span>.</span></div>
   <div class="nav-right">
     <button class="nav-tab active" onclick="switchTab('launch')"> Launch Readiness</button>
-    <button class="nav-tab" onclick="switchTab('pillars')"> Strategic Pillars</button>
+    <button class="nav-tab" onclick="switchTab('pillars')">⚡ Strategic Pillars</button>
     <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()"> Admin</button>
   </div>
 </nav>
@@ -382,7 +382,7 @@ body.readonly .item-select { pointer-events: none; opacity: 0.7; }
 <!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
   <div class="modal" id="modal">
-    <button class="modal-close" onclick="closeModal()"></button>
+    <button class="modal-close" onclick="closeModal()">✕</button>
     <div class="modal-title" id="modalTitle"></div>
     <div class="modal-sub" id="modalSub"></div>
     <div class="modal-score-row">
@@ -438,7 +438,7 @@ const SECTIONS = [
     ]
   },
   {
-    id: 'sc', label: 'dApp — Smart Contracts', icon: '️', colorClass: 'c-sc', barClass: 'bar-sc', numClass: 'num-sc',
+    id: 'sc', label: 'dApp — Smart Contracts', icon: '⛓️', colorClass: 'c-sc', barClass: 'bar-sc', numClass: 'num-sc',
     sub: 'Contract deployment and on-chain configuration',
     subsections: [
       {
@@ -546,7 +546,7 @@ const PILLARS = [
     ]
   },
   {
-    id: 'p3', label: 'Pillar 3 — Road to Kaskad L1', icon: '️', colorClass: 'c-p3', barClass: 'bar-p3', numClass: 'num-p3',
+    id: 'p3', label: 'Pillar 3 — Road to Kaskad L1', icon: '⛓️', colorClass: 'c-p3', barClass: 'bar-p3', numClass: 'num-p3',
     sub: 'Kaspa covenant integration, Kasia notifications, and L1 PoC',
     items: [
       { text: 'Jack + Anton sync on covenant/vProg tooling state (Kaspa TN12)' },
@@ -698,7 +698,7 @@ function renderCards() {
         <div class="sc-bar-fill ${sec.barClass}" style="width:${score}%"></div>
       </div>
       <div class="sc-stats">
-        <span class="sc-stat done-chip"> ${done} done</span>
+        <span class="sc-stat done-chip">✓ ${done} done</span>
         ${prog ? `<span class="sc-stat prog-chip">⟳ ${prog} in progress</span>` : ''}
         ${none ? `<span class="sc-stat none-chip">◯ ${none} not started</span>` : ''}
       </div>
@@ -784,9 +784,9 @@ function renderModalItems() {
       <select class="item-select ${val}" data-key="${key}" onchange="handleChange(this)">
         <option value="not-started" ${val==='not-started'?'selected':''}>Not started</option>
         <option value="progress"    ${val==='progress'?'selected':''}>In progress</option>
-        <option value="done"        ${val==='done'?'selected':''}>Done </option>
+        <option value="done"        ${val==='done'?'selected':''}>Done ✓</option>
       </select>
-      <button class="item-del" title="Remove item"></button>
+      <button class="item-del" title="Remove item">✕</button>
     `;
     div.querySelector('.item-del').onclick = () => deleteItem(sec, capturedIdx, capturedSsRef);
     container.appendChild(div);
@@ -960,7 +960,7 @@ function renderPillarCards() {
         <div class="sc-bar-fill ${sec.barClass}" style="width:${score}%"></div>
       </div>
       <div class="sc-stats">
-        <span class="sc-stat done-chip"> ${done} done</span>
+        <span class="sc-stat done-chip">✓ ${done} done</span>
         ${prog ? `<span class="sc-stat prog-chip">⟳ ${prog} in progress</span>` : ''}
         ${none ? `<span class="sc-stat none-chip">◯ ${none} not started</span>` : ''}
         ${!total ? `<span class="sc-stat none-chip">No items yet</span>` : ''}
@@ -987,7 +987,7 @@ function renderPillarScore() {
   else if (score < 60) { color = '#B45309'; label = 'In Progress';  bg = 'rgba(245,158,11,0.10)'; }
   else if (score < 80) { color = '#6366F1'; label = 'On Track';     bg = 'rgba(99,102,241,0.10)'; }
   else if (score < 100){ color = '#6366F1'; label = 'Near Complete';bg = 'rgba(99,102,241,0.12)'; }
-  else                  { color = '#00875A'; label = ' All Pillars Ready'; bg = 'rgba(0,184,150,0.12)'; }
+  else                  { color = '#00875A'; label = '✦ All Pillars Ready'; bg = 'rgba(0,184,150,0.12)'; }
 
   fill.style.stroke = color;
   num.textContent = score;
@@ -1163,13 +1163,13 @@ function renderBlockers() {
   if (!el) return;
   const severityLabel = { critical: 'Critical', warn: 'Watch', info: 'Info' };
   el.innerHTML = `
-    <div class="blockers-title"> Key Blockers</div>
+    <div class="blockers-title">⚠ Key Blockers</div>
     <div class="blockers-grid">
       ${blockers.map((b, i) => `
         <div class="blocker-card ${b.severity === 'warn' ? 'warn' : b.severity === 'info' ? 'info' : ''}">
           <div class="blocker-card-top">
             <div class="blocker-badge">${severityLabel[b.severity] || 'Critical'}</div>
-            <button class="blocker-del" onclick="deleteBlocker(${i})" title="Remove"></button>
+            <button class="blocker-del" onclick="deleteBlocker(${i})" title="Remove">✕</button>
           </div>
           <div class="blocker-text">${b.text}</div>
           <div class="blocker-owner">→ ${b.owner}</div>
@@ -1234,7 +1234,7 @@ function renderTargetDate() {
       <span></span>
       <span class="target-date-value">${dateStr}</span>
       <span class="target-countdown ${urgent ? 'urgent' : ''}">${countdownText}</span>
-      <button class="target-edit-btn" onclick="showTargetDateEdit()" title="Edit date">️</button>
+      <button class="target-edit-btn" onclick="showTargetDateEdit()" title="Edit date">✏️</button>
     </div>
     <div class="target-date-edit" id="targetDateEditRow" style="display:none">
       <input class="target-date-input" type="date" id="targetDateInput" value="${stored}">
