@@ -92,12 +92,14 @@ async function auditUrl(url) {
 
   try {
     const r = await fetchUrl(`${url}/robots.txt`);
-    result.robots_txt = r.status === 200 && r.body.length > 10;
+    const ct = (r.headers['content-type'] || '');
+    result.robots_txt = r.status === 200 && ct.includes('text/plain') && r.body.includes('User-agent');
   } catch(e) {}
 
   try {
     const r = await fetchUrl(`${url}/llms.txt`);
-    result.llms_txt = r.status === 200 && r.body.length > 10;
+    const ct = (r.headers['content-type'] || '');
+    result.llms_txt = r.status === 200 && ct.includes('text/plain') && r.body.length > 20;
   } catch(e) {}
 
   try {
@@ -141,23 +143,26 @@ async function auditAgenticReadiness() {
     scoped_agent_approvals: false,
   };
 
-  // MCP server — check /.well-known/mcp or /mcp endpoint
+  // MCP server — must return JSON with content-type application/json
   for (const path of ['/.well-known/mcp', '/mcp', '/api/mcp']) {
     try {
       const r = await fetchUrl(`${BASE}${path}`, 5000);
-      if (r.status === 200) { checks.mcp_server = true; break; }
+      const ct = (r.headers['content-type'] || '');
+      if (r.status === 200 && ct.includes('application/json')) { checks.mcp_server = true; break; }
     } catch(e) {}
   }
 
-  // Advisor API endpoints
+  // Advisor API endpoints — must return JSON, not HTML catch-all
   try {
     const r = await fetchUrl(`${BASE}/api/advisor/epoch-context`, 5000);
-    checks.advisor_epoch_context = r.status === 200;
+    const ct = (r.headers['content-type'] || '');
+    checks.advisor_epoch_context = r.status === 200 && ct.includes('application/json');
   } catch(e) {}
 
   try {
     const r = await fetchUrl(`${BASE}/api/advisor/signals`, 5000);
-    checks.advisor_signals = r.status === 200;
+    const ct = (r.headers['content-type'] || '');
+    checks.advisor_signals = r.status === 200 && ct.includes('application/json');
   } catch(e) {}
 
   // llms.txt references API
@@ -174,10 +179,11 @@ async function auditAgenticReadiness() {
     checks.ai_toggle_dapp = r.body.includes('advisor') || r.body.includes('ai-toggle') || r.body.includes('position-analysis');
   } catch(e) {}
 
-  // Scoped agent approvals — check for EIP or spec endpoint
+  // Scoped agent approvals — must return JSON
   try {
     const r = await fetchUrl(`${BASE}/api/agent/scope`, 5000);
-    checks.scoped_agent_approvals = r.status === 200;
+    const ct = (r.headers['content-type'] || '');
+    checks.scoped_agent_approvals = r.status === 200 && ct.includes('application/json');
   } catch(e) {}
 
   const passed = Object.values(checks).filter(Boolean).length;
