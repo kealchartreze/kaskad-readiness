@@ -67,6 +67,119 @@ app.post('/api/state', async (req, res) => {
   }
 });
 
+// ── GEO BENCHMARK ──
+const https = require('https');
+const http = require('http');
+const GEO_ADMIN_TOKEN = process.env.GEO_ADMIN_TOKEN || 'kaskad-geo-admin-2026';
+const GEO_URLS = ['https://kaskad.app', 'https://testnet.kaskad.live'];
+
+function fetchUrl(url, timeoutMs = 10000) {
+  return new Promise((resolve, reject) => {
+    const lib = url.startsWith('https') ? https : http;
+    const req = lib.get(url, { timeout: timeoutMs }, res => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body: data }));
+    });
+    req.on('error', reject);
+    req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
+  });
+}
+
+async function auditUrl(url) {
+  const result = { url, robots_txt: false, llms_txt: false, ssr: false, structured_data: false, citability_score: 0 };
+  const domain = url.replace('https://', '');
+
+  try {
+    const r = await fetchUrl(`${url}/robots.txt`);
+    result.robots_txt = r.status === 200 && r.body.length > 10;
+  } catch(e) {}
+
+  try {
+    const r = await fetchUrl(`${url}/llms.txt`);
+    result.llms_txt = r.status === 200 && r.body.length > 10;
+  } catch(e) {}
+
+  try {
+    const r = await fetchUrl(url);
+    const body = r.body;
+    // SSR check: meaningful text content server-rendered
+    const textLen = body.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().length;
+    result.ssr = textLen > 500;
+    // Structured data check
+    result.structured_data = body.includes('application/ld+json') || body.includes('schema.org');
+    // Citability: count paragraphs with 100+ chars
+    const paras = (body.match(/<p[^>]*>([^<]{100,})<\/p>/gi) || []).length;
+    result.citability_score = Math.min(paras * 5, 15);
+  } catch(e) {}
+
+  return result;
+}
+
+function computeGeoScore(urlResults) {
+  const scores = urlResults.map(r => {
+    let s = 0;
+    if (r.robots_txt) s += 15;
+    if (r.llms_txt) s += 20;
+    if (r.ssr) s += 30;
+    if (r.structured_data) s += 20;
+    s += r.citability_score || 0;
+    return s;
+  });
+  return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+}
+
+// GET /api/geo/score — public
+app.get('/api/geo/score', async (req, res) => {
+  try {
+    const result = await pool.query("SELECT value FROM kaskad_state WHERE key = 'geo_benchmark'");
+    if (!result.rows.length) return res.json({ status: 'no_data', geo_score: 15, date: '2026-03-19' });
+    const data = JSON.parse(result.rows[0].value);
+    res.json({ status: 'ok', ...data });
+  } catch(err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+// POST /api/geo/run — admin only
+app.post('/api/geo/run', async (req, res) => {
+  const token = req.headers['x-admin-token'] || '';
+  if (token !== GEO_ADMIN_TOKEN) return res.status(403).json({ error: 'Forbidden' });
+
+  try {
+    const urlResults = await Promise.all(GEO_URLS.map(auditUrl));
+    const geoScore = computeGeoScore(urlResults);
+    const date = new Date().toISOString().slice(0, 10);
+
+    const criticalIssues = [];
+    const quickWins = [];
+    for (const r of urlResults) {
+      const d = r.url.replace('https://', '');
+      if (!r.ssr) criticalIssues.push(`${d}: client-side only — AI crawlers see no content`);
+      if (!r.robots_txt) criticalIssues.push(`${d}: no robots.txt`);
+      if (!r.llms_txt && r.url.includes('kaskad.app')) quickWins.push(`${d}: add llms.txt`);
+      if (!r.structured_data) quickWins.push(`${d}: add JSON-LD structured data`);
+    }
+
+    const report = {
+      geo_score: geoScore, date,
+      urls: Object.fromEntries(urlResults.map(r => [r.url.replace('https://', ''), r])),
+      critical_issues: criticalIssues,
+      quick_wins: quickWins,
+      status: 'ok'
+    };
+
+    await pool.query(`
+      INSERT INTO kaskad_state (key, value, updated_at) VALUES ('geo_benchmark', $1, NOW())
+      ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()
+    `, [JSON.stringify(report)]);
+
+    res.json(report);
+  } catch(err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // Serve index.html for all other routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
