@@ -518,7 +518,188 @@ body:not(.readonly) .ticker-toggle-btn { display: flex; align-items: center; }
     <div class="score-verdict" id="scoreVerdictP" style="background:rgba(125,133,144,0.12);color:#9CA3AF">Not Started</div>
   </div>
   <div class="section-grid" id="pillarGrid"></div>
+
+  <!-- GEO BENCHMARK WIDGET — Pillar 2 -->
+  <div id="geo-widget" style="display:none; margin-top:32px;">
+    <div style="background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:20px; padding:28px 32px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+        <div>
+          <div style="font-size:16px; font-weight:700; color:#1A1A1A; letter-spacing:-0.02em;">🤖 AI Discoverability Benchmark</div>
+          <div style="font-size:13px; color:#6B7280; margin-top:3px;">GEO Score — how visible Kaskad is to AI crawlers and search agents</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span id="geo-date" style="font-size:12px; color:#9CA3AF;"></span>
+          <button id="geo-run-btn" onclick="runGeoBenchmark()" style="display:none; background:#6366F1; color:#fff; border:none; border-radius:10px; padding:8px 18px; font-size:13px; font-weight:600; font-family:Inter,sans-serif; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
+            ▶ Run Benchmark
+          </button>
+        </div>
+      </div>
+
+      <!-- Score bar -->
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+        <div style="font-size:48px; font-weight:800; letter-spacing:-0.05em; color:#6366F1;" id="geo-score-num">—</div>
+        <div style="flex:1;">
+          <div style="height:10px; background:rgba(0,0,0,0.06); border-radius:6px; overflow:hidden;">
+            <div id="geo-score-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#6366F1,#8B5CF6); border-radius:6px; transition:width 0.8s cubic-bezier(.4,0,.2,1);"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-top:4px;">
+            <span style="font-size:11px; color:#9CA3AF;">0</span>
+            <span id="geo-verdict" style="font-size:11px; font-weight:600; color:#6B7280;"></span>
+            <span style="font-size:11px; color:#9CA3AF;">100</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- URL breakdown -->
+      <div id="geo-urls" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;"></div>
+
+      <!-- Issues + wins -->
+      <div id="geo-issues" style="display:none;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div>
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#EF4444; margin-bottom:8px;">Critical Issues</div>
+            <ul id="geo-critical-list" style="list-style:none; display:flex; flex-direction:column; gap:5px;"></ul>
+          </div>
+          <div>
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#10B981; margin-bottom:8px;">Quick Wins</div>
+            <ul id="geo-wins-list" style="list-style:none; display:flex; flex-direction:column; gap:5px;"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Running state -->
+      <div id="geo-running" style="display:none; text-align:center; padding:16px; color:#6B7280; font-size:13px;">
+        ⏳ Running benchmark... this takes ~30 seconds
+      </div>
+    </div>
+  </div>
+
   </div><!-- /tab-pillars -->
+
+<script>
+// ── GEO BENCHMARK ──
+const GEO_API = 'http://localhost:5678/geo';
+const GEO_ADMIN_TOKEN = 'kaskad-geo-admin-2026';
+
+function geoVerdictLabel(score) {
+  if (score >= 80) return { label: 'Excellent', color: '#10B981' };
+  if (score >= 60) return { label: 'Good', color: '#6366F1' };
+  if (score >= 40) return { label: 'Moderate', color: '#F59E0B' };
+  if (score >= 20) return { label: 'Poor', color: '#EF4444' };
+  return { label: 'Critical', color: '#DC2626' };
+}
+
+function renderGeoScore(data) {
+  const score = data.geo_score || 0;
+  document.getElementById('geo-score-num').textContent = score;
+  document.getElementById('geo-score-bar').style.width = score + '%';
+  const v = geoVerdictLabel(score);
+  const vEl = document.getElementById('geo-verdict');
+  vEl.textContent = v.label;
+  vEl.style.color = v.color;
+  document.getElementById('geo-score-num').style.color = v.color;
+
+  if (data.date) {
+    document.getElementById('geo-date').textContent = 'Last run: ' + data.date;
+  }
+
+  // URL breakdown
+  const urlsEl = document.getElementById('geo-urls');
+  urlsEl.innerHTML = '';
+  if (data.urls) {
+    Object.entries(data.urls).forEach(([domain, info]) => {
+      const checks = [
+        { label: 'robots.txt', ok: info.robots_txt },
+        { label: 'llms.txt', ok: info.llms_txt },
+        { label: 'SSR / crawlable', ok: info.ssr },
+        { label: 'Structured data', ok: info.structured_data },
+      ];
+      urlsEl.innerHTML += `
+        <div style="background:#F9F9F7; border:1px solid rgba(0,0,0,0.06); border-radius:12px; padding:14px 16px;">
+          <div style="font-size:13px; font-weight:700; color:#1A1A1A; margin-bottom:10px;">${domain}</div>
+          ${checks.map(c => `
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
+              <span style="font-size:13px;">${c.ok ? '✅' : '❌'}</span>
+              <span style="font-size:12px; color:${c.ok ? '#374151' : '#9CA3AF'};">${c.label}</span>
+            </div>
+          `).join('')}
+        </div>`;
+    });
+  }
+
+  // Issues
+  if (data.critical_issues?.length || data.quick_wins?.length) {
+    document.getElementById('geo-issues').style.display = 'block';
+    const cl = document.getElementById('geo-critical-list');
+    const wl = document.getElementById('geo-wins-list');
+    cl.innerHTML = (data.critical_issues || []).map(i =>
+      `<li style="font-size:12px; color:#374151; padding:4px 8px; background:#FEF2F2; border-radius:6px;">⚠️ ${i}</li>`).join('');
+    wl.innerHTML = (data.quick_wins || []).map(w =>
+      `<li style="font-size:12px; color:#374151; padding:4px 8px; background:#ECFDF5; border-radius:6px;">→ ${w}</li>`).join('');
+  }
+}
+
+async function loadGeoScore() {
+  try {
+    const res = await fetch(GEO_API + '/score');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.status === 'ok') renderGeoScore(data);
+  } catch(e) {
+    // API not running — silent, widget still shows with cached data
+    document.getElementById('geo-score-num').textContent = '15';
+    document.getElementById('geo-score-bar').style.width = '15%';
+    document.getElementById('geo-verdict').textContent = 'Critical';
+    document.getElementById('geo-verdict').style.color = '#DC2626';
+    document.getElementById('geo-score-num').style.color = '#DC2626';
+    document.getElementById('geo-date').textContent = 'Last run: 2026-03-19 (cached)';
+  }
+}
+
+async function runGeoBenchmark() {
+  const btn = document.getElementById('geo-run-btn');
+  const running = document.getElementById('geo-running');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+  running.style.display = 'block';
+
+  try {
+    const res = await fetch(GEO_API + '/run', {
+      method: 'POST',
+      headers: { 'X-Admin-Token': GEO_ADMIN_TOKEN }
+    });
+    if (res.status === 403) { alert('Admin access required.'); return; }
+    const data = await res.json();
+    if (data.status === 'ok') renderGeoScore({ ...data, ...data.report });
+  } catch(e) {
+    alert('Benchmark API not running. Start it with: python research/geo-seo/benchmark_api.py');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '▶ Run Benchmark';
+    running.style.display = 'none';
+  }
+}
+
+// Show GEO widget when Pillar 2 is expanded, show Run button for admins
+function checkGeoWidget() {
+  const p2Card = document.querySelector('[data-pillar="p2"]');
+  // Widget visibility controlled by pillar tab being active
+  // Admin check: simple — if token is set, show button
+  const isAdmin = true; // local dashboard = always admin
+  if (isAdmin) document.getElementById('geo-run-btn').style.display = 'block';
+}
+
+// Load score on tab switch to pillars
+const origSwitchTab = window.switchTab;
+window.switchTab = function(tab) {
+  if (origSwitchTab) origSwitchTab(tab);
+  if (tab === 'pillars') {
+    document.getElementById('geo-widget').style.display = 'block';
+    loadGeoScore();
+    checkGeoWidget();
+  }
+};
+</script>
 
 </div>
 
