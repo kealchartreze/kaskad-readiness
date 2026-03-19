@@ -129,6 +129,64 @@ function computeGeoScore(urlResults) {
   return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 }
 
+// Agentic readiness checks — testnet.kaskad.live endpoints
+async function auditAgenticReadiness() {
+  const BASE = 'https://testnet.kaskad.live';
+  const checks = {
+    mcp_server: false,
+    advisor_epoch_context: false,
+    advisor_signals: false,
+    llms_txt_references_api: false,
+    ai_toggle_dapp: false,
+    scoped_agent_approvals: false,
+  };
+
+  // MCP server — check /.well-known/mcp or /mcp endpoint
+  for (const path of ['/.well-known/mcp', '/mcp', '/api/mcp']) {
+    try {
+      const r = await fetchUrl(`${BASE}${path}`, 5000);
+      if (r.status === 200) { checks.mcp_server = true; break; }
+    } catch(e) {}
+  }
+
+  // Advisor API endpoints
+  try {
+    const r = await fetchUrl(`${BASE}/api/advisor/epoch-context`, 5000);
+    checks.advisor_epoch_context = r.status === 200;
+  } catch(e) {}
+
+  try {
+    const r = await fetchUrl(`${BASE}/api/advisor/signals`, 5000);
+    checks.advisor_signals = r.status === 200;
+  } catch(e) {}
+
+  // llms.txt references API
+  try {
+    const r = await fetchUrl(`https://kaskad.app/llms.txt`, 5000);
+    if (r.status === 200) {
+      checks.llms_txt_references_api = r.body.includes('/api/') || r.body.includes('advisor') || r.body.includes('mcp');
+    }
+  } catch(e) {}
+
+  // AI toggle on dApp — check for any AI/advisor UI hint in page source
+  try {
+    const r = await fetchUrl(BASE, 8000);
+    checks.ai_toggle_dapp = r.body.includes('advisor') || r.body.includes('ai-toggle') || r.body.includes('position-analysis');
+  } catch(e) {}
+
+  // Scoped agent approvals — check for EIP or spec endpoint
+  try {
+    const r = await fetchUrl(`${BASE}/api/agent/scope`, 5000);
+    checks.scoped_agent_approvals = r.status === 200;
+  } catch(e) {}
+
+  const passed = Object.values(checks).filter(Boolean).length;
+  const total = Object.keys(checks).length;
+  const score = Math.round((passed / total) * 100);
+
+  return { checks, score, passed, total };
+}
+
 // GET /api/geo/score — public
 app.get('/api/geo/score', async (req, res) => {
   try {
@@ -147,7 +205,10 @@ app.post('/api/geo/run', async (req, res) => {
   if (token !== GEO_ADMIN_TOKEN) return res.status(403).json({ error: 'Forbidden' });
 
   try {
-    const urlResults = await Promise.all(GEO_URLS.map(auditUrl));
+    const [urlResults, agenticResult] = await Promise.all([
+      Promise.all(GEO_URLS.map(auditUrl)),
+      auditAgenticReadiness()
+    ]);
     const geoScore = computeGeoScore(urlResults);
     const date = new Date().toISOString().slice(0, 10);
 
@@ -161,9 +222,16 @@ app.post('/api/geo/run', async (req, res) => {
       if (!r.structured_data) quickWins.push(`${d}: add JSON-LD structured data`);
     }
 
+    // Agentic issues
+    const ag = agenticResult.checks;
+    if (!ag.mcp_server) criticalIssues.push('No MCP server detected on testnet.kaskad.live');
+    if (!ag.advisor_epoch_context) quickWins.push('Build /api/advisor/epoch-context (Pierrick)');
+    if (!ag.advisor_signals) quickWins.push('Build /api/advisor/signals (Pierrick)');
+
     const report = {
       geo_score: geoScore, date,
       urls: Object.fromEntries(urlResults.map(r => [r.url.replace('https://', ''), r])),
+      agentic: agenticResult,
       critical_issues: criticalIssues,
       quick_wins: quickWins,
       status: 'ok'
