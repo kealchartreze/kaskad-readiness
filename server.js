@@ -73,10 +73,19 @@ const http = require('http');
 const GEO_ADMIN_TOKEN = process.env.GEO_ADMIN_TOKEN || 'kaskad-geo-admin-2026';
 const GEO_URLS = ['https://kaskad.app', 'https://testnet.kaskad.live'];
 
-function fetchUrl(url, timeoutMs = 10000) {
+function fetchUrl(url, timeoutMs = 10000, redirectCount = 0) {
   return new Promise((resolve, reject) => {
+    if (redirectCount > 5) return reject(new Error('too many redirects'));
     const lib = url.startsWith('https') ? https : http;
     const req = lib.get(url, { timeout: timeoutMs }, res => {
+      // Follow redirects
+      if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
+        const next = res.headers.location.startsWith('http')
+          ? res.headers.location
+          : new URL(res.headers.location, url).href;
+        res.resume();
+        return fetchUrl(next, timeoutMs, redirectCount + 1).then(resolve).catch(reject);
+      }
       let data = '';
       res.on('data', c => data += c);
       res.on('end', () => resolve({ status: res.statusCode, headers: res.headers, body: data }));
