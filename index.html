@@ -521,15 +521,23 @@ body:not(.readonly) .ticker-toggle-btn { display: flex; align-items: center; }
 
   <!-- GEO BENCHMARK WIDGET — Pillar 2 -->
   <div id="geo-widget" style="display:none; margin-top:32px;">
-    <div style="background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:20px; padding:28px 32px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+    <style>
+      @media (max-width: 600px) {
+        #geo-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+        #geo-tracks { grid-template-columns: 1fr !important; }
+        #geo-issues-grid { grid-template-columns: 1fr !important; }
+        #geo-score-num { font-size: 36px !important; }
+      }
+    </style>
+    <div style="background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:20px; padding:28px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+      <div id="geo-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; gap:12px;">
         <div>
           <div style="font-size:16px; font-weight:700; color:#1A1A1A; letter-spacing:-0.02em;">🤖 AI Discoverability Benchmark</div>
           <div style="font-size:13px; color:#6B7280; margin-top:3px;">GEO Score — how visible Kaskad is to AI crawlers and search agents</div>
         </div>
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
           <span id="geo-date" style="font-size:12px; color:#9CA3AF;"></span>
-          <button id="geo-run-btn" onclick="runGeoBenchmark()" style="display:none; background:#6366F1; color:#fff; border:none; border-radius:10px; padding:8px 18px; font-size:13px; font-weight:600; font-family:Inter,sans-serif; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
+          <button id="geo-run-btn" onclick="runGeoBenchmark()" style="display:none; background:#6366F1; color:#fff; border:none; border-radius:10px; padding:8px 18px; font-size:13px; font-weight:600; font-family:Inter,sans-serif; cursor:pointer; transition:opacity 0.15s; white-space:nowrap;" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
             ▶ Run Benchmark
           </button>
         </div>
@@ -537,8 +545,8 @@ body:not(.readonly) .ticker-toggle-btn { display: flex; align-items: center; }
 
       <!-- Score bar -->
       <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
-        <div style="font-size:48px; font-weight:800; letter-spacing:-0.05em; color:#6366F1;" id="geo-score-num">—</div>
-        <div style="flex:1;">
+        <div style="font-size:48px; font-weight:800; letter-spacing:-0.05em; color:#6366F1; flex-shrink:0;" id="geo-score-num">—</div>
+        <div style="flex:1; min-width:0;">
           <div style="height:10px; background:rgba(0,0,0,0.06); border-radius:6px; overflow:hidden;">
             <div id="geo-score-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#6366F1,#8B5CF6); border-radius:6px; transition:width 0.8s cubic-bezier(.4,0,.2,1);"></div>
           </div>
@@ -551,7 +559,7 @@ body:not(.readonly) .ticker-toggle-btn { display: flex; align-items: center; }
       </div>
 
       <!-- Two tracks -->
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+      <div id="geo-tracks" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
         <!-- Track 1: Discoverability -->
         <div>
           <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#6366F1; margin-bottom:10px;">Track 1 — Discoverability</div>
@@ -568,7 +576,7 @@ body:not(.readonly) .ticker-toggle-btn { display: flex; align-items: center; }
 
       <!-- Issues + wins -->
       <div id="geo-issues" style="display:none;">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div id="geo-issues-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
           <div>
             <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#EF4444; margin-bottom:8px;">Critical Issues</div>
             <ul id="geo-critical-list" style="list-style:none; display:flex; flex-direction:column; gap:5px;"></ul>
