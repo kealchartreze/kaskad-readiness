@@ -36,7 +36,8 @@ body {
 .nav-tab.active { background: rgba(0,184,150,0.18); color: #00B896; }
 
 /* LAYOUT */
-.page { max-width: 1280px; margin: 0 auto; padding: 52px 40px 100px; }
+.page { max-width: 1280px; margin: 0 auto; padding: 52px 40px 100px; overflow-x: hidden; }
+@media (max-width: 768px) { .page { padding: 24px 16px 80px; } }
 
 /* HEADER */
 .hd { text-align: center; margin-bottom: 56px; }
@@ -522,11 +523,13 @@ body:not(.readonly) .ticker-toggle-btn { display: flex; align-items: center; }
   <!-- GEO BENCHMARK WIDGET — Pillar 2 -->
   <div id="geo-widget" style="display:none; margin-top:32px;">
     <style>
-      @media (max-width: 600px) {
+      #geo-widget { max-width: 100%; overflow: hidden; }
+      @media (max-width: 768px) {
         #geo-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
         #geo-tracks { grid-template-columns: 1fr !important; }
         #geo-issues-grid { grid-template-columns: 1fr !important; }
-        #geo-score-num { font-size: 36px !important; }
+        #geo-score-num { font-size: 34px !important; }
+        #geo-widget > div { padding: 20px 16px !important; }
       }
     </style>
     <div style="background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:20px; padding:28px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
