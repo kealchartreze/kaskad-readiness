@@ -689,16 +689,22 @@ function checkGeoWidget() {
   if (isAdmin) document.getElementById('geo-run-btn').style.display = 'block';
 }
 
-// Load score on tab switch to pillars
-const origSwitchTab = window.switchTab;
-window.switchTab = function(tab) {
-  if (origSwitchTab) origSwitchTab(tab);
-  if (tab === 'pillars') {
-    document.getElementById('geo-widget').style.display = 'block';
-    loadGeoScore();
-    checkGeoWidget();
+// Show widget whenever pillars tab is visible (poll)
+function checkPillarsVisible() {
+  const pillarsTab = document.getElementById('tab-pillars');
+  const geoWidget = document.getElementById('geo-widget');
+  if (!pillarsTab || !geoWidget) return;
+  if (pillarsTab.style.display !== 'none') {
+    if (geoWidget.style.display === 'none') {
+      geoWidget.style.display = 'block';
+      loadGeoScore();
+      checkGeoWidget();
+    }
+  } else {
+    geoWidget.style.display = 'none';
   }
-};
+}
+setInterval(checkPillarsVisible, 300);
 </script>
 
 </div>
