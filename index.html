@@ -1530,6 +1530,7 @@ function saveBlockers() {
 }
 
 function deleteBlocker(idx) {
+  if (!confirm('Remove this blocker?')) return;
   blockers.splice(idx, 1);
   saveBlockers();
   renderBlockers();
