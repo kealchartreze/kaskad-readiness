@@ -1526,6 +1526,7 @@ let blockers = JSON.parse(localStorage.getItem(BLOCKER_STORAGE_KEY) || 'null') |
 
 function saveBlockers() {
   localStorage.setItem(BLOCKER_STORAGE_KEY, JSON.stringify(blockers));
+  saveToServer();
 }
 
 function deleteBlocker(idx) {
