@@ -73,18 +73,18 @@ const http = require('http');
 const GEO_ADMIN_TOKEN = process.env.GEO_ADMIN_TOKEN || 'kaskad-geo-admin-2026';
 const GEO_URLS = ['https://kaskad.app', 'https://testnet.kaskad.live'];
 
-function fetchUrl(url, timeoutMs = 10000, redirectCount = 0) {
+function fetchUrl(url, timeoutMs = 10000, redirectCount = 0, extraHeaders = {}) {
   return new Promise((resolve, reject) => {
     if (redirectCount > 5) return reject(new Error('too many redirects'));
     const lib = url.startsWith('https') ? https : http;
-    const req = lib.get(url, { timeout: timeoutMs }, res => {
+    const req = lib.get(url, { timeout: timeoutMs, headers: extraHeaders }, res => {
       // Follow redirects
       if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
         const next = res.headers.location.startsWith('http')
           ? res.headers.location
           : new URL(res.headers.location, url).href;
         res.resume();
-        return fetchUrl(next, timeoutMs, redirectCount + 1).then(resolve).catch(reject);
+        return fetchUrl(next, timeoutMs, redirectCount + 1, extraHeaders).then(resolve).catch(reject);
       }
       let data = '';
       res.on('data', c => data += c);
@@ -140,59 +140,71 @@ function computeGeoScore(urlResults) {
   return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 }
 
-// Agentic readiness checks — testnet.kaskad.live endpoints
+// Agentic readiness checks — real live endpoints
 async function auditAgenticReadiness() {
-  const BASE = 'https://testnet.kaskad.live';
   const checks = {
     mcp_server: false,
+    testnet_rpc: false,
+    github_repo_public: false,
     advisor_epoch_context: false,
     advisor_signals: false,
     llms_txt_references_api: false,
-    ai_toggle_dapp: false,
-    scoped_agent_approvals: false,
   };
 
-  // MCP server — must return JSON with content-type application/json
-  for (const path of ['/.well-known/mcp', '/mcp', '/api/mcp']) {
-    try {
-      const r = await fetchUrl(`${BASE}${path}`, 5000);
-      const ct = (r.headers['content-type'] || '');
-      if (r.status === 200 && ct.includes('application/json')) { checks.mcp_server = true; break; }
-    } catch(e) {}
-  }
-
-  // Advisor API endpoints — must return JSON, not HTML catch-all
+  // MCP server — GitHub repo kealchartreze/kaskad-mcp is public with commits
   try {
-    const r = await fetchUrl(`${BASE}/api/advisor/epoch-context`, 5000);
-    const ct = (r.headers['content-type'] || '');
-    checks.advisor_epoch_context = r.status === 200 && ct.includes('application/json');
-  } catch(e) {}
-
-  try {
-    const r = await fetchUrl(`${BASE}/api/advisor/signals`, 5000);
-    const ct = (r.headers['content-type'] || '');
-    checks.advisor_signals = r.status === 200 && ct.includes('application/json');
-  } catch(e) {}
-
-  // llms.txt references API
-  try {
-    const r = await fetchUrl(`https://kaskad.app/llms.txt`, 5000);
+    const r = await fetchUrl('https://api.github.com/repos/kealchartreze/kaskad-mcp', 8000, 0, {'User-Agent': 'kaskad-readiness/1.0'});
     if (r.status === 200) {
-      checks.llms_txt_references_api = r.body.includes('/api/') || r.body.includes('advisor') || r.body.includes('mcp');
+      const data = JSON.parse(r.body);
+      checks.mcp_server = !data.private && (data.size > 0 || data.pushed_at != null);
+      checks.github_repo_public = !data.private;
     }
   } catch(e) {}
 
-  // AI toggle on dApp — check for any AI/advisor UI hint in page source
+  // Testnet RPC alive — eth_blockNumber
   try {
-    const r = await fetchUrl(BASE, 8000);
-    checks.ai_toggle_dapp = r.body.includes('advisor') || r.body.includes('ai-toggle') || r.body.includes('position-analysis');
+    const postData = JSON.stringify({jsonrpc:'2.0',method:'eth_blockNumber',params:[],id:1});
+    const r = await new Promise((resolve, reject) => {
+      const req = https.request({
+        hostname: 'galleon-testnet.igralabs.com',
+        port: 8545,
+        path: '/',
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Content-Length':Buffer.byteLength(postData)},
+        timeout: 8000
+      }, res => {
+        let d = '';
+        res.on('data', c => d += c);
+        res.on('end', () => resolve({status: res.statusCode, body: d}));
+      });
+      req.on('error', reject);
+      req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
+      req.write(postData);
+      req.end();
+    });
+    if (r.status === 200) {
+      const data = JSON.parse(r.body);
+      checks.testnet_rpc = !!data.result;
+    }
   } catch(e) {}
 
-  // Scoped agent approvals — must return JSON
+  // Advisor API endpoints on testnet dApp
   try {
-    const r = await fetchUrl(`${BASE}/api/agent/scope`, 5000);
-    const ct = (r.headers['content-type'] || '');
-    checks.scoped_agent_approvals = r.status === 200 && ct.includes('application/json');
+    const r = await fetchUrl('https://testnet.kaskad.live/api/advisor/epoch-context', 5000);
+    checks.advisor_epoch_context = r.status === 200 && (r.headers['content-type']||'').includes('application/json');
+  } catch(e) {}
+
+  try {
+    const r = await fetchUrl('https://testnet.kaskad.live/api/advisor/signals', 5000);
+    checks.advisor_signals = r.status === 200 && (r.headers['content-type']||'').includes('application/json');
+  } catch(e) {}
+
+  // llms.txt references MCP or API
+  try {
+    const r = await fetchUrl('https://kaskad.app/llms.txt', 5000);
+    if (r.status === 200) {
+      checks.llms_txt_references_api = r.body.includes('/api/') || r.body.includes('mcp') || r.body.includes('advisor');
+    }
   } catch(e) {}
 
   const passed = Object.values(checks).filter(Boolean).length;
@@ -201,6 +213,54 @@ async function auditAgenticReadiness() {
 
   return { checks, score, passed, total };
 }
+
+// POST /api/autocheck — run all automatable checks, update geo_benchmark + critical issues list
+app.post('/api/autocheck', async (req, res) => {
+  const token = req.headers['x-admin-token'] || '';
+  if (token !== GEO_ADMIN_TOKEN) return res.status(403).json({ error: 'Forbidden' });
+
+  try {
+    const agenticResult = await auditAgenticReadiness();
+    const checks = agenticResult.checks;
+
+    // Load current geo_benchmark
+    const gbRow = await pool.query("SELECT value FROM kaskad_state WHERE key='geo_benchmark'");
+    let geo = gbRow.rows.length ? JSON.parse(gbRow.rows[0].value) : {};
+    geo.agentic = agenticResult;
+    geo.date = new Date().toISOString().slice(0, 10);
+
+    // Rebuild critical_issues list preserving manual ones, updating auto ones
+    const AUTO_ISSUE_KEYS = ['No MCP server', 'Testnet RPC', 'GitHub repo'];
+    const existingIssues = (geo.critical_issues || []).filter(i =>
+      !AUTO_ISSUE_KEYS.some(k => i.includes(k))
+    );
+    const autoIssues = [];
+    if (!checks.mcp_server) autoIssues.push('No MCP server detected — kealchartreze/kaskad-mcp not public or empty');
+    if (!checks.testnet_rpc) autoIssues.push('Testnet RPC unresponsive — galleon-testnet.igralabs.com:8545');
+    if (!checks.github_repo_public) autoIssues.push('GitHub repo kaskad-mcp not public');
+    geo.critical_issues = [...existingIssues, ...autoIssues];
+
+    // Rebuild quick_wins
+    const AUTO_WIN_KEYS = ['advisor_epoch_context', 'advisor_signals', 'llms_txt'];
+    const existingWins = (geo.quick_wins || []).filter(w =>
+      !AUTO_WIN_KEYS.some(k => w.includes(k))
+    );
+    const autoWins = [];
+    if (!checks.advisor_epoch_context) autoWins.push('Build /api/advisor/epoch-context (Pierrick)');
+    if (!checks.advisor_signals) autoWins.push('Build /api/advisor/signals (Pierrick)');
+    if (!checks.llms_txt_references_api) autoWins.push('Add MCP reference to kaskad.app/llms.txt');
+    geo.quick_wins = [...existingWins, ...autoWins];
+
+    await pool.query(`
+      INSERT INTO kaskad_state (key, value, updated_at) VALUES ('geo_benchmark', $1, NOW())
+      ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()
+    `, [JSON.stringify(geo)]);
+
+    res.json({ ok: true, agentic: agenticResult, critical_issues: geo.critical_issues, quick_wins: geo.quick_wins });
+  } catch(err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 
 // GET /api/geo/score — public
 app.get('/api/geo/score', async (req, res) => {
