@@ -143,12 +143,10 @@ function computeGeoScore(urlResults) {
 // Agentic readiness checks — real live endpoints
 async function auditAgenticReadiness() {
   const checks = {
-    mcp_server: false,
-    testnet_rpc: false,
-    github_repo_public: false,
-    advisor_epoch_context: false,
-    advisor_signals: false,
-    llms_txt_references_api: false,
+    mcp_server: false,         // MCP repo public + has code
+    testnet_rpc: false,        // Igra Galleon RPC responding
+    github_repo_public: false, // kaskad-mcp repo publicly visible
+    llms_txt_references_mcp: false, // kaskad.app/llms.txt mentions MCP
   };
 
   // MCP server — GitHub repo kealchartreze/kaskad-mcp is public with commits
@@ -188,22 +186,11 @@ async function auditAgenticReadiness() {
     }
   } catch(e) {}
 
-  // Advisor API endpoints on testnet dApp
-  try {
-    const r = await fetchUrl('https://testnet.kaskad.live/api/advisor/epoch-context', 5000);
-    checks.advisor_epoch_context = r.status === 200 && (r.headers['content-type']||'').includes('application/json');
-  } catch(e) {}
-
-  try {
-    const r = await fetchUrl('https://testnet.kaskad.live/api/advisor/signals', 5000);
-    checks.advisor_signals = r.status === 200 && (r.headers['content-type']||'').includes('application/json');
-  } catch(e) {}
-
-  // llms.txt references MCP or API
+  // llms.txt references MCP
   try {
     const r = await fetchUrl('https://kaskad.app/llms.txt', 5000);
     if (r.status === 200) {
-      checks.llms_txt_references_api = r.body.includes('/api/') || r.body.includes('mcp') || r.body.includes('advisor');
+      checks.llms_txt_references_mcp = r.body.includes('mcp') || r.body.includes('MCP') || r.body.includes('kaskad-mcp');
     }
   } catch(e) {}
 
@@ -245,14 +232,12 @@ app.post('/api/autocheck', async (req, res) => {
     geo.critical_issues = [...existingIssues, ...autoIssues];
 
     // Rebuild quick_wins
-    const AUTO_WIN_KEYS = ['advisor_epoch_context', 'advisor_signals', 'llms_txt'];
+    const AUTO_WIN_KEYS = ['llms_txt'];
     const existingWins = (geo.quick_wins || []).filter(w =>
       !AUTO_WIN_KEYS.some(k => w.includes(k))
     );
     const autoWins = [];
-    if (!checks.advisor_epoch_context) autoWins.push('Build /api/advisor/epoch-context (Pierrick)');
-    if (!checks.advisor_signals) autoWins.push('Build /api/advisor/signals (Pierrick)');
-    if (!checks.llms_txt_references_api) autoWins.push('Add MCP reference to kaskad.app/llms.txt');
+    if (!checks.llms_txt_references_mcp) autoWins.push('Add MCP reference to kaskad.app/llms.txt (2 lines — Marius)');
     geo.quick_wins = [...existingWins, ...autoWins];
 
     await pool.query(`
@@ -303,9 +288,8 @@ app.post('/api/geo/run', async (req, res) => {
 
     // Agentic issues
     const ag = agenticResult.checks;
-    if (!ag.mcp_server) criticalIssues.push('No MCP server detected on testnet.kaskad.live');
-    if (!ag.advisor_epoch_context) quickWins.push('Build /api/advisor/epoch-context (Pierrick)');
-    if (!ag.advisor_signals) quickWins.push('Build /api/advisor/signals (Pierrick)');
+    if (!ag.mcp_server) criticalIssues.push('No MCP server detected — kaskad-mcp repo missing or private');
+    if (!ag.llms_txt_references_mcp) quickWins.push('Add MCP reference to kaskad.app/llms.txt (Marius, 5 min)');
 
     // Composite score: Track 1 discoverability (60%) + Track 2 agentic (40%)
     const compositeScore = Math.round(geoScore * 0.6 + agenticResult.score * 0.4);
