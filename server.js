@@ -13,6 +13,21 @@ const pool = new Pool({
 });
 
 app.use(express.json());
+
+// Basic Auth — protects all routes except /health
+const DASH_USER = process.env.DASHBOARD_USER || 'kaskad';
+const DASH_PASS = process.env.DASHBOARD_PASSWORD || '';
+app.use((req, res, next) => {
+  if (req.path === '/health') return next(); // allow health checks unauthenticated
+  const auth = req.headers['authorization'];
+  if (auth && auth.startsWith('Basic ')) {
+    const [user, pass] = Buffer.from(auth.slice(6), 'base64').toString().split(':');
+    if (user === DASH_USER && pass === DASH_PASS) return next();
+  }
+  res.set('WWW-Authenticate', 'Basic realm="Kaskad Dashboard"');
+  res.status(401).send('Unauthorized');
+});
+
 app.use(express.static(__dirname));
 
 // Init table on startup
