@@ -657,11 +657,9 @@ function renderGeoScore(data) {
     const ag = data.agentic;
     const agChecks = [
       { label: 'MCP server live', ok: ag.checks.mcp_server },
-      { label: '/api/advisor/epoch-context', ok: ag.checks.advisor_epoch_context },
-      { label: '/api/advisor/signals', ok: ag.checks.advisor_signals },
-      { label: 'llms.txt references API', ok: ag.checks.llms_txt_references_api },
-      { label: 'AI toggle on dApp', ok: ag.checks.ai_toggle_dapp },
-      { label: 'Scoped agent approvals', ok: ag.checks.scoped_agent_approvals },
+      { label: 'Testnet RPC alive', ok: ag.checks.testnet_rpc },
+      { label: 'GitHub repo public', ok: ag.checks.github_repo_public },
+      { label: 'llms.txt references MCP', ok: ag.checks.llms_txt_references_mcp },
     ];
     const pct = Math.round((ag.passed / ag.total) * 100);
     agEl.innerHTML = `
@@ -706,9 +704,9 @@ async function loadGeoScore() {
         'kaskad.app': { robots_txt: false, llms_txt: false, ssr: false, structured_data: false },
         'testnet.kaskad.live': { robots_txt: false, llms_txt: false, ssr: false, structured_data: false }
       },
-      agentic: { passed: 0, total: 6, checks: { mcp_server: false, advisor_epoch_context: false, advisor_signals: false, llms_txt_references_api: false, ai_toggle_dapp: false, scoped_agent_approvals: false } },
-      critical_issues: ['Both sites client-side only', 'No robots.txt', 'No MCP server'],
-      quick_wins: ['Add llms.txt', 'Add robots.txt', 'Build advisor API endpoints'],
+      agentic: { passed: 3, total: 4, checks: { mcp_server: true, testnet_rpc: true, github_repo_public: true, llms_txt_references_mcp: false } },
+      critical_issues: ['testnet.kaskad.live: client-side only — AI crawlers see no content', 'testnet.kaskad.live: no robots.txt'],
+      quick_wins: ['Add MCP reference to kaskad.app/llms.txt (Marius, 5 min)', 'testnet.kaskad.live: add JSON-LD structured data'],
       status: 'ok'
     });
     document.getElementById('geo-date').textContent = 'Last run: 2026-03-19 (cached)';
@@ -921,17 +919,14 @@ const PILLARS = [
   },
   {
     id: 'p2', label: 'Pillar 2 — Agentic Readiness', icon: '', colorClass: 'c-p2', barClass: 'bar-p2', numClass: 'num-p2',
-    sub: 'MCP server, AI advisor API, and agentic token standard',
+    sub: 'MCP server, llms.txt, and agentic discoverability',
     items: [
-      { text: 'AI Position Advisor API spec reviewed by Anton + Yuliya' },
-      { text: '/api/advisor/epoch-context endpoint implemented (Pierrick)' },
-      { text: '/api/advisor/signals endpoint implemented (Pierrick)' },
-      { text: 'Both endpoints tested against testnet data' },
-      { text: 'MCP server (read-only) scaffolded — protocol state + position data' },
       { text: 'MCP server deployed and accessible to external agents' },
-      { text: 'Human-facing AI toggle live on dApp (position analysis panel)' },
-      { text: 'Scoped agent approvals spec drafted (new token standard)' },
-      { text: 'Scoped agent approvals reviewed by Anton' },
+      { text: 'kaskad.app/llms.txt references MCP server' },
+      { text: 'GitHub repo (kaskad-mcp) public and discoverable' },
+      { text: 'Testnet RPC responding (galleon-testnet.igralabs.com)' },
+      { text: 'Robots.txt on both kaskad.app and testnet.kaskad.live' },
+      { text: 'SSR or pre-rendering for testnet.kaskad.live (AI crawler support)' },
     ]
   },
   {
