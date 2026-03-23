@@ -656,10 +656,10 @@ function renderGeoScore(data) {
   if (data.agentic) {
     const ag = data.agentic;
     const agChecks = [
-      { label: 'MCP server live', ok: ag.checks.mcp_server },
-      { label: 'Testnet RPC alive', ok: ag.checks.testnet_rpc },
-      { label: 'GitHub repo public', ok: ag.checks.github_repo_public },
-      { label: 'llms.txt references MCP', ok: ag.checks.llms_txt_references_mcp },
+      { label: 'MCP repo discoverable (kaskad-mcp public)', ok: ag.checks.mcp_repo_discoverable },
+      { label: 'llms.txt references MCP (kaskad.app)', ok: ag.checks.llms_txt_references_mcp },
+      { label: 'Testnet dApp live (testnet.kaskad.live)', ok: ag.checks.testnet_dapp_live },
+      { label: 'robots.txt on testnet dApp', ok: ag.checks.robots_txt_testnet },
     ];
     const pct = Math.round((ag.passed / ag.total) * 100);
     agEl.innerHTML = `
@@ -704,7 +704,7 @@ async function loadGeoScore() {
         'kaskad.app': { robots_txt: false, llms_txt: false, ssr: false, structured_data: false },
         'testnet.kaskad.live': { robots_txt: false, llms_txt: false, ssr: false, structured_data: false }
       },
-      agentic: { passed: 3, total: 4, checks: { mcp_server: true, testnet_rpc: true, github_repo_public: true, llms_txt_references_mcp: false } },
+      agentic: { passed: 2, total: 4, checks: { mcp_repo_discoverable: true, llms_txt_references_mcp: true, testnet_dapp_live: true, robots_txt_testnet: false } },
       critical_issues: ['testnet.kaskad.live: client-side only — AI crawlers see no content', 'testnet.kaskad.live: no robots.txt'],
       quick_wins: ['Add MCP reference to kaskad.app/llms.txt (Marius, 5 min)', 'testnet.kaskad.live: add JSON-LD structured data'],
       status: 'ok'

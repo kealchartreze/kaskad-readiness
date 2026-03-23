@@ -140,58 +140,42 @@ function computeGeoScore(urlResults) {
   return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 }
 
-// Agentic readiness checks — real live endpoints
+// Agentic readiness checks — discoverability-only (what agents can actually find)
 async function auditAgenticReadiness() {
   const checks = {
-    mcp_server: false,         // MCP repo public + has code
-    testnet_rpc: false,        // Igra Galleon RPC responding
-    github_repo_public: false, // kaskad-mcp repo publicly visible
-    llms_txt_references_mcp: false, // kaskad.app/llms.txt mentions MCP
+    mcp_repo_discoverable: false,    // kaskad-mcp repo public and accessible to agents
+    llms_txt_references_mcp: false,  // kaskad.app/llms.txt points agents to MCP
+    testnet_dapp_live: false,        // testnet.kaskad.live is reachable
+    robots_txt_testnet: false,       // testnet.kaskad.live has robots.txt for crawlers
   };
 
-  // MCP server — GitHub repo kealchartreze/kaskad-mcp is public with commits
+  // MCP repo discoverable — GitHub repo kealchartreze/kaskad-mcp is public with code
   try {
     const r = await fetchUrl('https://api.github.com/repos/kealchartreze/kaskad-mcp', 8000, 0, {'User-Agent': 'kaskad-readiness/1.0'});
     if (r.status === 200) {
       const data = JSON.parse(r.body);
-      checks.mcp_server = !data.private && (data.size > 0 || data.pushed_at != null);
-      checks.github_repo_public = !data.private;
+      checks.mcp_repo_discoverable = !data.private && (data.size > 0 || data.pushed_at != null);
     }
   } catch(e) {}
 
-  // Testnet RPC alive — eth_blockNumber
-  try {
-    const postData = JSON.stringify({jsonrpc:'2.0',method:'eth_blockNumber',params:[],id:1});
-    const r = await new Promise((resolve, reject) => {
-      const req = https.request({
-        hostname: 'galleon-testnet.igralabs.com',
-        port: 8545,
-        path: '/',
-        method: 'POST',
-        headers: {'Content-Type':'application/json','Content-Length':Buffer.byteLength(postData)},
-        timeout: 8000
-      }, res => {
-        let d = '';
-        res.on('data', c => d += c);
-        res.on('end', () => resolve({status: res.statusCode, body: d}));
-      });
-      req.on('error', reject);
-      req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
-      req.write(postData);
-      req.end();
-    });
-    if (r.status === 200) {
-      const data = JSON.parse(r.body);
-      checks.testnet_rpc = !!data.result;
-    }
-  } catch(e) {}
-
-  // llms.txt references MCP
+  // llms.txt references MCP — agents crawling kaskad.app can find the MCP entry point
   try {
     const r = await fetchUrl('https://kaskad.app/llms.txt', 5000);
     if (r.status === 200) {
       checks.llms_txt_references_mcp = r.body.includes('mcp') || r.body.includes('MCP') || r.body.includes('kaskad-mcp');
     }
+  } catch(e) {}
+
+  // testnet dApp live
+  try {
+    const r = await fetchUrl('https://testnet.kaskad.live', 8000);
+    checks.testnet_dapp_live = r.status === 200;
+  } catch(e) {}
+
+  // robots.txt on testnet — crawlers can index it
+  try {
+    const r = await fetchUrl('https://testnet.kaskad.live/robots.txt', 5000);
+    checks.robots_txt_testnet = r.status === 200 && (r.headers['content-type']||'').includes('text/plain') && r.body.includes('User-agent');
   } catch(e) {}
 
   const passed = Object.values(checks).filter(Boolean).length;
