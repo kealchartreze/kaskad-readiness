@@ -713,7 +713,7 @@ async function loadGeoScore() {
         'kaskad.app': { robots_txt: false, llms_txt: false, ssr: false, structured_data: false },
         'testnet.kaskad.live': { robots_txt: false, llms_txt: false, ssr: false, structured_data: false }
       },
-      agentic: { passed: 3, total: 7, checks: { mcp_repo_discoverable: true, llms_txt_references_mcp: true, robots_txt_testnet: false, testnet_dapp_live: true, historical_data: false, write_tools: false, health_factor_alerts: false } },
+      agentic: { passed: 4, total: 7, checks: { mcp_repo_discoverable: true, llms_txt_references_mcp: true, robots_txt_testnet: false, testnet_dapp_live: true, historical_data: true, write_tools: false, health_factor_alerts: false } },
       critical_issues: ['testnet.kaskad.live: client-side only — AI crawlers see no content', 'testnet.kaskad.live: no robots.txt'],
       quick_wins: ['Add MCP reference to kaskad.app/llms.txt (Marius, 5 min)', 'testnet.kaskad.live: add JSON-LD structured data'],
       status: 'ok'

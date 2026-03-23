@@ -200,8 +200,31 @@ async function auditAgenticReadiness() {
     checks.testnet_dapp_live = r.status === 200;
   } catch(e) {}
 
-  // Historical data — subgraph endpoint (to be wired when Anton shares URL)
-  // checks.historical_data = false; // hardcoded until subgraph is live
+  // Historical data — subgraph live check (POST required for GraphQL)
+  try {
+    const sgPostData = JSON.stringify({ query: '{ reserves(first: 1) { id symbol } }' });
+    const sgResult = await new Promise((resolve, reject) => {
+      const req = https.request({
+        hostname: 'testnet.kaskad.live',
+        path: '/subgraphs/name/galleon-testnet-aave-v3',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(sgPostData) },
+        timeout: 8000
+      }, res => {
+        let d = '';
+        res.on('data', c => d += c);
+        res.on('end', () => resolve({ status: res.statusCode, body: d }));
+      });
+      req.on('error', reject);
+      req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
+      req.write(sgPostData);
+      req.end();
+    });
+    if (sgResult.status === 200) {
+      const sgData = JSON.parse(sgResult.body);
+      checks.historical_data = !!(sgData.data && sgData.data.reserves && sgData.data.reserves.length > 0);
+    }
+  } catch(e) {}
 
   // Write tools — check MCP package.json version tag or a /capabilities endpoint (future)
   // checks.write_tools = false; // hardcoded until write tools are built
