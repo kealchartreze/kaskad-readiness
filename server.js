@@ -227,6 +227,10 @@ app.post('/api/autocheck', async (req, res) => {
     const gbRow = await pool.query("SELECT value FROM kaskad_state WHERE key='geo_benchmark'");
     let geo = gbRow.rows.length ? JSON.parse(gbRow.rows[0].value) : {};
     geo.agentic = agenticResult;
+    geo.track2_score = agenticResult.score;
+    // Recompute composite score
+    const track1 = geo.track1_score || geo.geo_score || 43;
+    geo.geo_score = Math.round(track1 * 0.6 + agenticResult.score * 0.4);
     geo.date = new Date().toISOString().slice(0, 10);
 
     // Rebuild critical_issues list preserving manual ones, updating auto ones
@@ -303,8 +307,13 @@ app.post('/api/geo/run', async (req, res) => {
     if (!ag.advisor_epoch_context) quickWins.push('Build /api/advisor/epoch-context (Pierrick)');
     if (!ag.advisor_signals) quickWins.push('Build /api/advisor/signals (Pierrick)');
 
+    // Composite score: Track 1 discoverability (60%) + Track 2 agentic (40%)
+    const compositeScore = Math.round(geoScore * 0.6 + agenticResult.score * 0.4);
+
     const report = {
-      geo_score: geoScore, date,
+      geo_score: compositeScore, date,
+      track1_score: geoScore,
+      track2_score: agenticResult.score,
       urls: Object.fromEntries(urlResults.map(r => [r.url.replace('https://', ''), r])),
       agentic: agenticResult,
       critical_issues: criticalIssues,
