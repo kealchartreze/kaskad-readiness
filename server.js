@@ -205,15 +205,13 @@ app.post('/api/autocheck', async (req, res) => {
     geo.date = new Date().toISOString().slice(0, 10);
 
     // Rebuild critical_issues list preserving manual ones, updating auto ones
-    const AUTO_ISSUE_KEYS = ['No MCP server', 'Testnet RPC', 'GitHub repo'];
+    // Only preserve manually-set critical issues (Track 1 discoverability)
+    // Auto-checks now surface in Track 2 UI directly — no duplicate critical issue entries
+    const AUTO_ISSUE_KEYS = ['No MCP server', 'Testnet RPC', 'GitHub repo', 'galleon-testnet'];
     const existingIssues = (geo.critical_issues || []).filter(i =>
       !AUTO_ISSUE_KEYS.some(k => i.includes(k))
     );
-    const autoIssues = [];
-    if (!checks.mcp_server) autoIssues.push('No MCP server detected — kealchartreze/kaskad-mcp not public or empty');
-    if (!checks.testnet_rpc) autoIssues.push('Testnet RPC unresponsive — galleon-testnet.igralabs.com:8545');
-    if (!checks.github_repo_public) autoIssues.push('GitHub repo kaskad-mcp not public');
-    geo.critical_issues = [...existingIssues, ...autoIssues];
+    geo.critical_issues = existingIssues;
 
     // Rebuild quick_wins
     const AUTO_WIN_KEYS = ['llms_txt'];
