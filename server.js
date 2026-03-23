@@ -140,16 +140,23 @@ function computeGeoScore(urlResults) {
   return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 }
 
-// Agentic readiness checks — discoverability-only (what agents can actually find)
+// Agentic readiness checks — full agent capability map (discovery + what agents can actually do)
 async function auditAgenticReadiness() {
   const checks = {
+    // --- DISCOVERY ---
     mcp_repo_discoverable: false,    // kaskad-mcp repo public and accessible to agents
     llms_txt_references_mcp: false,  // kaskad.app/llms.txt points agents to MCP
-    testnet_dapp_live: false,        // testnet.kaskad.live is reachable
     robots_txt_testnet: false,       // testnet.kaskad.live has robots.txt for crawlers
+    // --- READ CAPABILITY ---
+    testnet_dapp_live: false,        // testnet.kaskad.live is reachable (MCP data source live)
+    historical_data: false,          // subgraph endpoint live (agents can check trends)
+    // --- WRITE CAPABILITY ---
+    write_tools: false,              // MCP exposes supply/borrow/repay tools
+    // --- MONITORING ---
+    health_factor_alerts: false,     // agent can subscribe to health factor breach alerts
   };
 
-  // MCP repo discoverable — GitHub repo kealchartreze/kaskad-mcp is public with code
+  // MCP repo discoverable
   try {
     const r = await fetchUrl('https://api.github.com/repos/kealchartreze/kaskad-mcp', 8000, 0, {'User-Agent': 'kaskad-readiness/1.0'});
     if (r.status === 200) {
@@ -158,7 +165,7 @@ async function auditAgenticReadiness() {
     }
   } catch(e) {}
 
-  // llms.txt references MCP — agents crawling kaskad.app can find the MCP entry point
+  // llms.txt references MCP
   try {
     const r = await fetchUrl('https://kaskad.app/llms.txt', 5000);
     if (r.status === 200) {
@@ -166,17 +173,26 @@ async function auditAgenticReadiness() {
     }
   } catch(e) {}
 
-  // testnet dApp live
+  // robots.txt on testnet
+  try {
+    const r = await fetchUrl('https://testnet.kaskad.live/robots.txt', 5000);
+    checks.robots_txt_testnet = r.status === 200 && (r.headers['content-type']||'').includes('text/plain') && r.body.includes('User-agent');
+  } catch(e) {}
+
+  // Testnet dApp live (MCP data source)
   try {
     const r = await fetchUrl('https://testnet.kaskad.live', 8000);
     checks.testnet_dapp_live = r.status === 200;
   } catch(e) {}
 
-  // robots.txt on testnet — crawlers can index it
-  try {
-    const r = await fetchUrl('https://testnet.kaskad.live/robots.txt', 5000);
-    checks.robots_txt_testnet = r.status === 200 && (r.headers['content-type']||'').includes('text/plain') && r.body.includes('User-agent');
-  } catch(e) {}
+  // Historical data — subgraph endpoint (to be wired when Anton shares URL)
+  // checks.historical_data = false; // hardcoded until subgraph is live
+
+  // Write tools — check MCP package.json version tag or a /capabilities endpoint (future)
+  // checks.write_tools = false; // hardcoded until write tools are built
+
+  // Health factor alerts — check for webhook/alert endpoint
+  // checks.health_factor_alerts = false; // hardcoded until alert system is built
 
   const passed = Object.values(checks).filter(Boolean).length;
   const total = Object.keys(checks).length;

@@ -656,10 +656,13 @@ function renderGeoScore(data) {
   if (data.agentic) {
     const ag = data.agentic;
     const agChecks = [
-      { label: 'MCP repo discoverable (kaskad-mcp public)', ok: ag.checks.mcp_repo_discoverable },
-      { label: 'llms.txt references MCP (kaskad.app)', ok: ag.checks.llms_txt_references_mcp },
-      { label: 'Testnet dApp live (testnet.kaskad.live)', ok: ag.checks.testnet_dapp_live },
-      { label: 'robots.txt on testnet dApp', ok: ag.checks.robots_txt_testnet },
+      { label: 'MCP repo discoverable', ok: ag.checks.mcp_repo_discoverable, group: 'Discovery' },
+      { label: 'llms.txt references MCP', ok: ag.checks.llms_txt_references_mcp, group: 'Discovery' },
+      { label: 'robots.txt on testnet dApp', ok: ag.checks.robots_txt_testnet, group: 'Discovery' },
+      { label: 'Testnet dApp live (MCP data source)', ok: ag.checks.testnet_dapp_live, group: 'Read' },
+      { label: 'Historical data via subgraph', ok: ag.checks.historical_data, group: 'Read' },
+      { label: 'Write tools (supply / borrow / repay)', ok: ag.checks.write_tools, group: 'Write' },
+      { label: 'Health factor alerts', ok: ag.checks.health_factor_alerts, group: 'Monitor' },
     ];
     const pct = Math.round((ag.passed / ag.total) * 100);
     agEl.innerHTML = `
@@ -670,12 +673,18 @@ function renderGeoScore(data) {
       <div style="height:4px; background:rgba(0,0,0,0.06); border-radius:3px; margin-bottom:10px; overflow:hidden;">
         <div style="height:100%; width:${pct}%; background:#10B981; border-radius:3px; transition:width 0.6s;"></div>
       </div>
-      ${agChecks.map(c => `
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-          <span style="font-size:12px;">${c.ok ? '✅' : '⬜'}</span>
-          <span style="font-size:12px; color:${c.ok ? '#374151' : '#9CA3AF'};">${c.label}</span>
-        </div>
-      `).join('')}`;
+      ${(() => {
+        const groups = [...new Set(agChecks.map(c => c.group))];
+        return groups.map(g => `
+          <div style="font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#9CA3AF; margin:8px 0 4px;">${g}</div>
+          ${agChecks.filter(c => c.group === g).map(c => `
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+              <span style="font-size:12px;">${c.ok ? '✅' : '⬜'}</span>
+              <span style="font-size:12px; color:${c.ok ? '#374151' : '#9CA3AF'};">${c.label}</span>
+            </div>
+          `).join('')}
+        `).join('');
+      })()}`;
   }
 
   // Issues
@@ -704,7 +713,7 @@ async function loadGeoScore() {
         'kaskad.app': { robots_txt: false, llms_txt: false, ssr: false, structured_data: false },
         'testnet.kaskad.live': { robots_txt: false, llms_txt: false, ssr: false, structured_data: false }
       },
-      agentic: { passed: 2, total: 4, checks: { mcp_repo_discoverable: true, llms_txt_references_mcp: true, testnet_dapp_live: true, robots_txt_testnet: false } },
+      agentic: { passed: 3, total: 7, checks: { mcp_repo_discoverable: true, llms_txt_references_mcp: true, robots_txt_testnet: false, testnet_dapp_live: true, historical_data: false, write_tools: false, health_factor_alerts: false } },
       critical_issues: ['testnet.kaskad.live: client-side only — AI crawlers see no content', 'testnet.kaskad.live: no robots.txt'],
       quick_wins: ['Add MCP reference to kaskad.app/llms.txt (Marius, 5 min)', 'testnet.kaskad.live: add JSON-LD structured data'],
       status: 'ok'
