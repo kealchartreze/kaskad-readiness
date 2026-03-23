@@ -188,6 +188,15 @@ async function auditAgenticReadiness() {
     }
   } catch(e) {}
 
+  // AGENTS.md present in MCP repo with comprehensive tokenomics (>5KB)
+  try {
+    const r = await fetchUrl('https://api.github.com/repos/kealchartreze/kaskad-mcp/contents/AGENTS.md', 8000, 0, {'User-Agent': 'kaskad-readiness/1.0'});
+    if (r.status === 200) {
+      const data = JSON.parse(r.body);
+      checks.agents_md_present = data.size > 5000;
+    }
+  } catch(e) {}
+
   // robots.txt on testnet
   try {
     const r = await fetchUrl('https://testnet.kaskad.live/robots.txt', 5000);

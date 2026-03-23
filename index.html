@@ -658,6 +658,7 @@ function renderGeoScore(data) {
     const agChecks = [
       { label: 'MCP repo discoverable', ok: ag.checks.mcp_repo_discoverable, group: 'Discovery' },
       { label: 'llms.txt references MCP', ok: ag.checks.llms_txt_references_mcp, group: 'Discovery' },
+      { label: 'AGENTS.md with tokenomics context', ok: ag.checks.agents_md_present, group: 'Discovery' },
       { label: 'robots.txt on testnet dApp', ok: ag.checks.robots_txt_testnet, group: 'Discovery' },
       { label: 'Testnet dApp live (MCP data source)', ok: ag.checks.testnet_dapp_live, group: 'Read' },
       { label: 'Historical data via subgraph', ok: ag.checks.historical_data, group: 'Read' },
@@ -713,7 +714,7 @@ async function loadGeoScore() {
         'kaskad.app': { robots_txt: false, llms_txt: false, ssr: false, structured_data: false },
         'testnet.kaskad.live': { robots_txt: false, llms_txt: false, ssr: false, structured_data: false }
       },
-      agentic: { passed: 4, total: 7, checks: { mcp_repo_discoverable: true, llms_txt_references_mcp: true, robots_txt_testnet: false, testnet_dapp_live: true, historical_data: true, write_tools: false, health_factor_alerts: false } },
+      agentic: { passed: 5, total: 8, checks: { mcp_repo_discoverable: true, llms_txt_references_mcp: true, agents_md_present: true, robots_txt_testnet: false, testnet_dapp_live: true, historical_data: true, write_tools: false, health_factor_alerts: false } },
       critical_issues: ['testnet.kaskad.live: client-side only — AI crawlers see no content', 'testnet.kaskad.live: no robots.txt'],
       quick_wins: ['Add MCP reference to kaskad.app/llms.txt (Marius, 5 min)', 'testnet.kaskad.live: add JSON-LD structured data'],
       status: 'ok'
