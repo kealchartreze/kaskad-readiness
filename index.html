@@ -409,6 +409,56 @@ body.readonly .ticker-admin { display: none !important; }
 .ticker-toggle-btn:hover { color: #00B896; }
 body:not(.readonly) .ticker-toggle-btn { display: flex; align-items: center; }
 
+
+/* ── EVENTS TAB ── */
+.events-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+.events-week-nav { display:flex; align-items:center; gap:10px; }
+.week-nav-btn { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.7); width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+.week-nav-btn:hover { background:rgba(255,255,255,0.14); color:#fff; }
+.week-label { font-size:14px; font-weight:700; color:#fff; min-width:200px; text-align:center; }
+.today-btn { background:transparent; border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.5); font-size:12px; font-weight:700; padding:5px 12px; border-radius:8px; cursor:pointer; font-family:inherit; transition:all .15s; }
+.today-btn:hover { color:rgba(255,255,255,0.8); border-color:rgba(255,255,255,0.4); }
+.add-event-btn { background:#00B896; color:#fff; border:none; font-size:13px; font-weight:700; padding:8px 18px; border-radius:8px; cursor:pointer; font-family:inherit; transition:opacity .15s; }
+.add-event-btn:hover { opacity:.85; }
+.week-grid { display:grid; grid-template-columns:52px repeat(7,1fr); background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; overflow:hidden; }
+.week-col-header { padding:10px 6px; text-align:center; border-bottom:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); }
+.week-col-header.today-col { background:rgba(0,184,150,0.08); }
+.day-name { font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:rgba(255,255,255,0.35); }
+.day-num { font-size:18px; font-weight:800; color:rgba(255,255,255,0.75); line-height:1.3; }
+.day-num.today-num { color:#00B896; }
+.time-col-cell { border-right:1px solid rgba(255,255,255,0.06); }
+.ev-time-slot { height:44px; display:flex; align-items:flex-start; justify-content:flex-end; padding:3px 6px 0 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:9px; font-weight:600; color:rgba(255,255,255,0.25); }
+.day-col-cell { border-right:1px solid rgba(255,255,255,0.06); position:relative; }
+.day-col-cell:last-child { border-right:none; }
+.ev-day-cell { height:44px; border-bottom:1px solid rgba(255,255,255,0.05); position:relative; cursor:pointer; transition:background .1s; }
+.ev-day-cell:hover { background:rgba(0,184,150,0.05); }
+.ev-block { position:absolute; left:2px; right:2px; border-radius:5px; padding:2px 5px; font-size:10px; font-weight:700; cursor:pointer; overflow:hidden; z-index:2; line-height:1.3; transition:opacity .15s; }
+.ev-block:hover { opacity:.8; }
+.ev-block.c-teal { background:rgba(0,184,150,0.22); color:#00B896; border-left:3px solid #00B896; }
+.ev-block.c-gold { background:rgba(251,191,36,0.18); color:#FBB224; border-left:3px solid #FBB224; }
+.ev-block.c-purple { background:rgba(99,102,241,0.2); color:#818CF8; border-left:3px solid #818CF8; }
+.ev-block.c-neutral { background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.6); border-left:3px solid rgba(255,255,255,0.25); }
+/* Event modal */
+.ev-form { display:flex; flex-direction:column; gap:14px; }
+.ev-row { display:flex; gap:10px; }
+.ev-field { display:flex; flex-direction:column; gap:4px; flex:1; }
+.ev-label { font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:rgba(255,255,255,0.4); }
+.ev-input { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14); color:#fff; font-size:13px; font-family:inherit; padding:8px 12px; border-radius:8px; outline:none; transition:border-color .15s; }
+.ev-input:focus { border-color:#00B896; }
+.ev-select { background:#1a2a28; border:1px solid rgba(255,255,255,0.14); color:#fff; font-size:13px; font-family:inherit; padding:8px 12px; border-radius:8px; outline:none; cursor:pointer; }
+.ev-repeat-days { display:flex; gap:6px; flex-wrap:wrap; }
+.ev-day-btn { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.5); font-size:11px; font-weight:700; padding:5px 10px; border-radius:7px; cursor:pointer; transition:all .15s; font-family:inherit; }
+.ev-day-btn.ev-day-sel { background:rgba(0,184,150,0.2); border-color:rgba(0,184,150,0.4); color:#00B896; }
+.ev-colors { display:flex; gap:8px; }
+.ev-color-dot { width:22px; height:22px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:transform .15s; }
+.ev-color-dot.ev-color-sel { transform:scale(1.25); border-color:#fff; }
+.ev-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:6px; }
+.ev-cancel { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.7); font-size:13px; font-weight:600; padding:8px 16px; border-radius:8px; cursor:pointer; font-family:inherit; }
+.ev-save { background:#00B896; color:#fff; border:none; font-size:13px; font-weight:700; padding:8px 16px; border-radius:8px; cursor:pointer; font-family:inherit; transition:opacity .15s; }
+.ev-save:hover { opacity:.85; }
+.ev-delete { background:rgba(239,68,68,0.12); color:#F87171; border:1px solid rgba(239,68,68,0.25); font-size:13px; font-weight:700; padding:8px 16px; border-radius:8px; cursor:pointer; font-family:inherit; transition:background .15s; }
+.ev-delete:hover { background:rgba(239,68,68,0.2); }
+
 </style>
 </head>
 <body>
@@ -417,6 +467,7 @@ body:not(.readonly) .ticker-toggle-btn { display: flex; align-items: center; }
   <div class="nav-right">
     <button class="nav-tab active" onclick="switchTab('launch')"> Launch Readiness</button>
     <button class="nav-tab" onclick="switchTab('pillars')">⚡ Strategic Pillars</button>
+    <button class="nav-tab" onclick="switchTab('events')">📅 Events</button>
     <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()"> Admin</button>
   </div>
 </nav>
@@ -1301,9 +1352,15 @@ function switchTab(tab) {
   activeTab = tab;
   document.getElementById('tab-launch').style.display = tab === 'launch' ? '' : 'none';
   document.getElementById('tab-pillars').style.display = tab === 'pillars' ? '' : 'none';
+  document.getElementById('tab-events').style.display = tab === 'events' ? '' : 'none';
   document.querySelectorAll('.nav-tab').forEach((btn, i) => {
-    btn.classList.toggle('active', (i === 0 && tab === 'launch') || (i === 1 && tab === 'pillars'));
+    btn.classList.toggle('active',
+      (i === 0 && tab === 'launch') ||
+      (i === 1 && tab === 'pillars') ||
+      (i === 2 && tab === 'events')
+    );
   });
+  if (tab === 'events') renderWeekGrid();
   closeModal();
 }
 
@@ -1917,9 +1974,202 @@ document.addEventListener('click', function(e) {
   }
 });
 
+
+// ── EVENTS ──────────────────────────────────────────────────────────────────
+const EV_KEY = 'kaskad-events-v1';
+let evEvents = [];
+let evWeekOff = 0;
+let evEditId = null;
+let evSelColor = 'c-teal';
+const EV_DAYS_LABEL = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const EV_START_HOUR = 8;
+const EV_END_HOUR = 20;
+
+function evLoadAll() {
+  try { evEvents = JSON.parse(localStorage.getItem(EV_KEY) || '[]'); } catch(e) { evEvents = []; }
+}
+function evSaveAll() {
+  localStorage.setItem(EV_KEY, JSON.stringify(evEvents));
+}
+function evWeekStart(off) {
+  const now = new Date();
+  const d = now.getDay();
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - (d === 0 ? 6 : d - 1) + off * 7);
+  mon.setHours(0,0,0,0);
+  return mon;
+}
+function shiftWeek(dir) { evWeekOff += dir; renderWeekGrid(); }
+function goToday() { evWeekOff = 0; renderWeekGrid(); }
+
+function evMatchesCell(ev, isoDate, dow) {
+  if (ev.repeat === 'none')     return ev.date === isoDate;
+  if (ev.repeat === 'daily')    return true;
+  if (ev.repeat === 'weekdays') return dow >= 1 && dow <= 5;
+  if (ev.repeat === 'weekly')   return ev.days && ev.days.includes(dow);
+  return false;
+}
+
+function renderWeekGrid() {
+  const grid = document.getElementById('evWeekGrid');
+  const label = document.getElementById('evWeekLabel');
+  if (!grid || !label) return;
+
+  const ws = evWeekStart(evWeekOff);
+  const we = new Date(ws); we.setDate(ws.getDate() + 6);
+  const fmt = d => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  label.textContent = fmt(ws) + ' – ' + fmt(we);
+
+  const todayISO = new Date().toISOString().slice(0,10);
+  const weekDays = Array.from({length:7}, (_,i) => {
+    const d = new Date(ws); d.setDate(ws.getDate() + i); return d;
+  });
+
+  let html = '';
+
+  // Column headers
+  html += '<div class="week-col-header time-col-cell"></div>';
+  weekDays.forEach(d => {
+    const iso = d.toISOString().slice(0,10);
+    const isToday = iso === todayISO;
+    html += `<div class="week-col-header${isToday?' today-col':''}">
+      <div class="day-name">${EV_DAYS_LABEL[d.getDay()]}</div>
+      <div class="day-num${isToday?' today-num':''}">${d.getDate()}</div>
+    </div>`;
+  });
+
+  // Hourly rows
+  for (let h = EV_START_HOUR; h <= EV_END_HOUR; h++) {
+    const hLabel = h === 0 ? '12am' : h < 12 ? h + ':00' : h === 12 ? '12pm' : (h - 12) + 'pm';
+    html += `<div class="ev-time-slot time-col-cell">${hLabel}</div>`;
+    weekDays.forEach((d, di) => {
+      const iso = d.toISOString().slice(0,10);
+      const dow = d.getDay();
+      const cellEvs = evEvents.filter(ev => {
+        if (!evMatchesCell(ev, iso, dow)) return false;
+        const sh = parseInt(ev.start.split(':')[0], 10);
+        return sh === h;
+      });
+      let evBlocks = '';
+      cellEvs.forEach(ev => {
+        const [sh, sm] = ev.start.split(':').map(Number);
+        const [eh, em] = ev.end.split(':').map(Number);
+        const dur = Math.max(((eh * 60 + em) - (sh * 60 + sm)) / 60, 0.5);
+        const px = Math.max(dur * 44 - 4, 18);
+        evBlocks += `<div class="ev-block ${ev.color||'c-teal'}" style="height:${px}px;top:2px;" onclick="event.stopPropagation();openEvModal(null,null,'${ev.id}')">${ev.title}</div>`;
+      });
+      html += `<div class="ev-day-cell day-col-cell${di===6?' ':''}${di<6?'':''}" onclick="openEvModal('${iso}','${String(h).padStart(2,'0')}:00')">${evBlocks}</div>`;
+    });
+  }
+
+  grid.innerHTML = html;
+}
+
+function openEvModal(date, time, evId) {
+  evEditId = evId || null;
+  evSelColor = 'c-teal';
+
+  document.getElementById('evTitle').value = '';
+  document.getElementById('evDate').value = date || new Date().toISOString().slice(0,10);
+  document.getElementById('evStart').value = time || '10:00';
+  document.getElementById('evEnd').value = time ? (String(parseInt(time)+1).padStart(2,'0') + ':00') : '10:30';
+  document.getElementById('evRepeat').value = 'none';
+  document.getElementById('evWeeklyDaysField').style.display = 'none';
+  document.getElementById('evDateField').style.display = '';
+  document.getElementById('evDeleteBtn').style.display = 'none';
+  document.getElementById('evModalTitle').textContent = 'Add Event';
+
+  document.querySelectorAll('.ev-day-btn').forEach(b => b.classList.remove('ev-day-sel'));
+  document.querySelectorAll('.ev-color-dot').forEach(b => b.classList.toggle('ev-color-sel', b.dataset.col === 'c-teal'));
+
+  if (evId) {
+    const ev = evEvents.find(e => e.id === evId);
+    if (ev) {
+      document.getElementById('evTitle').value = ev.title;
+      document.getElementById('evDate').value = ev.date || '';
+      document.getElementById('evStart').value = ev.start;
+      document.getElementById('evEnd').value = ev.end;
+      document.getElementById('evRepeat').value = ev.repeat || 'none';
+      evSelColor = ev.color || 'c-teal';
+      document.querySelectorAll('.ev-color-dot').forEach(b => b.classList.toggle('ev-color-sel', b.dataset.col === evSelColor));
+      if (ev.repeat === 'weekly') {
+        document.getElementById('evWeeklyDaysField').style.display = '';
+        document.querySelectorAll('.ev-day-btn').forEach(b => {
+          if (ev.days && ev.days.includes(parseInt(b.dataset.day))) b.classList.add('ev-day-sel');
+        });
+      }
+      document.getElementById('evDateField').style.display = ev.repeat === 'none' ? '' : 'none';
+      document.getElementById('evDeleteBtn').style.display = '';
+      document.getElementById('evModalTitle').textContent = 'Edit Event';
+    }
+  }
+
+  const overlay = document.getElementById('evModalOverlay');
+  overlay.style.display = 'flex';
+}
+
+function closeEvModal() {
+  document.getElementById('evModalOverlay').style.display = 'none';
+  evEditId = null;
+}
+document.addEventListener('click', function(e) {
+  const overlay = document.getElementById('evModalOverlay');
+  if (e.target === overlay) closeEvModal();
+});
+
+function updateEvRepeatUI() {
+  const val = document.getElementById('evRepeat').value;
+  document.getElementById('evWeeklyDaysField').style.display = val === 'weekly' ? '' : 'none';
+  document.getElementById('evDateField').style.display = val === 'none' ? '' : 'none';
+}
+function toggleEvDay(btn) { btn.classList.toggle('ev-day-sel'); }
+function pickEvColor(dot) {
+  document.querySelectorAll('.ev-color-dot').forEach(b => b.classList.remove('ev-color-sel'));
+  dot.classList.add('ev-color-sel');
+  evSelColor = dot.dataset.col;
+}
+
+function saveEv() {
+  const title = document.getElementById('evTitle').value.trim();
+  if (!title) return;
+  const repeat = document.getElementById('evRepeat').value;
+  const days = repeat === 'weekly'
+    ? Array.from(document.querySelectorAll('.ev-day-btn.ev-day-sel')).map(b => parseInt(b.dataset.day))
+    : [];
+  const ev = {
+    id: evEditId || ('ev_' + Date.now()),
+    title,
+    date: document.getElementById('evDate').value,
+    start: document.getElementById('evStart').value,
+    end: document.getElementById('evEnd').value,
+    repeat,
+    days,
+    color: evSelColor,
+  };
+  if (evEditId) {
+    const idx = evEvents.findIndex(e => e.id === evEditId);
+    if (idx >= 0) evEvents[idx] = ev; else evEvents.push(ev);
+  } else {
+    evEvents.push(ev);
+  }
+  evSaveAll();
+  closeEvModal();
+  renderWeekGrid();
+}
+
+function deleteEv() {
+  if (!evEditId) return;
+  evEvents = evEvents.filter(e => e.id !== evEditId);
+  evSaveAll();
+  closeEvModal();
+  renderWeekGrid();
+}
+// ── END EVENTS ──────────────────────────────────────────────────────────────
+
 // ── INIT ──
 document.body.classList.add('readonly'); // read-only by default
 loadFromServer().then(() => {
+  evLoadAll();
   loadState();
   loadTickerEvents();
   renderTicker();
@@ -1958,6 +2208,92 @@ loadFromServer().then(() => {
     }
   });
 </script>
+
+
+  <!-- TAB: EVENTS -->
+  <div id="tab-events" style="display:none; padding:32px 32px 64px;">
+    <div style="max-width:1200px; margin:0 auto;">
+      <div style="margin-bottom:28px;">
+        <div style="font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(0,184,150,0.7); margin-bottom:6px;">Kaskad Protocol</div>
+        <div style="font-size:28px; font-weight:800; color:#fff; letter-spacing:-.02em; margin-bottom:6px;">Team <span style="color:#00B896;">Events</span></div>
+        <div style="font-size:14px; color:rgba(255,255,255,0.45);">Plan recurring calls, milestones, and deadlines. Repeats daily, weekly, or on selected days.</div>
+      </div>
+      <div class="events-header">
+        <div class="events-week-nav">
+          <button class="week-nav-btn" onclick="shiftWeek(-1)">&#8592;</button>
+          <div class="week-label" id="evWeekLabel"></div>
+          <button class="week-nav-btn" onclick="shiftWeek(1)">&#8594;</button>
+          <button class="today-btn" onclick="goToday()">Today</button>
+        </div>
+        <button class="add-event-btn" onclick="openEvModal()">+ Add Event</button>
+      </div>
+      <div class="week-grid" id="evWeekGrid"></div>
+    </div>
+  </div>
+
+  <!-- EVENT FORM MODAL -->
+  <div id="evModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:200; display:none; align-items:center; justify-content:center;">
+    <div style="background:#1A2A28; border:1px solid rgba(255,255,255,0.12); border-radius:18px; padding:32px; width:500px; max-width:95vw; max-height:90vh; overflow-y:auto; position:relative;">
+      <button onclick="closeEvModal()" style="position:absolute; top:16px; right:16px; background:none; border:none; color:rgba(255,255,255,0.4); font-size:18px; cursor:pointer;">&#x2715;</button>
+      <div id="evModalTitle" style="font-size:18px; font-weight:800; color:#fff; margin-bottom:4px;">Add Event</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:20px;">Schedule a recurring or one-time event.</div>
+      <div class="ev-form">
+        <div class="ev-field">
+          <div class="ev-label">Event Title</div>
+          <input class="ev-input" type="text" id="evTitle" placeholder="e.g. Daily Standup">
+        </div>
+        <div class="ev-row">
+          <div class="ev-field">
+            <div class="ev-label">Start Time</div>
+            <input class="ev-input" type="time" id="evStart" value="10:00">
+          </div>
+          <div class="ev-field">
+            <div class="ev-label">End Time</div>
+            <input class="ev-input" type="time" id="evEnd" value="10:30">
+          </div>
+          <div class="ev-field" id="evDateField">
+            <div class="ev-label">Date (one-time)</div>
+            <input class="ev-input" type="date" id="evDate">
+          </div>
+        </div>
+        <div class="ev-field">
+          <div class="ev-label">Repeat</div>
+          <select class="ev-select" id="evRepeat" onchange="updateEvRepeatUI()">
+            <option value="none">No repeat (one-time)</option>
+            <option value="daily">Every day</option>
+            <option value="weekdays">Every weekday (Mon–Fri)</option>
+            <option value="weekly">Weekly on selected days</option>
+          </select>
+        </div>
+        <div class="ev-field" id="evWeeklyDaysField" style="display:none;">
+          <div class="ev-label">Repeat On</div>
+          <div class="ev-repeat-days" id="evWeeklyDays">
+            <button class="ev-day-btn" data-day="1" onclick="toggleEvDay(this)">Mon</button>
+            <button class="ev-day-btn" data-day="2" onclick="toggleEvDay(this)">Tue</button>
+            <button class="ev-day-btn" data-day="3" onclick="toggleEvDay(this)">Wed</button>
+            <button class="ev-day-btn" data-day="4" onclick="toggleEvDay(this)">Thu</button>
+            <button class="ev-day-btn" data-day="5" onclick="toggleEvDay(this)">Fri</button>
+            <button class="ev-day-btn" data-day="6" onclick="toggleEvDay(this)">Sat</button>
+            <button class="ev-day-btn" data-day="0" onclick="toggleEvDay(this)">Sun</button>
+          </div>
+        </div>
+        <div class="ev-field">
+          <div class="ev-label">Color</div>
+          <div class="ev-colors">
+            <div class="ev-color-dot ev-color-sel" data-col="c-teal" style="background:#00B896;" onclick="pickEvColor(this)" title="Teal"></div>
+            <div class="ev-color-dot" data-col="c-gold" style="background:#FBB224;" onclick="pickEvColor(this)" title="Gold"></div>
+            <div class="ev-color-dot" data-col="c-purple" style="background:#818CF8;" onclick="pickEvColor(this)" title="Purple"></div>
+            <div class="ev-color-dot" data-col="c-neutral" style="background:rgba(255,255,255,0.3);" onclick="pickEvColor(this)" title="Neutral"></div>
+          </div>
+        </div>
+        <div class="ev-actions">
+          <button class="ev-delete" id="evDeleteBtn" style="display:none;" onclick="deleteEv()">Delete</button>
+          <button class="ev-cancel" onclick="closeEvModal()">Cancel</button>
+          <button class="ev-save" onclick="saveEv()">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
