@@ -2049,8 +2049,8 @@ let evWeekOff = 0;
 let evEditId = null;
 let evSelColor = 'c-teal';
 const EV_DAYS_LABEL = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const EV_START_HOUR = 8;
-const EV_END_HOUR = 20;
+const EV_START_HOUR = 0;
+const EV_END_HOUR = 23;
 
 function evLoadAll() {
   try { evEvents = JSON.parse(localStorage.getItem(EV_KEY) || '[]'); } catch(e) { evEvents = []; }
