@@ -347,8 +347,10 @@ app.post('/api/geo/run', async (req, res) => {
 
     // Agentic issues
     const ag = agenticResult.checks;
-    if (!ag.mcp_server) criticalIssues.push('No MCP server detected â€” kaskad-mcp repo missing or private');
-    if (!ag.llms_txt_references_mcp) quickWins.push('Add MCP reference to kaskad.app/llms.txt (Marius, 5 min)');
+    if (!ag.mcp_repo_discoverable) criticalIssues.push('MCP repo not discoverable - check Kaskad-Lending/kaskad-mcp visibility');
+    if (!ag.write_tools) criticalIssues.push('MCP write tools missing - supply/borrow/repay not found in MCP');
+    if (!ag.robots_txt_testnet) quickWins.push('testnet.kaskad.live: add robots.txt');
+    if (!ag.health_factor_alerts) quickWins.push('Implement health factor alert tool in MCP (last remaining agentic gap)');
 
     // Composite score: Track 1 discoverability (60%) + Track 2 agentic (40%)
     const compositeScore = Math.round(geoScore * 0.6 + agenticResult.score * 0.4);
