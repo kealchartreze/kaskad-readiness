@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kaskad — Mainnet Readiness</title>
+<title>Kaskad - Mainnet Readiness</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 
@@ -89,7 +89,7 @@ body {
 .score-track { stroke: var(--score-track); }
 #detail-panel { background: var(--detail-bg); border-color: var(--detail-border); }
 .blocker-item { background: var(--blocker-bg); border-color: var(--blocker-border); }
-/* Input theming — scoped to dark mode only so item-select colors are not overridden */
+/* Input theming - scoped to dark mode only so item-select colors are not overridden */
 [data-theme="dark"] input,
 [data-theme="dark"] textarea { background: var(--input-bg) !important; border-color: var(--input-border) !important; color: var(--input-color) !important; }
 [data-theme="dark"] select:not(.item-select) { background: var(--input-bg) !important; border-color: var(--input-border) !important; color: var(--input-color) !important; }
@@ -97,7 +97,7 @@ body {
 .sq-section-title { color: var(--section-label); }
 .ticker-bar { background: var(--ticker-bg) !important; }
 
-/* Light mode — squad node overrides (base styles are dark-hardcoded) */
+/* Light mode - squad node overrides (base styles are dark-hardcoded) */
 [data-theme="light"] .node-jack { background: #e8f5f2 !important; border-color: rgba(0,184,150,0.4) !important; }
 [data-theme="light"] .node-jack .name { color: #1A1A1A !important; }
 [data-theme="light"] .node-jack .role, [data-theme="light"] .node-jack .sub { color: rgba(0,100,80,0.7) !important; }
@@ -120,11 +120,11 @@ body {
 [data-theme="light"] .p-div { background: rgba(0,0,0,0.07) !important; }
 [data-theme="light"] #tab-squad .sq-leg { color: rgba(0,0,0,0.55) !important; }
 [data-theme="light"] #tab-squad .sq-hint { color: rgba(0,0,0,0.4) !important; }
-/* Events tab header — theme-aware */
+/* Events tab header - theme-aware */
 .ev-hd-title { color: var(--text-primary); }
 .ev-hd-sub { color: var(--text-secondary); }
 
-/* Dark mode — squad goal cards */
+/* Dark mode - squad goal cards */
 [data-theme="dark"] .node-goal {
   background: #161B22 !important;
   border-color: rgba(255,255,255,0.08) !important;
@@ -243,7 +243,7 @@ body {
 /* SECTION GRID */
 .section-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; margin-bottom: 56px; }
 
-/* CARDS — no left border, gradient top accent on hover */
+/* CARDS - no left border, gradient top accent on hover */
 .sec-card {
   position: relative; overflow: hidden;
   background: var(--bg-card);
@@ -271,7 +271,7 @@ body {
   box-shadow: 0 0 0 2px rgba(0,184,150,0.12), 0 8px 24px rgba(0,0,0,0.08);
 }
 
-/* ambient orb — subtle, top-right */
+/* ambient orb - subtle, top-right */
 .sec-card-glow {
   position: absolute; top: -20px; right: -20px;
   width: 90px; height: 90px; border-radius: 50%;
@@ -280,7 +280,7 @@ body {
 
 .sc-top { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
 
-/* Icon container — glass-ish pill, no emoji */
+/* Icon container - glass-ish pill, no emoji */
 .sc-icon {
   width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
@@ -716,7 +716,7 @@ canvas#cv { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
 /* === End Squad Tab Styles (light mode) === */
 
 /* ═══════════════════════════════════════
-   MOBILE RESPONSIVE — max-width: 768px
+   MOBILE RESPONSIVE - max-width: 768px
    All changes scoped here, zero desktop impact
    ═══════════════════════════════════════ */
 
@@ -1103,7 +1103,7 @@ canvas { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
   <div class="ticker-label">Live Events</div>
   <div class="ticker-track">
     <div class="ticker-inner" id="tickerInner">
-      <div class="ticker-empty">No upcoming events — admin can add events below</div>
+      <div class="ticker-empty">No upcoming events - admin can add events below</div>
     </div>
   </div>
   <button class="ticker-toggle-btn" onclick="toggleTickerAdmin()" title="Manage events">+ Edit</button>
@@ -1197,7 +1197,7 @@ canvas { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
   </div>
   <div class="section-grid" id="pillarGrid"></div>
 
-  <!-- GEO BENCHMARK WIDGET — Pillar 2 -->
+  <!-- GEO BENCHMARK WIDGET - Pillar 2 -->
   <div id="geo-widget" style="display:none; margin-top:32px;">
     <style>
       #geo-widget { max-width: 100%; overflow: hidden; }
@@ -1235,7 +1235,7 @@ canvas { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
         <div class="geo-sub-card" style="border-color:rgba(99,102,241,0.2);">
           <div class="geo-label" style="color:#6366F1; margin-bottom:10px;">Overall Score</div>
           <div style="display:flex; align-items:baseline; gap:8px;">
-            <span id="geo-score-num" style="font-size:52px; font-weight:800; letter-spacing:-0.05em; color:#6366F1; line-height:1;">—</span>
+            <span id="geo-score-num" style="font-size:52px; font-weight:800; letter-spacing:-0.05em; color:#6366F1; line-height:1;">-</span>
             <span style="font-size:18px; font-weight:600; color:var(--text-tertiary);">/100</span>
           </div>
           <div id="geo-blended-bar">
@@ -1248,7 +1248,7 @@ canvas { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
         <div class="geo-sub-card" id="geo-agentic-hero" style="border-color:rgba(16,185,129,0.2);">
           <div class="geo-label" style="color:#10B981; margin-bottom:10px;">Agentic Readiness</div>
           <div style="display:flex; align-items:baseline; gap:8px;">
-            <span id="geo-ag-score" style="font-size:52px; font-weight:800; letter-spacing:-0.05em; color:#10B981; line-height:1;">—</span>
+            <span id="geo-ag-score" style="font-size:52px; font-weight:800; letter-spacing:-0.05em; color:#10B981; line-height:1;">-</span>
             <span style="font-size:18px; font-weight:600; color:var(--text-tertiary);">/100</span>
           </div>
           <div style="height:8px; background:var(--bar-track); border-radius:5px; overflow:hidden; margin:8px 0 4px;">
@@ -1263,12 +1263,12 @@ canvas { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
       <div id="geo-tracks" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
         <!-- Track 1: Discoverability -->
         <div>
-          <div class="geo-label" style="color:#6366F1; margin-bottom:10px;">Track 1 — Discoverability</div>
+          <div class="geo-label" style="color:#6366F1; margin-bottom:10px;">Track 1 - Discoverability</div>
           <div id="geo-urls" style="display:flex; flex-direction:column; gap:8px;"></div>
         </div>
         <!-- Track 2: Agentic checks -->
         <div>
-          <div class="geo-label" style="color:#10B981; margin-bottom:10px;">Track 2 — Agentic Checks</div>
+          <div class="geo-label" style="color:#10B981; margin-bottom:10px;">Track 2 - Agentic Checks</div>
           <div id="geo-agentic" class="geo-sub-card">
             <div style="font-size:12px; color:var(--text-muted); font-style:italic;">Run benchmark to check</div>
           </div>
@@ -1332,7 +1332,7 @@ function renderGeoScore(data) {
     agEl.style.color = agColor;
     document.getElementById('geo-ag-bar').style.background = `linear-gradient(90deg,${agColor},${agColor}99)`;
     const agVerdictEl = document.getElementById('geo-ag-verdict');
-    agVerdictEl.textContent = `${data.agentic.passed}/${data.agentic.total} checks — ${agVerdict}`;
+    agVerdictEl.textContent = `${data.agentic.passed}/${data.agentic.total} checks - ${agVerdict}`;
     agVerdictEl.style.color = agColor;
     document.getElementById('geo-agentic-hero').style.borderColor = agColor + '33';
   }
@@ -1421,7 +1421,7 @@ async function loadGeoScore() {
     const data = await res.json();
     if (data.status === 'ok') renderGeoScore(data);
   } catch(e) {
-    // API not running — silent, widget still shows with cached data
+    // API not running - silent, widget still shows with cached data
     renderGeoScore({
       geo_score: 56, date: '2026-04-02',
       urls: {
@@ -1465,7 +1465,7 @@ async function runGeoBenchmark() {
 function checkGeoWidget() {
   const p2Card = document.querySelector('[data-pillar="p2"]');
   // Widget visibility controlled by pillar tab being active
-  // Admin check: simple — if token is set, show button
+  // Admin check: simple - if token is set, show button
   const isAdmin = true; // local dashboard = always admin
   if (isAdmin) document.getElementById('geo-run-btn').style.display = 'block';
 }
@@ -1549,7 +1549,7 @@ const SECTIONS = [
     ]
   },
   {
-    id: 'sc', label: 'dApp — Smart Contracts', icon: '⛓️', colorClass: 'c-sc', barClass: 'bar-sc', numClass: 'num-sc',
+    id: 'sc', label: 'dApp - Smart Contracts', icon: '⛓️', colorClass: 'c-sc', barClass: 'bar-sc', numClass: 'num-sc',
     sub: 'Contract deployment and on-chain configuration',
     subsections: [
       {
@@ -1584,7 +1584,7 @@ const SECTIONS = [
     ]
   },
   {
-    id: 'ui', label: 'dApp — UI', icon: '️', colorClass: 'c-ui', barClass: 'bar-ui', numClass: 'num-ui',
+    id: 'ui', label: 'dApp - UI', icon: '️', colorClass: 'c-ui', barClass: 'bar-ui', numClass: 'num-ui',
     sub: 'Frontend flows, UX quality and user-facing correctness',
     items: [
       { text: 'Supply flow end-to-end functional' },
@@ -1637,12 +1637,12 @@ const SECTIONS = [
 // ── PILLARS DATA ──
 const PILLARS = [
   {
-    id: 'p1', label: 'Pillar 1 — Oracle COB/DAN', icon: '', colorClass: 'c-p1', barClass: 'bar-p1', numClass: 'num-p1',
+    id: 'p1', label: 'Pillar 1 - Oracle COB/DAN', icon: '', colorClass: 'c-p1', barClass: 'bar-p1', numClass: 'num-p1',
     sub: "Eliott's Consolidated Order Book oracle integration roadmap",
-    items: []  // blank — user adds items
+    items: []  // blank - user adds items
   },
   {
-    id: 'p2', label: 'Pillar 2 — Agentic Readiness', icon: '', colorClass: 'c-p2', barClass: 'bar-p2', numClass: 'num-p2',
+    id: 'p2', label: 'Pillar 2 - Agentic Readiness', icon: '', colorClass: 'c-p2', barClass: 'bar-p2', numClass: 'num-p2',
     sub: 'MCP server, llms.txt, and agentic discoverability',
     items: [
       { text: 'MCP server deployed and accessible to external agents' },
@@ -1654,11 +1654,11 @@ const PILLARS = [
     ]
   },
   {
-    id: 'p3', label: 'Pillar 3 — Road to Kaskad L1', icon: '⛓️', colorClass: 'c-p3', barClass: 'bar-p3', numClass: 'num-p3',
+    id: 'p3', label: 'Pillar 3 - Road to Kaskad L1', icon: '⛓️', colorClass: 'c-p3', barClass: 'bar-p3', numClass: 'num-p3',
     sub: 'Kaspa covenant integration, Kasia notifications, and L1 PoC',
     items: [
       { text: 'Jack + Anton sync on covenant/vProg tooling state (Kaspa TN12)' },
-      { text: 'SilverScript PoC scope agreed — minimal lending covenant defined' },
+      { text: 'SilverScript PoC scope agreed - minimal lending covenant defined' },
       { text: 'SilverScript lending vault PoC built on TN12' },
       { text: 'PoC: collateral lockup with destination restriction (covenant)' },
       { text: 'PoC: repayment condition enforced at script level' },
@@ -1733,8 +1733,8 @@ function saveData() {
   const str = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) +
     ' at ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   localStorage.setItem('kaskad-last-updated-v1', str);
-  
-  // 4. Server persistence — all keys
+
+  // 4. Server persistence - all keys
   const ALL_KEYS = [STORAGE_KEY, SECTIONS_KEY, PILLARS_KEY, 'kaskad-blockers-v1', 'kaskad-target-date-v1', 'kaskad-last-updated-v1'];
   const s = {};
   for (const key of ALL_KEYS) {
@@ -1746,7 +1746,7 @@ function saveData() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ state: s })
   }).then(() => console.log('State saved to server'));
-  
+
   // 5. UI updates
   dirty = false;
   document.getElementById('saveBanner').classList.remove('show');
@@ -1904,7 +1904,7 @@ function renderModalItems() {
     const wrap = document.createElement('div');
     wrap.className = 'add-item-row add-subsection-wrap';
     wrap.innerHTML = `
-      <input class="add-item-input" type="text" placeholder="Add item…" />
+      <input class="add-item-input" type="text" placeholder="Add item..." />
       <button class="add-item-btn">+ Add</button>
     `;
     const input = wrap.querySelector('input');
@@ -2193,7 +2193,7 @@ const ADMIN_HASH = '7a3f9b2e1d8c6f4a0e5b7d2c9f1a4e8b3d6c0f2e5a8b1d4c7f0e3a6b9d2c
 let adminUnlocked = false;
 
 function _hashPassword(pw) {
-  // simple djb2-style hash encoded as hex — not crypto, just obfuscation
+  // simple djb2-style hash encoded as hex - not crypto, just obfuscation
   let h = 5381;
   for (let i = 0; i < pw.length; i++) h = ((h << 5) + h) ^ pw.charCodeAt(i);
   return (h >>> 0).toString(16).padStart(8, '0');
@@ -2271,7 +2271,7 @@ function addBlocker() {
   const text = textEl.value.trim();
   const owner = ownerEl.value.trim();
   if (!text) return;
-  blockers.push({ text, owner: owner || '—', severity: sevEl.value });
+  blockers.push({ text, owner: owner || '-', severity: sevEl.value });
   saveBlockers();
   textEl.value = ''; ownerEl.value = '';
   renderBlockers();
@@ -2295,8 +2295,8 @@ function renderBlockers() {
         </div>`).join('')}
     </div>
     <div class="add-blocker-row">
-      <input class="add-blocker-input" id="newBlockerText" placeholder="Blocker description…" onkeydown="if(event.key==='Enter')addBlocker()">
-      <input class="add-blocker-input" id="newBlockerOwner" placeholder="Owner…" onkeydown="if(event.key==='Enter')addBlocker()">
+      <input class="add-blocker-input" id="newBlockerText" placeholder="Blocker description..." onkeydown="if(event.key==='Enter')addBlocker()">
+      <input class="add-blocker-input" id="newBlockerOwner" placeholder="Owner..." onkeydown="if(event.key==='Enter')addBlocker()">
       <select class="add-blocker-select" id="newBlockerSev">
         <option value="critical">Critical</option>
         <option value="warn">Watch</option>
@@ -2324,7 +2324,7 @@ function renderTargetDate() {
   wrap.style.display = 'flex';
 
   if (!stored) {
-    // Admin, no date set — show edit form
+    // Admin, no date set - show edit form
     wrap.innerHTML = `
       <div class="target-date-label">Target Launch Date</div>
       <div class="target-date-edit">
@@ -2334,7 +2334,7 @@ function renderTargetDate() {
     return;
   }
 
-  // Date is set — show display
+  // Date is set - show display
   const d = new Date(stored + 'T00:00:00');
   const today = new Date(); today.setHours(0,0,0,0);
   const diffMs = d - today;
@@ -2397,7 +2397,7 @@ function touchLastUpdated() {
   renderLastUpdated();
 }
 
-// toggleAdmin already defined above — re-render target date after state change handled via renderTargetDate calls in confirmAuth and the lock branch below
+// toggleAdmin already defined above - re-render target date after state change handled via renderTargetDate calls in confirmAuth and the lock branch below
 
 // ── SERVER PERSISTENCE ──
 const API_BASE = '/api/state';
@@ -2511,7 +2511,7 @@ function loadTickerEvents() {
     if (raw) tickerEvents = JSON.parse(raw);
   } catch(e) { tickerEvents = []; }
   if (!Array.isArray(tickerEvents)) tickerEvents = [];
-  // Only keep manual ticker entries (those with a label field) — calendar events have title not label
+  // Only keep manual ticker entries (those with a label field) - calendar events have title not label
   tickerEvents = tickerEvents.filter(function(e) { return e.label; });
 }
 
@@ -2626,7 +2626,7 @@ function renderTicker() {
     return;
   }
 
-  // Build items — duplicate for seamless loop
+  // Build items - duplicate for seamless loop
   var items = upcoming.map(function(e) {
     var cls = getDotClass(e.date);
     return '<div class="ticker-event">' +
@@ -2749,7 +2749,7 @@ function renderWeekGrid() {
   const ws = evWeekStart(evWeekOff);
   const we = new Date(ws); we.setDate(ws.getDate() + 6);
   const fmt = d => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  label.textContent = fmt(ws) + ' – ' + fmt(we);
+  label.textContent = fmt(ws) + ' - ' + fmt(we);
 
   const todayISO = new Date().toISOString().slice(0,10);
   const weekDays = Array.from({length:7}, (_,i) => {
@@ -2943,7 +2943,7 @@ loadFromServer().then(() => {
 <script src="https://cdn.jsdelivr.net/npm/page-agent@1.6.0/dist/iife/page-agent.demo.js" crossorigin="true"></script>
 <script>
   // Initialize page-agent after DOM is ready
-  // Provides a floating chat widget — type natural language commands to control the dashboard
+  // Provides a floating chat widget - type natural language commands to control the dashboard
   // Examples:
   //   "Mark smart contract audit as complete"
   //   "Add a blocker: oracle deployment delayed"
@@ -2957,7 +2957,7 @@ loadFromServer().then(() => {
           'You are an AI assistant helping to manage the Kaskad Protocol mainnet readiness dashboard.',
           'The dashboard tracks launch requirements across 7 pillars: Smart Contracts, Frontend, Infrastructure, Security, Legal/Compliance, Marketing, and Operations.',
           'You can check/uncheck readiness items, add blockers, update the target launch date, and read the current state.',
-          'Admin actions (editing items, adding blockers) require the admin panel to be unlocked first — ask the user to unlock it if needed.',
+          'Admin actions (editing items, adding blockers) require the admin panel to be unlocked first - ask the user to unlock it if needed.',
           'Be concise and confirm what you did after each action.'
         ].join(' ')
       });
@@ -3020,7 +3020,7 @@ loadFromServer().then(() => {
           <select class="ev-select" id="evRepeat" onchange="updateEvRepeatUI()">
             <option value="none">No repeat (one-time)</option>
             <option value="daily">Every day</option>
-            <option value="weekdays">Every weekday (Mon–Fri)</option>
+            <option value="weekdays">Every weekday (Mon-Fri)</option>
             <option value="weekly">Weekly on selected days</option>
           </select>
         </div>
@@ -3098,7 +3098,7 @@ loadFromServer().then(() => {
           <div class="ksp-icon">🔖</div>
           <div class="ksp-info">
             <div class="ksp-name">Kairos <span class="ksp-badge badge-on">Always On</span></div>
-            <div class="ksp-desc">Task checkpoints — verifies goal alignment &amp; output at each step</div>
+            <div class="ksp-desc">Task checkpoints - verifies goal alignment &amp; output at each step</div>
           </div>
         </div>
 
@@ -3106,7 +3106,7 @@ loadFromServer().then(() => {
           <div class="ksp-icon">📋</div>
           <div class="ksp-info">
             <div class="ksp-name">Plan Mode V2 <span class="ksp-badge badge-on">Always On</span></div>
-            <div class="ksp-desc">Shows explicit plan before any multi-step task — Jack approves first</div>
+            <div class="ksp-desc">Shows explicit plan before any multi-step task - Jack approves first</div>
           </div>
         </div>
 
@@ -3114,7 +3114,7 @@ loadFromServer().then(() => {
           <div class="ksp-icon">🌿</div>
           <div class="ksp-info">
             <div class="ksp-name">Willow <span class="ksp-badge badge-on">Always On</span></div>
-            <div class="ksp-desc">Ambient memory writes — key facts persisted silently during sessions</div>
+            <div class="ksp-desc">Ambient memory writes - key facts persisted silently during sessions</div>
           </div>
         </div>
 
@@ -3122,7 +3122,7 @@ loadFromServer().then(() => {
           <div class="ksp-icon">🌿</div>
           <div class="ksp-info">
             <div class="ksp-name">Branch <span class="ksp-badge badge-on">Always On</span></div>
-            <div class="ksp-desc">Named workstreams — investor pitch, Anton tech, Marius design stay isolated</div>
+            <div class="ksp-desc">Named workstreams - investor pitch, Anton tech, Marius design stay isolated</div>
           </div>
         </div>
 
@@ -3138,7 +3138,23 @@ loadFromServer().then(() => {
           <div class="ksp-icon">⚔️</div>
           <div class="ksp-info">
             <div class="ksp-name">Adversarial QA <span class="ksp-badge badge-demand">On-Demand</span></div>
-            <div class="ksp-desc">Red-team mode — edge cases, oracle attacks, reentrancy probes</div>
+            <div class="ksp-desc">Red-team mode - edge cases, oracle attacks, reentrancy probes</div>
+          </div>
+        </div>
+
+        <div class="ksp-row">
+          <div class="ksp-icon">🔒</div>
+          <div class="ksp-info">
+            <div class="ksp-name">Secret Scanner <span class="ksp-badge badge-on">Always On</span></div>
+            <div class="ksp-desc">Scans memory writes for leaked API keys, PATs &amp; private keys before persisting</div>
+          </div>
+        </div>
+
+        <div class="ksp-row">
+          <div class="ksp-icon">📄</div>
+          <div class="ksp-info">
+            <div class="ksp-name">Magic Docs <span class="ksp-badge badge-on">Always On</span></div>
+            <div class="ksp-desc">Auto-updates living reference docs (MEMORY.md, kaskad-current-state.md) from session learnings</div>
           </div>
         </div>
       </div>
@@ -3223,14 +3239,14 @@ loadFromServer().then(() => {
 
       <div class="node-task sf-task" data-id="dashboard" data-goals="g1,g2,g3,p1,p2,pm" data-color="#F0ABFC"
         data-name="Kaskad Dashboard" data-sched="Live · kaskad-readiness-production.up.railway.app"
-        data-pts="Launch readiness tracker across all teams|Strategic pillars + covenant roadmap|Events calendar + live ticker|Signal flow — this view">
+        data-pts="Launch readiness tracker across all teams|Strategic pillars + covenant roadmap|Events calendar + live ticker|Signal flow - this view">
         <div class="task-dot" style="background:#F0ABFC;box-shadow:0 0 5px #F0ABFC;"></div>
         <div><div class="task-label">Kaskad Dashboard</div><div class="task-sub">Always-on</div></div>
       </div>
 
       <div class="node-task sf-task" data-id="checks" data-goals="pm" data-color="#94A3B8"
         data-name="Morning + Afternoon Checks" data-sched="08:00 + 14:00 daily"
-        data-pts="Scans inbox for urgent items|Checks calendar 24–48h ahead|Verifies port 18789 loopback-only|Silent when nothing needs attention">
+        data-pts="Scans inbox for urgent items|Checks calendar 24-48h ahead|Verifies port 18789 loopback-only|Silent when nothing needs attention">
         <div class="task-dot" style="background:#94A3B8;box-shadow:0 0 5px #94A3B8;"></div>
         <div><div class="task-label">Daily Checks</div><div class="task-sub">08:00 + 14:00</div></div>
       </div>
@@ -3330,9 +3346,9 @@ loadFromServer().then(() => {
     }
   }
 
-  // Org pulse — slower, rounder, softer pulse along a bezier
+  // Org pulse - slower, rounder, softer pulse along a bezier
   class OrgPulse {
-    constructor(from, to, color){ 
+    constructor(from, to, color){
       this.from=from; this.to=to; this.color=color;
       this.t=Math.random();
       this.spd=0.0004+Math.random()*0.0003;
@@ -3385,7 +3401,7 @@ loadFromServer().then(() => {
       for(let i=0;i<2;i++) orgPulses.push(new OrgPulse(kr,sl,'#00B896'));
     });
 
-    // Keal → tasks DIRECT (parallel branch — Keal directly executes some tasks)
+    // Keal → tasks DIRECT (parallel branch - Keal directly executes some tasks)
     const kealDirect=['trendscan','pillar2','pillar3','secmon','autores','emerge','checks','backup','dashboard'];
     tasks.forEach(t=>{
       if(kealDirect.includes(t.dataset.id)){
