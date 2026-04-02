@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -7,17 +7,175 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 
+/* ── Theme tokens ── */
+:root {
+  --bg-page: #F2EDE4;
+  --bg-page-grad1: rgba(0,184,150,0.10);
+  --bg-page-grad2: rgba(99,102,241,0.07);
+  --bg-page-grad3: rgba(251,191,36,0.06);
+  --bg-card: #ffffff;
+  --bg-card-hover: #ffffff;
+  --border-card: rgba(0,0,0,0.07);
+  --border-card-hover: rgba(0,0,0,0.10);
+  --text-primary: #1A1A1A;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+  --text-muted: #B0B0B0;
+  --bar-track: rgba(0,0,0,0.06);
+  --score-track: rgba(0,0,0,0.07);
+  --detail-bg: #ffffff;
+  --detail-border: rgba(0,0,0,0.07);
+  --input-bg: #ffffff;
+  --input-border: #D1D5DB;
+  --input-color: #111827;
+  --blocker-bg: #F9FAFB;
+  --blocker-border: #E5E7EB;
+  --tag-bg: rgba(0,0,0,0.05);
+  --tag-color: #6B7280;
+  --modal-bg: #ffffff;
+  --modal-border: rgba(0,0,0,0.12);
+  --section-label: rgba(26,26,26,0.35);
+  --ticker-bg: rgba(26,46,42,0.97);
+  --ticker-text: rgba(255,255,255,0.5);
+}
+
+[data-theme="dark"] {
+  --bg-page: #0D0F14;
+  --bg-page-grad1: rgba(0,184,150,0.06);
+  --bg-page-grad2: rgba(99,102,241,0.05);
+  --bg-page-grad3: rgba(251,191,36,0.04);
+  --bg-card: #161B22;
+  --bg-card-hover: #1C2330;
+  --border-card: rgba(255,255,255,0.06);
+  --border-card-hover: rgba(255,255,255,0.10);
+  --text-primary: #E8EAF0;
+  --text-secondary: #8B949E;
+  --text-tertiary: #6E7681;
+  --text-muted: #555E6B;
+  --bar-track: rgba(255,255,255,0.07);
+  --score-track: rgba(255,255,255,0.08);
+  --detail-bg: #161B22;
+  --detail-border: rgba(255,255,255,0.07);
+  --input-bg: #0D1117;
+  --input-border: rgba(255,255,255,0.1);
+  --input-color: #E8EAF0;
+  --blocker-bg: #0D1117;
+  --blocker-border: rgba(255,255,255,0.07);
+  --tag-bg: rgba(255,255,255,0.06);
+  --tag-color: #8B949E;
+  --modal-bg: #161B22;
+  --modal-border: rgba(255,255,255,0.1);
+  --section-label: rgba(232,234,240,0.55);
+  --ticker-bg: rgba(10,12,18,0.98);
+  --ticker-text: rgba(255,255,255,0.4);
+}
+
+/* ── Apply tokens to core elements ── */
+body {
+  color: var(--text-primary);
+  background:
+    radial-gradient(ellipse 80% 50% at 15% 0%, var(--bg-page-grad1) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 90% 10%, var(--bg-page-grad2) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 60% at 50% 100%, var(--bg-page-grad3) 0%, transparent 60%),
+    var(--bg-page);
+}
+.sec-card { background: var(--bg-card); border-color: var(--border-card); }
+.sec-card:hover { background: var(--bg-card-hover); border-color: var(--border-card-hover); }
+.sc-name { color: var(--text-primary); }
+.sc-count { color: var(--text-tertiary); }
+.hd-title { color: var(--text-primary); }
+.hd-sub { color: var(--text-secondary); }
+.sc-bar-track { background: var(--bar-track); }
+.score-track { stroke: var(--score-track); }
+#detail-panel { background: var(--detail-bg); border-color: var(--detail-border); }
+.blocker-item { background: var(--blocker-bg); border-color: var(--blocker-border); }
+/* Input theming — scoped to dark mode only so item-select colors are not overridden */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea { background: var(--input-bg) !important; border-color: var(--input-border) !important; color: var(--input-color) !important; }
+[data-theme="dark"] select:not(.item-select) { background: var(--input-bg) !important; border-color: var(--input-border) !important; color: var(--input-color) !important; }
+.modal-content { background: var(--modal-bg) !important; border-color: var(--modal-border) !important; }
+.sq-section-title { color: var(--section-label); }
+.ticker-bar { background: var(--ticker-bg) !important; }
+
+/* Dark mode — squad goal cards */
+[data-theme="dark"] .node-goal {
+  background: #161B22 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3) !important;
+}
+[data-theme="dark"] .goal-name { color: rgba(232,234,240,0.75) !important; }
+[data-theme="dark"] .goal-type { color: rgba(232,234,240,0.25) !important; }
+[data-theme="dark"] .node-task {
+  background: rgba(255,255,255,0.03) !important;
+  border-color: rgba(255,255,255,0.06) !important;
+}
+[data-theme="dark"] .task-label { color: rgba(232,234,240,0.8) !important; }
+[data-theme="dark"] .task-sub { color: rgba(232,234,240,0.28) !important; }
+[data-theme="dark"] .node-spec {
+  background: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.07) !important;
+}
+[data-theme="dark"] .node-spec .sp-name { color: rgba(232,234,240,0.82) !important; }
+[data-theme="dark"] .node-spec .sp-sub  { color: rgba(232,234,240,0.28) !important; }
+[data-theme="dark"] .node-jack { background: #1A2E2A !important; border-color: rgba(0,184,150,0.5) !important; box-shadow: none !important; }
+[data-theme="dark"] .node-jack .name { color: #fff !important; }
+[data-theme="dark"] .node-jack .sub  { color: rgba(255,255,255,0.32) !important; }
+[data-theme="dark"] .node-keal { background: #1A2E2A !important; border-color: rgba(0,184,150,0.32) !important; box-shadow: none !important; }
+[data-theme="dark"] .node-keal .name { color: #fff !important; }
+[data-theme="dark"] .node-keal .sub  { color: rgba(255,255,255,0.3) !important; }
+[data-theme="dark"] .node-keal .cmd  { background: rgba(0,184,150,0.12) !important; color: rgba(0,184,150,0.7) !important; border-color: rgba(0,184,150,0.2) !important; }
+[data-theme="dark"] #popup { background: #1A1D27 !important; border-color: rgba(255,255,255,0.12) !important; }
+[data-theme="dark"] #p-sched { color: rgba(255,255,255,0.3) !important; }
+[data-theme="dark"] #p-pts li { color: rgba(255,255,255,0.62) !important; }
+[data-theme="dark"] .p-div { background: rgba(255,255,255,0.07) !important; }
+[data-theme="dark"] .sq-leg { color: rgba(255,255,255,0.3) !important; }
+[data-theme="dark"] .sq-hint { color: rgba(255,255,255,0.15) !important; }
+[data-theme="dark"] .blocker-text { color: var(--text-primary) !important; }
+[data-theme="dark"] .modal-title { color: var(--text-primary) !important; }
+[data-theme="dark"] .modal-close:hover { color: var(--text-primary) !important; background: rgba(255,255,255,0.08) !important; }
+[data-theme="dark"] .ticker-admin-title { color: var(--text-primary) !important; }
+[data-theme="dark"] .week-label { color: var(--text-primary) !important; }
+[data-theme="dark"] .day-num { color: var(--text-primary) !important; }
+[data-theme="dark"] .ev-input { background: var(--input-bg) !important; border-color: var(--input-border) !important; color: var(--input-color) !important; }
+[data-theme="dark"] .ev-select { background: var(--input-bg) !important; border-color: var(--input-border) !important; color: var(--input-color) !important; }
+[data-theme="dark"] .score-label { color: var(--text-tertiary) !important; }
+[data-theme="dark"] .sc-count { color: var(--text-tertiary) !important; }
+[data-theme="dark"] .hd-title { color: var(--text-primary) !important; }
+[data-theme="dark"] .hd-sub { color: var(--text-secondary) !important; }
+[data-theme="dark"] .item-select.done { border-color: #00B896 !important; color: #2DD4A8 !important; background-color: rgba(0,184,150,0.18) !important; }
+[data-theme="dark"] .item-select.progress { border-color: #F59E0B !important; color: #FBBF24 !important; background-color: rgba(245,158,11,0.15) !important; }
+[data-theme="dark"] .item-select.not-started { border-color: rgba(255,255,255,0.1) !important; color: #6E7681 !important; background-color: rgba(255,255,255,0.04) !important; }
+[data-theme="dark"] .done-chip { background: rgba(0,184,150,0.15) !important; color: #2DD4A8 !important; }
+[data-theme="dark"] .prog-chip { background: rgba(245,158,11,0.15) !important; color: #FBBF24 !important; }
+[data-theme="dark"] .none-chip { background: rgba(255,255,255,0.06) !important; color: #6E7681 !important; }
+
+/* Toggle button */
+.theme-toggle {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  padding: 6px 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  display: flex; align-items: center; gap: 6px;
+  margin-left: 8px;
+}
+.theme-toggle:hover {
+  background: rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.9);
+}
+.theme-toggle .tt-icon { font-size: 15px; line-height: 1; }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  color: #1A1A1A;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-  background:
-    radial-gradient(ellipse 80% 50% at 15% 0%, rgba(0,184,150,0.10) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(99,102,241,0.07) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 60% at 50% 100%, rgba(251,191,36,0.06) 0%, transparent 60%),
-    #F2EDE4;
+  transition: background 0.3s, color 0.3s;
 }
 
 /* NAV */
@@ -41,8 +199,8 @@ body {
 
 /* HEADER */
 .hd { text-align: center; margin-bottom: 56px; }
-.hd-title { font-size: 32px; font-weight: 800; color: #1A1A1A; margin-bottom: 8px; letter-spacing: -0.03em; }
-.hd-sub { font-size: 15px; color: #6B7280; }
+.hd-title { font-size: 32px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px; letter-spacing: -0.03em; }
+.hd-sub { font-size: 15px; color: var(--text-secondary); }
 
 /* SCORE RING */
 .score-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 60px; }
@@ -61,11 +219,11 @@ body {
 /* CARDS — no left border, gradient top accent on hover */
 .sec-card {
   position: relative; overflow: hidden;
-  background: #fff;
-  border: 1px solid rgba(0,0,0,0.07);
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
   border-radius: 20px; padding: 22px;
   cursor: pointer;
-  transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+  transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s, background 0.3s;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 .sec-card::before {
@@ -100,7 +258,7 @@ body {
   width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
 }
-.sc-name { font-size: 14px; font-weight: 700; color: #111827; }
+.sc-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
 .sc-count { font-size: 12px; color: #9CA3AF; margin-top: 2px; }
 .sc-pct { margin-left: auto; font-size: 20px; font-weight: 800; letter-spacing: -0.04em; }
 
@@ -109,9 +267,9 @@ body {
 
 .sc-stats { display: flex; gap: 7px; flex-wrap: wrap; }
 .sc-stat { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; }
-.done-chip  { background: rgba(0,184,150,0.10); color: #00875A; }
-.prog-chip  { background: rgba(245,158,11,0.10); color: #B45309; }
-.none-chip  { background: rgba(0,0,0,0.05); color: #9CA3AF; }
+.done-chip  { background: rgba(0,184,150,0.10); color: #00875A; font-weight: 700; }
+.prog-chip  { background: rgba(245,158,11,0.12); color: #B45309; font-weight: 700; }
+.none-chip  { background: rgba(0,0,0,0.05); color: #9CA3AF; font-weight: 600; }
 
 /* Per-section themes */
 .theme-audit .sc-icon { background: rgba(147,51,234,0.10); border: 1px solid rgba(147,51,234,0.18); }
@@ -203,9 +361,9 @@ body {
 .item-text { flex: 1; font-size: 13px; color: #374151; line-height: 1.5; }
 .item-select { appearance: none; background: #fff; border: 1px solid #D1C9BD; color: #374151; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; padding: 5px 28px 5px 11px; border-radius: 8px; cursor: pointer; outline: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239CA3AF'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; min-width: 118px; transition: border-color 0.15s; }
 .item-select:focus { border-color: #00B896; }
-.item-select.done { border-color: #00B896; color: #00875A; background-color: rgba(0,184,150,0.06); }
-.item-select.progress { border-color: #F59E0B; color: #B45309; background-color: rgba(245,158,11,0.06); }
-.item-select.not-started { border-color: #D1C9BD; color: #9CA3AF; }
+.item-select.done { border-color: #00B896; color: #00723F; background-color: #C6F6EC; font-weight: 700; }
+.item-select.progress { border-color: #F59E0B; color: #92400E; background-color: #FEF3C7; font-weight: 700; }
+.item-select.not-started { border-color: #D1C9BD; color: #9CA3AF; background-color: #F9FAFB; }
 .item-del { background: none; border: none; color: #D1C9BD; font-size: 15px; cursor: pointer; padding: 2px 4px; border-radius: 5px; line-height: 1; flex-shrink: 0; transition: color 0.12s; }
 .item-del:hover { color: #DC2626; background: rgba(220,38,38,0.07); }
 
@@ -247,23 +405,23 @@ body.readonly .target-date-edit { display: none !important; }
 .blockers-section { margin-bottom: 48px; }
 .blockers-title { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9CA3AF; margin-bottom: 14px; }
 .blockers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
-.blocker-card { background: #fff; border: 1px solid rgba(220,38,38,0.14); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+.blocker-card { background: var(--bg-card); border: 1px solid rgba(220,38,38,0.14); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
 .blocker-card.warn { border-color: rgba(245,158,11,0.18); }
 .blocker-card.info { border-color: rgba(99,102,241,0.18); }
 .blocker-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; width: fit-content; }
 .blocker-card .blocker-badge { background: rgba(220,38,38,0.08); color: #DC2626; }
 .blocker-card.warn .blocker-badge { background: rgba(245,158,11,0.08); color: #B45309; }
 .blocker-card.info .blocker-badge { background: rgba(99,102,241,0.08); color: #6366F1; }
-.blocker-text { font-size: 13px; font-weight: 600; color: #1A1A1A; line-height: 1.4; }
-.blocker-owner { font-size: 12px; color: #9CA3AF; }
+.blocker-text { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.4; }
+.blocker-owner { font-size: 12px; color: var(--text-secondary); }
 .blocker-del { background: none; border: none; color: #D1C9BD; font-size: 14px; cursor: pointer; padding: 2px 4px; border-radius: 5px; align-self: flex-start; margin-left: auto; transition: color 0.12s; }
 .blocker-del:hover { color: #DC2626; }
 .blocker-card-top { display: flex; align-items: flex-start; gap: 6px; }
 .add-blocker-row { display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 8px; margin-top: 14px; }
-.add-blocker-input { background: #fff; border: 1px dashed #D1C9BD; color: #374151; font-size: 13px; font-family: 'Inter', sans-serif; padding: 9px 12px; border-radius: 10px; outline: none; transition: border-color 0.15s; }
+.add-blocker-input { background: var(--input-bg); border: 1px dashed #D1C9BD; color: var(--input-color); font-size: 13px; font-family: 'Inter', sans-serif; padding: 9px 12px; border-radius: 10px; outline: none; transition: border-color 0.15s; }
 .add-blocker-input:focus { border-color: #00B896; border-style: solid; }
 .add-blocker-input::placeholder { color: #9CA3AF; }
-.add-blocker-select { background: #fff; border: 1px dashed #D1C9BD; color: #374151; font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; padding: 9px 12px; border-radius: 10px; outline: none; cursor: pointer; }
+.add-blocker-select { background: var(--input-bg); border: 1px dashed #D1C9BD; color: var(--input-color); font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif; padding: 9px 12px; border-radius: 10px; outline: none; cursor: pointer; }
 .add-blocker-btn { background: linear-gradient(135deg,#EF4444,#F87171); color: #fff; border: none; border-radius: 10px; padding: 9px 16px; font-size: 12px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; white-space: nowrap; }
 body.readonly .blocker-del { display: none !important; }
 body.readonly .add-blocker-row { display: none !important; }
@@ -462,6 +620,439 @@ body:not(.readonly) .ticker-toggle-btn { display: flex; align-items: center; }
 .ev-delete { background:rgba(239,68,68,0.12); color:#F87171; border:1px solid rgba(239,68,68,0.25); font-size:13px; font-weight:700; padding:8px 16px; border-radius:8px; cursor:pointer; font-family:inherit; transition:background .15s; }
 .ev-delete:hover { background:rgba(239,68,68,0.2); }
 
+
+/* === Squad Tab Styles (light mode) === */
+
+#stage { position: relative; width: 100%; height: 660px; }
+canvas#cv { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
+
+.col { position: absolute; top:0; height:100%; display:flex; flex-direction:column; justify-content:center; z-index:2; }
+#col-jack  { left:0;    width:130px; align-items:center; }
+#col-keal  { left:178px; width:148px; align-items:center; }
+#col-spec  { left:384px; width:182px; gap:9px; }
+#col-tasks { left:626px; width:204px; gap:6px; }
+#col-goals { right:0;   width:164px; gap:12px; }
+
+/* Jack */
+.node-jack { background:#fff; border:2px solid #00A882; border-radius:13px; padding:13px 16px; text-align:center; width:112px; box-shadow:0 2px 12px rgba(0,168,130,0.15); }
+.node-jack .role { font-size:8px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#00A882; margin-bottom:3px; }
+.node-jack .name { font-size:15px; font-weight:800; color:#111; }
+.node-jack .sub  { font-size:9px; color:#888; margin-top:2px; }
+
+/* Keal */
+.node-keal { background:#fff; border:2px solid rgba(0,168,130,0.35); border-radius:13px; padding:13px 16px; text-align:center; width:130px; box-shadow:0 2px 10px rgba(0,168,130,0.1); }
+.node-keal .role { font-size:8px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#00A882; margin-bottom:3px; }
+.node-keal .name { font-size:14px; font-weight:800; color:#111; }
+.node-keal .sub  { font-size:8.5px; color:#888; margin-top:2px; line-height:1.4; }
+.node-keal .cmds { margin-top:7px; display:flex; flex-wrap:wrap; gap:3px; justify-content:center; }
+.node-keal .cmd  { font-size:8px; font-weight:600; padding:2px 5px; border-radius:4px; background:rgba(0,168,130,0.08); color:#00A882; border:1px solid rgba(0,168,130,0.2); }
+
+/* Specialists */
+.node-spec { background:#fff; border:1px solid #E8E8E8; border-radius:9px; padding:8px 11px; width:168px; box-shadow:0 1px 6px rgba(0,0,0,0.05); }
+.node-spec .sp-name { font-size:11px; font-weight:700; color:#222; }
+.node-spec .sp-sub  { font-size:9px; color:#aaa; margin-top:1px; }
+.sp-dot { display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+
+/* Tasks */
+.node-task { background:#fff; border:1px solid #EBEBEB; border-radius:8px; padding:7px 11px; width:200px; cursor:pointer; transition:background .18s, box-shadow .18s, opacity .22s; display:flex; align-items:center; gap:8px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.node-task:hover { background:#F9F9F9; box-shadow:0 3px 14px rgba(0,0,0,0.09); border-color:#D0D0D0; }
+.node-task.dimmed { opacity:0.08; }
+.task-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.task-label { font-size:10px; font-weight:600; color:#1A1A1A; line-height:1.3; }
+.task-sub   { font-size:8.5px; color:#B0B0B0; }
+
+/* Goals */
+.node-goal { display:flex; align-items:center; gap:9px; padding:11px 13px; border-radius:9px; border:1px solid #D8D8D8; background:#fff; width:162px; transition:all .22s; box-shadow:0 2px 8px rgba(0,0,0,0.07); border-left-width:3px; }
+.goal-dot  { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.goal-type { font-size:7.5px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:#A0A0A0; margin-bottom:2px; }
+.goal-name { font-size:10.5px; font-weight:700; color:#1A1A1A; line-height:1.3; }
+
+/* Popup */
+#popup { position:fixed; z-index:100; background:#fff; border:1px solid #E0E0E0; border-radius:11px; padding:12px 14px; width:210px; box-shadow:0 8px 32px rgba(0,0,0,0.12); pointer-events:none; opacity:0; transform:translateY(4px); transition:opacity .15s,transform .15s; }
+#popup.vis { opacity:1; transform:translateY(0); }
+#p-title { font-size:11px; font-weight:700; margin-bottom:2px; }
+#p-sched { font-size:9px; color:#AAA; margin-bottom:8px; }
+.p-div { height:1px; background:#F0F0F0; margin-bottom:7px; }
+#p-pts { list-style:none; display:flex; flex-direction:column; gap:4px; }
+#p-pts li { font-size:9.5px; color:#555; line-height:1.4; display:flex; gap:6px; align-items:flex-start; }
+#p-pts li span.dot { display:block; width:4px; height:4px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+
+/* Squad section title */
+.sq-section-title { font-size:11px; font-weight:600; color: var(--section-label); letter-spacing:.08em; text-transform:uppercase; margin-bottom:20px; }
+
+/* Legend */
+#tab-squad .sq-legend { margin-top:18px; display:flex; gap:18px; flex-wrap:wrap; align-items:center; }
+#tab-squad .sq-leg { display:flex; align-items:center; gap:5px; font-size:9.5px; color:#999; }
+#tab-squad .sq-leg-dot { width:6px; height:6px; border-radius:50%; }
+#tab-squad .sq-hint { font-size:9px; color:#C8C8C8; margin-top:6px; }
+
+/* === End Squad Tab Styles (light mode) === */
+
+/* ═══════════════════════════════════════
+   MOBILE RESPONSIVE — max-width: 768px
+   All changes scoped here, zero desktop impact
+   ═══════════════════════════════════════ */
+
+/* Nav: make it scrollable horizontally on mobile */
+@media (max-width: 768px) {
+  .nav {
+    padding: 0 12px;
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    gap: 0;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+  .nav-logo {
+    font-size: 15px;
+    padding: 10px 0;
+    flex-shrink: 0;
+  }
+  .nav-right {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 6px 0 8px;
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+  .nav-right::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .theme-toggle {
+    font-size: 11px;
+    padding: 5px 9px;
+    flex-shrink: 0;
+    margin-left: 4px;
+  }
+}
+
+/* Header title: smaller on mobile */
+@media (max-width: 768px) {
+  .hd-title { font-size: 22px; }
+  .hd-sub   { font-size: 13px; }
+  .hd       { margin-bottom: 32px; }
+}
+
+/* Squad tab: horizontal scroll wrapper */
+@media (max-width: 1100px) {
+  #tab-squad > div {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.15) transparent;
+    padding-bottom: 12px;
+  }
+  #stage {
+    min-width: 1260px;
+    width: 1260px;
+  }
+  canvas#cv {
+    min-width: 1260px;
+    width: 1260px;
+  }
+  /* Reposition columns so goals don't overlap tasks */
+  #col-jack  { left: 0;     width: 120px; }
+  #col-keal  { left: 162px; width: 138px; }
+  #col-spec  { left: 348px; width: 172px; }
+  #col-tasks { left: 570px; width: 200px; }
+  #col-goals { left: 980px; right: auto; width: 164px; }
+  #tab-squad > div > .sq-legend,
+  #tab-squad > div > .sq-hint {
+    min-width: 1260px;
+  }
+}
+
+/* Section grid: single column on mobile */
+@media (max-width: 640px) {
+  .section-grid { grid-template-columns: 1fr; gap: 12px; }
+  .sec-card { padding: 16px; }
+  .score-ring-container { width: 150px; height: 150px; }
+  .score-ring-container svg { width: 150px; height: 150px; }
+  .score-num { font-size: 38px; }
+  .score-label { font-size: 9px; }
+  .score-verdict { font-size: 11px; padding: 4px 14px; margin-top: 10px; }
+  .score-wrap { margin-bottom: 32px; }
+}
+
+/* Detail panel: full width on mobile */
+@media (max-width: 768px) {
+  #detail-panel {
+    position: fixed !important;
+    left: 0 !important; right: 0 !important;
+    bottom: 0 !important; top: auto !important;
+    width: 100% !important;
+    max-height: 65vh;
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0 !important;
+    border-right: none !important;
+    border-left: none !important;
+    box-shadow: 0 -4px 32px rgba(0,0,0,0.15) !important;
+    z-index: 150;
+  }
+}
+
+/* Ticker: smaller text on mobile */
+@media (max-width: 768px) {
+  .ticker-item { font-size: 12px; }
+}
+
+/* ═══════════════════════════════════════ */
+
+
+/* === Squad Tab Styles === */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg-page, #0D0F14);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-primary, #fff);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+.page { padding: 40px 36px 80px; max-width: 1700px; margin: 0 auto; }
+h1 { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.2); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 40px; }
+
+#stage { position: relative; width: 100%; height: 600px; }
+canvas { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
+
+.col { position: absolute; top:0; height:100%; display:flex; flex-direction:column; justify-content:center; z-index:2; }
+
+/* Column positions */
+#col-jack       { left:0;    width:118px; align-items:center; }
+#col-keal       { left:158px; width:138px; align-items:center; }
+#col-spec       { left:346px; width:170px; gap:9px; }
+#col-tasks      { left:568px; width:188px; gap:6px; }
+#col-goals      { right:0;   width:152px; gap:12px; }
+
+/* Jack */
+.node-jack { background:#1A2E2A; border:2px solid rgba(0,184,150,0.5); border-radius:13px; padding:13px 16px; text-align:center; width:112px; }
+.node-jack .role { font-size:8.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(0,184,150,0.6); margin-bottom:3px; }
+.node-jack .name { font-size:15px; font-weight:800; color:#fff; }
+.node-jack .sub  { font-size:9.5px; color:rgba(255,255,255,0.32); margin-top:2px; }
+
+/* Keal */
+.node-keal { background:#1A2E2A; border:2px solid rgba(0,184,150,0.32); border-radius:13px; padding:13px 16px; text-align:center; width:130px; }
+.node-keal .role { font-size:8.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(0,184,150,0.5); margin-bottom:3px; }
+.node-keal .name { font-size:14px; font-weight:800; color:#fff; }
+.node-keal .sub  { font-size:9px; color:rgba(255,255,255,0.3); margin-top:2px; line-height:1.4; }
+.node-keal .cmds { margin-top:8px; display:flex; flex-wrap:wrap; gap:3px; justify-content:center; }
+.node-keal .cmd  { font-size:8.5px; font-weight:600; padding:2px 5px; border-radius:4px; background:rgba(0,184,150,0.12); color:rgba(0,184,150,0.7); }
+
+/* Specialists */
+.node-spec { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:9px; padding:8px 11px; width:166px; }
+.node-spec .sp-name { font-size:11px; font-weight:700; color:rgba(255,255,255,0.82); }
+.node-spec .sp-sub  { font-size:9px; color:rgba(255,255,255,0.28); margin-top:1px; }
+.sp-dot { display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+
+/* Tasks */
+.node-task { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:7px; padding:6px 9px; width:184px; cursor:pointer; transition:background .2s,opacity .25s; display:flex; align-items:center; gap:7px; }
+.node-task:hover { background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.11); }
+.node-task.dimmed { opacity:0.1; }
+.task-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.task-label { font-size:10px; font-weight:600; color:rgba(255,255,255,0.8); line-height:1.3; }
+.task-sub   { font-size:8.5px; color:rgba(255,255,255,0.26); }
+
+/* Goals */
+.node-goal { display:flex; align-items:center; gap:8px; padding:9px 11px; border-radius:8px; border:1px solid rgba(255,255,255,0.07); background:rgba(255,255,255,0.03); width:149px; transition:all .25s; }
+.goal-dot  { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.goal-type { font-size:8px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:rgba(255,255,255,0.22); margin-bottom:1px; }
+.goal-name { font-size:10px; font-weight:700; color:rgba(255,255,255,0.58); line-height:1.3; }
+
+/* Popup */
+#popup { position:fixed; z-index:100; background:#1A1D27; border:1px solid rgba(255,255,255,0.12); border-radius:11px; padding:12px 14px; width:205px; box-shadow:0 8px 32px rgba(0,0,0,0.6); pointer-events:none; opacity:0; transform:translateY(4px); transition:opacity .15s,transform .15s; }
+#popup.vis { opacity:1; transform:translateY(0); }
+#p-title { font-size:11px; font-weight:700; margin-bottom:2px; }
+#p-sched { font-size:9px; color:rgba(255,255,255,0.3); margin-bottom:8px; }
+.p-div { height:1px; background:rgba(255,255,255,0.07); margin-bottom:7px; }
+#p-pts { list-style:none; display:flex; flex-direction:column; gap:4px; }
+#p-pts li { font-size:10px; color:rgba(255,255,255,0.62); line-height:1.4; display:flex; gap:6px; align-items:flex-start; }
+#p-pts li span.dot { display:block; width:4px; height:4px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+
+/* Legend */
+.legend { margin-top:36px; display:flex; gap:18px; flex-wrap:wrap; align-items:center; }
+.leg { display:flex; align-items:center; gap:5px; font-size:9.5px; color:rgba(255,255,255,0.28); }
+.leg-dot { width:6px; height:6px; border-radius:50%; }
+.hint { font-size:9.5px; color:rgba(255,255,255,0.16); margin-top:8px; }
+
+/* === End Squad Tab Styles === */
+
+/* === Keal Skills Hover Panel === */
+#keal-skills-panel {
+  position: absolute;
+  z-index: 200;
+  background: #fff;
+  border: 1px solid #E0E0E0;
+  border-radius: 13px;
+  padding: 14px 16px;
+  width: 240px;
+  box-shadow: 0 10px 36px rgba(0,0,0,0.13);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(6px) scale(0.97);
+  transition: opacity .18s ease, transform .18s ease;
+  top: calc(100% + 10px);
+  left: 50%;
+  translate: -50% 0;
+}
+#keal-skills-panel.vis {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+#keal-skills-panel .ksp-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #00A882;
+  margin-bottom: 10px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid #F0F0F0;
+}
+#keal-skills-panel .ksp-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-bottom: 8px;
+}
+#keal-skills-panel .ksp-row:last-child { margin-bottom: 0; }
+#keal-skills-panel .ksp-icon {
+  font-size: 13px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+#keal-skills-panel .ksp-info { flex: 1; }
+#keal-skills-panel .ksp-name {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #1A1A1A;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+#keal-skills-panel .ksp-desc {
+  font-size: 8.5px;
+  color: #999;
+  margin-top: 1px;
+  line-height: 1.4;
+}
+#keal-skills-panel .ksp-badge {
+  font-size: 7.5px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+#keal-skills-panel .badge-on  { background: rgba(0,168,130,0.1); color: #00A882; }
+#keal-skills-panel .badge-off { background: rgba(160,160,160,0.1); color: #B0B0B0; }
+#keal-skills-panel .badge-demand { background: rgba(196,136,77,0.12); color: #C4884D; }
+[data-theme="dark"] #keal-skills-panel {
+  background: #1A2E2A;
+  border-color: rgba(0,184,150,0.25);
+  box-shadow: 0 10px 36px rgba(0,0,0,0.4);
+}
+[data-theme="dark"] #keal-skills-panel .ksp-title { color: rgba(0,184,150,0.8); border-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] #keal-skills-panel .ksp-name  { color: #fff; }
+[data-theme="dark"] #keal-skills-panel .ksp-desc  { color: rgba(255,255,255,0.4); }
+/* Wrapper needs position:relative for panel positioning */
+#col-keal { position: relative; }
+/* === End Keal Skills Hover Panel === */
+
+
+/* === Keal Skills Hover Panel === */
+#keal-skills-panel {
+  position: absolute;
+  z-index: 200;
+  background: #fff;
+  border: 1px solid #E0E0E0;
+  border-radius: 13px;
+  padding: 14px 16px;
+  width: 240px;
+  box-shadow: 0 10px 36px rgba(0,0,0,0.13);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(6px) scale(0.97);
+  transition: opacity .18s ease, transform .18s ease;
+  top: calc(100% + 10px);
+  left: 50%;
+  translate: -50% 0;
+}
+#keal-skills-panel.vis {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+#keal-skills-panel .ksp-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #00A882;
+  margin-bottom: 10px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid #F0F0F0;
+}
+#keal-skills-panel .ksp-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-bottom: 8px;
+}
+#keal-skills-panel .ksp-row:last-child { margin-bottom: 0; }
+#keal-skills-panel .ksp-icon {
+  font-size: 13px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+#keal-skills-panel .ksp-info { flex: 1; }
+#keal-skills-panel .ksp-name {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #1A1A1A;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+#keal-skills-panel .ksp-desc {
+  font-size: 8.5px;
+  color: #999;
+  margin-top: 1px;
+  line-height: 1.4;
+}
+#keal-skills-panel .ksp-badge {
+  font-size: 7.5px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+#keal-skills-panel .badge-on  { background: rgba(0,168,130,0.1); color: #00A882; }
+#keal-skills-panel .badge-off { background: rgba(160,160,160,0.1); color: #B0B0B0; }
+#keal-skills-panel .badge-demand { background: rgba(196,136,77,0.12); color: #C4884D; }
+[data-theme="dark"] #keal-skills-panel {
+  background: #1A2E2A;
+  border-color: rgba(0,184,150,0.25);
+  box-shadow: 0 10px 36px rgba(0,0,0,0.4);
+}
+[data-theme="dark"] #keal-skills-panel .ksp-title { color: rgba(0,184,150,0.8); border-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] #keal-skills-panel .ksp-name  { color: #fff; }
+[data-theme="dark"] #keal-skills-panel .ksp-desc  { color: rgba(255,255,255,0.4); }
+/* Wrapper needs position:relative for panel positioning */
+#col-keal { position: relative; }
+/* === End Keal Skills Hover Panel === */
+
 </style>
 </head>
 <body>
@@ -472,6 +1063,10 @@ body:not(.readonly) .ticker-toggle-btn { display: flex; align-items: center; }
     <button class="nav-tab" onclick="switchTab('pillars')">⚡ Strategic Pillars</button>
     <button class="nav-tab" onclick="switchTab('events')">📅 Events</button>
     <button class="nav-tab" onclick="switchTab('squad')">🤖 Squad</button>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+      <span class="tt-icon" id="themeIcon">🌙</span>
+      <span id="themeLabel">Dark</span>
+    </button>
     <button class="admin-btn" id="adminBtn" onclick="toggleAdmin()"> Admin</button>
   </div>
 </nav>
@@ -1367,6 +1962,7 @@ function switchTab(tab) {
     );
   });
   if (tab === 'events') renderWeekGrid();
+  if (tab === 'squad') { setTimeout(function(){ if(window.sfInit) window.sfInit(); }, 100); }
   closeModal();
 }
 
@@ -2395,171 +2991,601 @@ loadFromServer().then(() => {
   </div>
 
 
-  <!-- TAB: SQUAD -->
-  <div id="tab-squad" style="display:none; padding:40px 32px 80px;">
-    <div style="max-width:1100px; margin:0 auto;">
-      <div style="margin-bottom:36px;">
-        <div style="font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(0,184,150,0.7); margin-bottom:6px;">Kaskad Protocol</div>
-        <div style="font-size:28px; font-weight:800; color:#1A1A1A; letter-spacing:-.02em; margin-bottom:6px;">AI <span style="color:#00B896;">Squad</span></div>
-        <div style="font-size:14px; color:#6B7280;">Autonomous agent team. Jack supervises, Keal orchestrates, specialists execute.</div>
+        <!-- TAB: SQUAD -->
+  <div id="tab-squad" style="display:none; padding:36px 32px 80px;">
+    <div style="max-width:1600px; margin:0 auto;">
+<div id="stage">
+    <canvas id="cv"></canvas>
+
+    <!-- POPUP -->
+    <div id="popup">
+      <div id="p-title"></div><div id="p-sched"></div>
+      <div class="p-div"></div>
+      <ul id="p-pts"></ul>
+    </div>
+
+    <!-- COL 1: JACK -->
+    <div class="col" id="col-jack">
+      <div class="node-jack" id="node-jack">
+        <div class="role">Supervisor</div>
+        <div class="name">Jack</div>
+        <div class="sub">COO · Human</div>
       </div>
+    </div>
 
-      <!-- ORG CHART -->
-      <div style="display:flex; flex-direction:column; align-items:center; gap:0; margin-bottom:48px;">
-
-        <!-- Jack (Supervisor) -->
-        <div style="display:flex; justify-content:center; margin-bottom:0;">
-          <div style="background:#1A2E2A; border:2px solid rgba(0,184,150,0.4); border-radius:16px; padding:16px 28px; text-align:center; min-width:200px; box-shadow:0 4px 20px rgba(0,0,0,0.12);">
-            <div style="font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(0,184,150,0.6); margin-bottom:4px;">Supervisor</div>
-            <div style="font-size:17px; font-weight:800; color:#fff;">Jack</div>
-            <div style="font-size:12px; color:rgba(255,255,255,0.5); margin-top:2px;">COO · Human in the loop</div>
-          </div>
-        </div>
-
-        <!-- Connector -->
-        <div style="width:2px; height:28px; background:rgba(0,184,150,0.25);"></div>
-
-        <!-- Keal (Orchestrator) -->
-        <div style="display:flex; justify-content:center; margin-bottom:0;">
-          <div style="background:#fff; border:2px solid rgba(0,184,150,0.5); border-radius:16px; padding:16px 28px; text-align:center; min-width:220px; box-shadow:0 4px 20px rgba(0,184,150,0.10);">
-            <div style="font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#00875A; margin-bottom:4px;">Orchestrator</div>
-            <div style="font-size:17px; font-weight:800; color:#111827;">Keal</div>
-            <div style="font-size:12px; color:#6B7280; margin-top:2px;">COO AI Partner · Claude via OpenClaw</div>
-            <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:5px; justify-content:center;">
-              <span style="font-size:10px; font-weight:700; padding:3px 8px; border-radius:5px; background:rgba(0,184,150,0.1); color:#00875A;">/ceo-review</span>
-              <span style="font-size:10px; font-weight:700; padding:3px 8px; border-radius:5px; background:rgba(0,184,150,0.1); color:#00875A;">/eng-review</span>
-              <span style="font-size:10px; font-weight:700; padding:3px 8px; border-radius:5px; background:rgba(0,184,150,0.1); color:#00875A;">/ship</span>
-              <span style="font-size:10px; font-weight:700; padding:3px 8px; border-radius:5px; background:rgba(0,184,150,0.1); color:#00875A;">/retro</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Branching line -->
-        <div style="position:relative; width:100%; max-width:900px; height:40px;">
-          <div style="position:absolute; left:50%; top:0; width:2px; height:20px; background:rgba(0,0,0,0.12);"></div>
-          <div style="position:absolute; left:calc(12.5% + 1px); right:calc(12.5% + 1px); top:20px; height:2px; background:rgba(0,0,0,0.12);"></div>
-          <div style="position:absolute; left:12.5%; top:20px; width:2px; height:20px; background:rgba(0,0,0,0.12);"></div>
-          <div style="position:absolute; left:calc(50% - 1px); top:20px; width:2px; height:20px; background:rgba(0,0,0,0.12);"></div>
-          <div style="position:absolute; right:12.5%; top:20px; width:2px; height:20px; background:rgba(0,0,0,0.12);"></div>
-        </div>
-
-        <!-- Specialist agents row -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; width:100%; max-width:900px;">
-
-          <!-- QA Specialist -->
-          <div style="background:#fff; border:1px solid rgba(147,51,234,0.2); border-radius:14px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-              <div style="width:36px; height:36px; border-radius:10px; background:rgba(147,51,234,0.1); display:flex; align-items:center; justify-content:center;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z"/><path d="M9 12l2 2 4-4"/></svg>
-              </div>
-              <div>
-                <div style="font-size:13px; font-weight:700; color:#111827;">QA Specialist</div>
-                <div style="font-size:11px; color:#9CA3AF;">Mon/Wed · testnet audits</div>
-              </div>
-            </div>
-            <div style="font-size:11px; color:#6B7280; line-height:1.5;">Runs QA audit on testnet.kaskad.live → files findings to Plane → posts report to Discord</div>
-            <div style="margin-top:10px; display:flex; align-items:center; gap:6px;">
-              <div style="width:7px; height:7px; border-radius:50%; background:#00B896;"></div>
-              <span style="font-size:11px; font-weight:600; color:#00875A;">Active · 10:00 CET</span>
-            </div>
-          </div>
-
-          <!-- Research Agent -->
-          <div style="background:#fff; border:1px solid rgba(59,130,246,0.2); border-radius:14px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-              <div style="width:36px; height:36px; border-radius:10px; background:rgba(59,130,246,0.1); display:flex; align-items:center; justify-content:center;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1D4ED8" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              </div>
-              <div>
-                <div style="font-size:13px; font-weight:700; color:#111827;">Research Agent</div>
-                <div style="font-size:11px; color:#9CA3AF;">Every 3 days · DeFi trends</div>
-              </div>
-            </div>
-            <div style="font-size:11px; color:#6B7280; line-height:1.5;">Competitor TVL, DeFi landscape shifts, actionable strategy improvements for Kaskad</div>
-            <div style="margin-top:10px; display:flex; align-items:center; gap:6px;">
-              <div style="width:7px; height:7px; border-radius:50%; background:#00B896;"></div>
-              <span style="font-size:11px; font-weight:600; color:#00875A;">Active · 09:00 CET</span>
-            </div>
-          </div>
-
-          <!-- Comms Agent -->
-          <div style="background:#fff; border:1px solid rgba(236,72,153,0.2); border-radius:14px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-              <div style="width:36px; height:36px; border-radius:10px; background:rgba(236,72,153,0.1); display:flex; align-items:center; justify-content:center;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BE185D" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              </div>
-              <div>
-                <div style="font-size:13px; font-weight:700; color:#111827;">SEO/GEO Comms</div>
-                <div style="font-size:11px; color:#9CA3AF;">Daily · 07:00 CET</div>
-              </div>
-            </div>
-            <div style="font-size:11px; color:#6B7280; line-height:1.5;">3 X/Twitter drafts per day — technical, narrative, engagement. Posted to Discord for Jack to approve</div>
-            <div style="margin-top:10px; display:flex; align-items:center; gap:6px;">
-              <div style="width:7px; height:7px; border-radius:50%; background:#00B896;"></div>
-              <span style="font-size:11px; font-weight:600; color:#00875A;">Active · since 26 Mar</span>
-            </div>
-          </div>
-
-          <!-- Deployment Agent -->
-          <div style="background:#fff; border:1px solid rgba(245,158,11,0.2); border-radius:14px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-              <div style="width:36px; height:36px; border-radius:10px; background:rgba(245,158,11,0.1); display:flex; align-items:center; justify-content:center;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              </div>
-              <div>
-                <div style="font-size:13px; font-weight:700; color:#111827;">Deployment Agent</div>
-                <div style="font-size:11px; color:#9CA3AF;">On-demand · Railway</div>
-              </div>
-            </div>
-            <div style="font-size:11px; color:#6B7280; line-height:1.5;">Railway deployments, infra updates, light dev assist for Anton &amp; Yuliya</div>
-            <div style="margin-top:10px; display:flex; align-items:center; gap:6px;">
-              <div style="width:7px; height:7px; border-radius:50%; background:#F59E0B;"></div>
-              <span style="font-size:11px; font-weight:600; color:#B45309;">On-demand</span>
-            </div>
-          </div>
-
-          <!-- Advisor Autoresearch -->
-          <div style="background:#fff; border:1px solid rgba(34,197,94,0.2); border-radius:14px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-              <div style="width:36px; height:36px; border-radius:10px; background:rgba(34,197,94,0.1); display:flex; align-items:center; justify-content:center;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15803D" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 6v6l4 2"/></svg>
-              </div>
-              <div>
-                <div style="font-size:13px; font-weight:700; color:#111827;">Advisor Autoresearch</div>
-                <div style="font-size:11px; color:#9CA3AF;">Nightly · 02:00–05:30 CET</div>
-              </div>
-            </div>
-            <div style="font-size:11px; color:#6B7280; line-height:1.5;">Internal research lab — runs ~2M profiles/night, converges on optimal advisor weights across variants</div>
-            <div style="margin-top:10px; display:flex; align-items:center; gap:6px;">
-              <div style="width:7px; height:7px; border-radius:50%; background:#00B896;"></div>
-              <span style="font-size:11px; font-weight:600; color:#00875A;">Active · Night 5+ complete</span>
-            </div>
-          </div>
-
+    <!-- COL 2: KEAL -->
+    <div class="col" id="col-keal">
+      <div class="node-keal" id="node-keal">
+        <div class="role">Orchestrator</div>
+        <div class="name">Keal</div>
+        <div class="sub">Local OpenClaw<br>on Claude 4.6</div>
+        <div class="cmds">
+          <span class="cmd">/ceo-review</span>
+          <span class="cmd">/ship</span>
+          <span class="cmd">/retro</span>
         </div>
       </div>
 
-      <!-- COMING SOON row -->
-      <div style="margin-bottom:16px;">
-        <div style="font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#9CA3AF; margin-bottom:14px;">Planned Additions</div>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px;">
-          <div style="background:#FAFAF8; border:1px dashed #D1C9BD; border-radius:14px; padding:14px 16px; opacity:0.7;">
-            <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:4px;">Community Manager</div>
-            <div style="font-size:11px; color:#9CA3AF;">Discord announcement drafts for major milestones</div>
+      <!-- Keal Skills Hover Panel -->
+      <div id="keal-skills-panel">
+        <div class="ksp-title">Active Skills &amp; Patterns</div>
+
+        <div class="ksp-row">
+          <div class="ksp-icon">🔖</div>
+          <div class="ksp-info">
+            <div class="ksp-name">Kairos <span class="ksp-badge badge-on">Always On</span></div>
+            <div class="ksp-desc">Task checkpoints — verifies goal alignment &amp; output at each step</div>
           </div>
-          <div style="background:#FAFAF8; border:1px dashed #D1C9BD; border-radius:14px; padding:14px 16px; opacity:0.7;">
-            <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:4px;">Sales Agent</div>
-            <div style="font-size:11px; color:#9CA3AF;">Track and target potential Kaskad LPs and OTC investors</div>
+        </div>
+
+        <div class="ksp-row">
+          <div class="ksp-icon">📋</div>
+          <div class="ksp-info">
+            <div class="ksp-name">Plan Mode V2 <span class="ksp-badge badge-on">Always On</span></div>
+            <div class="ksp-desc">Shows explicit plan before any multi-step task — Jack approves first</div>
           </div>
-          <div style="background:#FAFAF8; border:1px dashed #D1C9BD; border-radius:14px; padding:14px 16px; opacity:0.7;">
-            <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:4px;">Support Agent</div>
-            <div style="font-size:11px; color:#9CA3AF;">Odoo ticket system — post-launch user support automation</div>
+        </div>
+
+        <div class="ksp-row">
+          <div class="ksp-icon">🌿</div>
+          <div class="ksp-info">
+            <div class="ksp-name">Willow <span class="ksp-badge badge-on">Always On</span></div>
+            <div class="ksp-desc">Ambient memory writes — key facts persisted silently during sessions</div>
+          </div>
+        </div>
+
+        <div class="ksp-row">
+          <div class="ksp-icon">🌿</div>
+          <div class="ksp-info">
+            <div class="ksp-name">Branch <span class="ksp-badge badge-on">Always On</span></div>
+            <div class="ksp-desc">Named workstreams — investor pitch, Anton tech, Marius design stay isolated</div>
+          </div>
+        </div>
+
+        <div class="ksp-row">
+          <div class="ksp-icon">🧠</div>
+          <div class="ksp-info">
+            <div class="ksp-name">Advisor <span class="ksp-badge badge-on">On</span></div>
+            <div class="ksp-desc">Postscript review on research, investor content &amp; security findings</div>
+          </div>
+        </div>
+
+        <div class="ksp-row">
+          <div class="ksp-icon">⚔️</div>
+          <div class="ksp-info">
+            <div class="ksp-name">Adversarial QA <span class="ksp-badge badge-demand">On-Demand</span></div>
+            <div class="ksp-desc">Red-team mode — edge cases, oracle attacks, reentrancy probes</div>
           </div>
         </div>
       </div>
 
     </div>
+
+    <!-- COL 3: SPECIALISTS -->
+    <div class="col" id="col-spec">
+      <div class="node-spec" data-spec="qa">
+        <div class="sp-name"><span class="sp-dot" style="background:#00B896;box-shadow:0 0 4px #00B896;"></span>QA Specialist</div>
+        <div class="sp-sub">Mon/Wed 10:00 · Audits</div>
+      </div>
+      <div class="node-spec" data-spec="research">
+        <div class="sp-name"><span class="sp-dot" style="background:#A78BFA;box-shadow:0 0 4px #A78BFA;"></span>Research Agent</div>
+        <div class="sp-sub">Every 3d · DeFi intel</div>
+      </div>
+      <div class="node-spec" data-spec="comms">
+        <div class="sp-name"><span class="sp-dot" style="background:#EC4899;box-shadow:0 0 4px #EC4899;"></span>SEO/GEO Comms</div>
+        <div class="sp-sub">Daily · Content drafts</div>
+      </div>
+      <div class="node-spec" data-spec="deploy">
+        <div class="sp-name"><span class="sp-dot" style="background:#60A5FA;box-shadow:0 0 4px #60A5FA;"></span>Deployment Agent</div>
+        <div class="sp-sub">On-demand · Railway</div>
+      </div>
+      <div class="node-spec" data-spec="advisor">
+        <div class="sp-name"><span class="sp-dot" style="background:#FBBF24;box-shadow:0 0 4px #FBBF24;"></span>Advisor Research</div>
+        <div class="sp-sub">Nightly 02:00 · ~2M profiles</div>
+      </div>
+    </div>
+
+    <!-- COL 4: TASKS -->
+    <div class="col" id="col-tasks">
+
+      <div class="node-task sf-task" data-id="xdrafts" data-goals="g1,g3" data-color="#EC4899"
+        data-name="X Content Drafts" data-sched="Daily · 07:00 CET → #prep-content"
+        data-pts="Generates 3 posts in COO founder voice|Labels: Technical, Narrative, Engagement|Checks latest trend scan for context|Posts to #prep-content for Jack">
+        <div class="task-dot" style="background:#EC4899;box-shadow:0 0 5px #EC4899;"></div>
+        <div><div class="task-label">X Content Drafts</div><div class="task-sub">Daily 07:00</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="trendscan" data-goals="g1,g2,g3" data-color="#00B896"
+        data-name="DeFi Trend Scan" data-sched="Every 2 days → #cut-through-noise"
+        data-pts="Searches X + Reddit for top DeFi posts|Answers 5 CEO questions on market signals|Splits: Jack decisions vs Keal actions|One-sentence LP pitch recommendation">
+        <div class="task-dot" style="background:#00B896;box-shadow:0 0 5px #00B896;"></div>
+        <div><div class="task-label">DeFi Trend Scan</div><div class="task-sub">Every 2d</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="pillar2" data-goals="g1,g2,p2" data-color="#A78BFA"
+        data-name="AI Discoverability (Pillar 2)" data-sched="Daily 16:00 → #cut-through-noise"
+        data-pts="Scans for new DeFi MCP server launches|Tracks agent-native protocol announcements|Identifies Kaskad's positioning angle|One actionable recommendation per run">
+        <div class="task-dot" style="background:#A78BFA;box-shadow:0 0 5px #A78BFA;"></div>
+        <div><div class="task-label">AI Discoverability</div><div class="task-sub">Daily 16:00</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="secmon" data-goals="p1" data-color="#F87171"
+        data-name="Security Monitor" data-sched="Daily 08:00 → #orchestration-general"
+        data-pts="Scrapes rekt.news + ChainSec for exploits|Filters NEW-only, never repeats|Cross-references vs Kaskad stack|Oracle risk assessment per incident">
+        <div class="task-dot" style="background:#F87171;box-shadow:0 0 5px #F87171;"></div>
+        <div><div class="task-label">Security Monitor</div><div class="task-sub">Daily 08:00</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="autores" data-goals="g1,g2,p1,g3" data-color="#4ADE80"
+        data-name="Kaskad Autoresearch" data-sched="Daily 02:00 → #orchestration-general"
+        data-pts="Computes Weighted Omega score (bull/bear/base)|Generates governance param recommendations|Flags anomalies before they compound|Tracks regime signal day-over-day">
+        <div class="task-dot" style="background:#4ADE80;box-shadow:0 0 5px #4ADE80;"></div>
+        <div><div class="task-label">Kaskad Autoresearch</div><div class="task-sub">Daily 02:00</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="pillar3" data-goals="g1,g2,p2" data-color="#60A5FA"
+        data-name="Covenants/vProg Scout" data-sched="Monday 10:00 → #orchestration-general"
+        data-pts="Scans Kaspa covenant + vProg developments|Reads exploration status from roadmap|Proposes one 2-week buildable demo|Flags blockers on Kaspa L1 primitives">
+        <div class="task-dot" style="background:#60A5FA;box-shadow:0 0 5px #60A5FA;"></div>
+        <div><div class="task-label">Covenants/vProg Scout</div><div class="task-sub">Monday 10:00</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="emerge" data-goals="g1" data-color="#FBBF24"
+        data-name="Emergence Scorer" data-sched="Monday 08:00 → #orchestration-general"
+        data-pts="Scores absorption signal week-over-week|Tracks friction score shifts|Interprets creation event delta|Early warning if growth is stalling">
+        <div class="task-dot" style="background:#FBBF24;box-shadow:0 0 5px #FBBF24;"></div>
+        <div><div class="task-label">Emergence Scorer</div><div class="task-sub">Monday 08:00</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="dashboard" data-goals="g1,g2,g3,p1,p2,pm" data-color="#F0ABFC"
+        data-name="Kaskad Dashboard" data-sched="Live · kaskad-readiness-production.up.railway.app"
+        data-pts="Launch readiness tracker across all teams|Strategic pillars + covenant roadmap|Events calendar + live ticker|Signal flow — this view">
+        <div class="task-dot" style="background:#F0ABFC;box-shadow:0 0 5px #F0ABFC;"></div>
+        <div><div class="task-label">Kaskad Dashboard</div><div class="task-sub">Always-on</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="checks" data-goals="pm" data-color="#94A3B8"
+        data-name="Morning + Afternoon Checks" data-sched="08:00 + 14:00 daily"
+        data-pts="Scans inbox for urgent items|Checks calendar 24–48h ahead|Verifies port 18789 loopback-only|Silent when nothing needs attention">
+        <div class="task-dot" style="background:#94A3B8;box-shadow:0 0 5px #94A3B8;"></div>
+        <div><div class="task-label">Daily Checks</div><div class="task-sub">08:00 + 14:00</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="backup" data-goals="pm" data-color="#64748B"
+        data-name="USB Backup" data-sched="Daily 02:00 · silent"
+        data-pts="Mirrors workspace to D: via robocopy|Copies credentials folder|Silent if USB unplugged|Runs before other nightly tasks">
+        <div class="task-dot" style="background:#64748B;box-shadow:0 0 5px #64748B;"></div>
+        <div><div class="task-label">USB Backup</div><div class="task-sub">Daily 02:00</div></div>
+      </div>
+
+    </div>
+
+    <!-- COL 5: GOALS -->
+    <div class="col" id="col-goals">
+      <div class="node-goal sf-goal" data-id="g1" data-gc="#00B896" style="--gc:#00B896;">
+        <div class="goal-dot" style="background:#00B896;"></div>
+        <div><div class="goal-type">Goal 1</div><div class="goal-name">Top 100<br>Lending</div></div>
+      </div>
+      <div class="node-goal sf-goal" data-id="g2" data-gc="#818CF8" style="--gc:#818CF8;">
+        <div class="goal-dot" style="background:#818CF8;"></div>
+        <div><div class="goal-type">Goal 2</div><div class="goal-name">Best-in-class<br>dApp</div></div>
+      </div>
+      <div class="node-goal sf-goal" data-id="g3" data-gc="#F59E0B" style="--gc:#F59E0B;">
+        <div class="goal-dot" style="background:#F59E0B;"></div>
+        <div><div class="goal-type">Goal 3</div><div class="goal-name">Team<br>Value</div></div>
+      </div>
+      <div class="node-goal sf-goal" data-id="p1" data-gc="#F87171" style="--gc:#F87171;">
+        <div class="goal-dot" style="background:#F87171;"></div>
+        <div><div class="goal-type">Pillar 1</div><div class="goal-name">Protocol<br>Safety</div></div>
+      </div>
+      <div class="node-goal sf-goal" data-id="p2" data-gc="#C084FC" style="--gc:#C084FC;">
+        <div class="goal-dot" style="background:#C084FC;"></div>
+        <div><div class="goal-type">Pillar 2</div><div class="goal-name">Agent<br>Readiness</div></div>
+      </div>
+      <div class="node-goal sf-goal" data-id="pm" data-gc="#94A3B8" style="--gc:#94A3B8;">
+        <div class="goal-dot" style="background:#94A3B8;"></div>
+        <div><div class="goal-type">Personal Mastery</div><div class="goal-name">Jack's<br>Leverage</div></div>
+      </div>
+    </div>
+
+  </div><!-- /stage -->
+
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:#EC4899;"></div>Growth</div>
+    <div class="leg"><div class="leg-dot" style="background:#F87171;"></div>Security</div>
+    <div class="leg"><div class="leg-dot" style="background:#60A5FA;"></div>Technical</div>
+    <div class="leg"><div class="leg-dot" style="background:#94A3B8;"></div>Operations</div>
+    <div class="leg"><div class="leg-dot" style="background:#F0ABFC;"></div>Dashboard</div>
+  </div>
+  <div class="hint">Hover a task to trace its signal stream</div>
+    </div>
   </div>
 
+<script>
+(function(){
+  const stage = document.getElementById('stage');
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const popup = document.getElementById('popup');
+  let hov = null, conns = [], pmap = {}, started = false;
+  // Pulse particles for org lines
+  let orgPulses = [];
+
+  function resize(){
+    cv.width = stage.offsetWidth;
+    cv.height = stage.offsetHeight;
+  }
+
+  function toHex(a){ return Math.round(Math.max(0,Math.min(1,a))*255).toString(16).padStart(2,'0'); }
+
+  function rightEdge(el){
+    if(!el) return null;
+    const sr=stage.getBoundingClientRect(), r=el.getBoundingClientRect();
+    return {x:r.right-sr.left, y:r.top-sr.top+r.height/2};
+  }
+  function leftEdge(el){
+    if(!el) return null;
+    const sr=stage.getBoundingClientRect(), r=el.getBoundingClientRect();
+    return {x:r.left-sr.left, y:r.top-sr.top+r.height/2};
+  }
+
+  function bz(p0,p1,p2,p3,t){
+    const m=1-t;
+    return {x:m*m*m*p0.x+3*m*m*t*p1.x+3*m*t*t*p2.x+t*t*t*p3.x,
+            y:m*m*m*p0.y+3*m*m*t*p1.y+3*m*t*t*p2.y+t*t*t*p3.y};
+  }
+
+  // Signal stream particle
+  class StreamP {
+    constructor(col){ this.t=Math.random(); this.spd=0.001+Math.random()*0.0007; this.sz=1.5+Math.random()*1.4; this.col=col; }
+    tick(){ this.t+=this.spd; if(this.t>1)this.t=0; }
+    draw(f,c1,c2,to,al){
+      const p=bz(f,c1,c2,to,this.t), fd=Math.sin(this.t*Math.PI), a=Math.min(1,fd*al);
+      ctx.beginPath(); ctx.arc(p.x,p.y,this.sz,0,Math.PI*2); ctx.fillStyle=this.col+toHex(a); ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x,p.y,this.sz*3,0,Math.PI*2); ctx.fillStyle=this.col+toHex(a*0.18); ctx.fill();
+    }
+  }
+
+  // Org pulse — slower, rounder, softer pulse along a bezier
+  class OrgPulse {
+    constructor(from, to, color){ 
+      this.from=from; this.to=to; this.color=color;
+      this.t=Math.random();
+      this.spd=0.0004+Math.random()*0.0003;
+      this.sz=3+Math.random()*2;
+    }
+    tick(){ this.t+=this.spd; if(this.t>1)this.t=0; }
+    draw(){
+      const cpX=(this.from.x+this.to.x)/2;
+      const cp1={x:cpX, y:this.from.y}, cp2={x:cpX, y:this.to.y};
+      const p=bz(this.from,cp1,cp2,this.to,this.t);
+      const fade=Math.sin(this.t*Math.PI);
+      const a=fade*0.55;
+      // Outer glow
+      ctx.beginPath(); ctx.arc(p.x,p.y,this.sz*3,0,Math.PI*2);
+      ctx.fillStyle=this.color+toHex(a*0.15); ctx.fill();
+      // Core
+      ctx.beginPath(); ctx.arc(p.x,p.y,this.sz,0,Math.PI*2);
+      ctx.fillStyle=this.color+toHex(a); ctx.fill();
+    }
+  }
+
+  function buildConns(){
+    conns=[]; pmap={};
+    document.querySelectorAll('.sf-task').forEach(t=>{
+      const id=t.dataset.id, col=t.dataset.color;
+      t.dataset.goals.split(',').forEach(g=>{
+        const k=`${id}-${g.trim()}`;
+        conns.push({id,col,gid:g.trim(),k});
+        pmap[k]=Array.from({length:5},()=>new StreamP(col));
+      });
+    });
+  }
+
+  function buildOrgPulses(){
+    orgPulses=[];
+    const jackEl=document.getElementById('node-jack');
+    const kealEl=document.getElementById('node-keal');
+    const specs=document.querySelectorAll('.node-spec');
+    const tasks=document.querySelectorAll('.sf-task');
+    if(!jackEl||!kealEl) return;
+
+    // Jack → Keal pulse
+    const jr=rightEdge(jackEl), kl=leftEdge(kealEl);
+    for(let i=0;i<3;i++) orgPulses.push(new OrgPulse(jr,kl,'#00B896'));
+
+    // Keal → each specialist
+    const kr=rightEdge(kealEl);
+    specs.forEach(sp=>{
+      const sl=leftEdge(sp);
+      for(let i=0;i<2;i++) orgPulses.push(new OrgPulse(kr,sl,'#00B896'));
+    });
+
+    // Keal → tasks DIRECT (parallel branch — Keal directly executes some tasks)
+    const kealDirect=['trendscan','pillar2','pillar3','secmon','autores','emerge','checks','backup','dashboard'];
+    tasks.forEach(t=>{
+      if(kealDirect.includes(t.dataset.id)){
+        const tl=leftEdge(t);
+        if(tl) orgPulses.push(new OrgPulse(kr, tl, '#00B896'));
+      }
+    });
+
+    // Specialist → tasks (each specialist feeds relevant tasks)
+    const specTaskMap = {
+      qa:       ['secmon'],
+      research: ['trendscan','pillar2','pillar3','emerge'],
+      comms:    ['xdrafts'],
+      deploy:   ['dashboard'],
+      advisor:  ['autores']
+    };
+    specs.forEach(sp=>{
+      const specId=sp.dataset.spec;
+      const sr=rightEdge(sp);
+      const mapped=specTaskMap[specId]||[];
+      mapped.forEach(tid=>{
+        const tEl=document.querySelector(`.sf-task[data-id="${tid}"]`);
+        if(!tEl) return;
+        const tl=leftEdge(tEl);
+        orgPulses.push(new OrgPulse(sr,tl, getSpecColor(specId)));
+      });
+    });
+  }
+
+  function getSpecColor(id){
+    const m={qa:'#00B896',research:'#A78BFA',comms:'#EC4899',deploy:'#60A5FA',advisor:'#FBBF24'};
+    return m[id]||'#ffffff';
+  }
+
+  function drawOrgLines(){
+    const jackEl=document.getElementById('node-jack');
+    const kealEl=document.getElementById('node-keal');
+    const specs=document.querySelectorAll('.node-spec');
+    const tasks=document.querySelectorAll('.sf-task');
+    if(!jackEl||!kealEl) return;
+
+    ctx.setLineDash([3,4]);
+
+    // Jack → Keal
+    const jr=rightEdge(jackEl), kl=leftEdge(kealEl);
+    ctx.beginPath(); ctx.moveTo(jr.x,jr.y); ctx.lineTo(kl.x,kl.y);
+    ctx.strokeStyle='rgba(0,184,150,0.2)'; ctx.lineWidth=1.5; ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    // Keal → specialists
+    const kr=rightEdge(kealEl);
+    specs.forEach(sp=>{
+      const sl=leftEdge(sp);
+      const mx=(kr.x+sl.x)/2;
+      ctx.beginPath(); ctx.moveTo(kr.x,kr.y); ctx.bezierCurveTo(mx,kr.y,mx,sl.y,sl.x,sl.y);
+      ctx.strokeStyle='rgba(0,184,150,0.1)'; ctx.lineWidth=1; ctx.stroke();
+    });
+
+    // Keal → tasks DIRECT (lighter, dashed)
+    ctx.setLineDash([2,5]);
+    const kealDirect=['trendscan','pillar2','pillar3','secmon','autores','emerge','checks','backup','dashboard'];
+    tasks.forEach(t=>{
+      if(!kealDirect.includes(t.dataset.id)) return;
+      const tl=leftEdge(t);
+      if(!tl) return;
+      const mx=(kr.x+tl.x)/2;
+      ctx.beginPath(); ctx.moveTo(kr.x,kr.y); ctx.bezierCurveTo(mx,kr.y,mx,tl.y,tl.x,tl.y);
+      ctx.strokeStyle='rgba(0,184,150,0.06)'; ctx.lineWidth=0.8; ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    // Specialists → tasks
+    const specTaskMap={
+      qa:['secmon'],research:['trendscan','pillar2','pillar3','emerge'],
+      comms:['xdrafts'],deploy:['dashboard'],advisor:['autores']
+    };
+    specs.forEach(sp=>{
+      const specId=sp.dataset.spec, sr=rightEdge(sp);
+      const col=getSpecColor(specId);
+      (specTaskMap[specId]||[]).forEach(tid=>{
+        const tEl=document.querySelector(`.sf-task[data-id="${tid}"]`);
+        if(!tEl) return;
+        const tl=leftEdge(tEl);
+        const mx=(sr.x+tl.x)/2;
+        ctx.beginPath(); ctx.moveTo(sr.x,sr.y); ctx.bezierCurveTo(mx,sr.y,mx,tl.y,tl.x,tl.y);
+        ctx.strokeStyle=col+toHex(0.12); ctx.lineWidth=0.9; ctx.stroke();
+      });
+    });
+  }
+
+  function frame(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    drawOrgLines();
+
+    // Draw org pulses
+    orgPulses.forEach(p=>{ p.tick(); p.draw(); });
+
+    // Signal streams
+    const anyHov=hov!==null;
+    conns.forEach(({id,col,gid,k})=>{
+      const tEl=document.querySelector(`.sf-task[data-id="${id}"]`);
+      const gEl=document.querySelector(`.sf-goal[data-id="${gid}"]`);
+      if(!tEl||!gEl) return;
+      const f=rightEdge(tEl), to=leftEdge(gEl);
+      const cpX=(f.x+to.x)/2;
+      const c1={x:cpX,y:f.y}, c2={x:cpX,y:to.y};
+      const isAct=hov===id;
+      const ca=anyHov?(isAct?0.6:0.03):0.12;
+      const pa=anyHov?(isAct?1.0:0.03):0.45;
+
+      ctx.beginPath(); ctx.moveTo(f.x,f.y);
+      ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,to.x,to.y);
+      ctx.strokeStyle=col+toHex(ca); ctx.lineWidth=isAct?2.5:0.8; ctx.stroke();
+      (pmap[k]||[]).forEach(p=>{ p.tick(); p.draw(f,c1,c2,to,pa); });
+    });
+
+    // Goal glow
+    document.querySelectorAll('.sf-goal').forEach(g=>{
+      const gc=g.dataset.gc;
+      if(anyHov){
+        const tEl=document.querySelector(`.sf-task[data-id="${hov}"]`);
+        const rel=tEl?tEl.dataset.goals.split(',').map(x=>x.trim()):[];
+        if(rel.includes(g.dataset.id)){
+          g.style.borderColor=gc; g.style.background=gc+'1E'; g.style.boxShadow=`0 0 18px ${gc}28`;
+        } else {
+          g.style.borderColor='rgba(255,255,255,0.07)'; g.style.background='rgba(255,255,255,0.03)'; g.style.boxShadow='none';
+        }
+      } else {
+        g.style.borderColor='rgba(255,255,255,0.07)'; g.style.background='rgba(255,255,255,0.03)'; g.style.boxShadow='none';
+      }
+    });
+
+    requestAnimationFrame(frame);
+  }
+
+  function showPopup(task,e){
+    const col=task.dataset.color;
+    document.getElementById('p-title').textContent=task.dataset.name;
+    document.getElementById('p-title').style.color=col;
+    document.getElementById('p-sched').textContent=task.dataset.sched;
+    const ul=document.getElementById('p-pts'); ul.innerHTML='';
+    task.dataset.pts.split('|').forEach(pt=>{
+      const li=document.createElement('li');
+      const dot=document.createElement('span'); dot.className='dot'; dot.style.background=col;
+      const txt=document.createElement('span'); txt.textContent=pt;
+      li.appendChild(dot); li.appendChild(txt); ul.appendChild(li);
+    });
+    let x=e.clientX+16, y=e.clientY-60;
+    if(x+215>window.innerWidth) x=e.clientX-225;
+    if(y+210>window.innerHeight) y=window.innerHeight-215;
+    if(y<8)y=8;
+    popup.style.left=x+'px'; popup.style.top=y+'px';
+    popup.classList.add('vis');
+  }
+
+  document.querySelectorAll('.sf-task').forEach(t=>{
+    t.addEventListener('mouseenter',e=>{
+      hov=t.dataset.id;
+      document.querySelectorAll('.sf-task').forEach(x=>{ x.style.opacity=x.dataset.id===hov?'1':'0.1'; });
+      showPopup(t,e);
+    });
+    t.addEventListener('mousemove',e=>{ showPopup(t,e); });
+    t.addEventListener('mouseleave',()=>{
+      hov=null;
+      document.querySelectorAll('.sf-task').forEach(x=>{ x.style.opacity='1'; });
+      popup.classList.remove('vis');
+    });
+  });
+
+  window.addEventListener('resize',()=>{ resize(); buildConns(); buildOrgPulses(); });
+
+  window.sfInit = function init(){
+    resize(); buildConns(); buildOrgPulses();
+    if(!started){ started=true; frame(); }
+  }
+  requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ setTimeout(init,200); }); });
+})();
+</script>
+
+<script>
+(function(){
+  function applyTheme(dark){
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    const icon = document.getElementById('themeIcon');
+    const label = document.getElementById('themeLabel');
+    if(icon)  icon.textContent  = dark ? '☀️' : '🌙';
+    if(label) label.textContent = dark ? 'Light' : 'Dark';
+    localStorage.setItem('kaskad-theme', dark ? 'dark' : 'light');
+    // Update squad goal card borders in JS (the animation loop reads these)
+    window._darkMode = dark;
+  }
+  window.toggleTheme = function(){
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    applyTheme(!isDark);
+  };
+  // Restore on load
+  const saved = localStorage.getItem('kaskad-theme');
+  applyTheme(saved === 'dark');
+})();
+
+// === Keal Skills Hover Panel ===
+(function() {
+  function initKealPanel() {
+    const kealNode = document.getElementById('node-keal');
+    const panel    = document.getElementById('keal-skills-panel');
+    if (!kealNode || !panel) return;
+
+    let hideTimer = null;
+
+    function showPanel() {
+      clearTimeout(hideTimer);
+      panel.classList.add('vis');
+    }
+    function hidePanel() {
+      hideTimer = setTimeout(() => panel.classList.remove('vis'), 120);
+    }
+
+    kealNode.addEventListener('mouseenter', showPanel);
+    kealNode.addEventListener('mouseleave', hidePanel);
+    panel.addEventListener('mouseenter', showPanel);   // keep open if hovering panel itself
+    panel.addEventListener('mouseleave', hidePanel);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initKealPanel);
+  } else {
+    initKealPanel();
+  }
+})();
+// === End Keal Skills Hover Panel ===
+
+
+// === Keal Skills Hover Panel ===
+(function() {
+  function initKealPanel() {
+    const kealNode = document.getElementById('node-keal');
+    const panel    = document.getElementById('keal-skills-panel');
+    if (!kealNode || !panel) return;
+
+    let hideTimer = null;
+
+    function showPanel() {
+      clearTimeout(hideTimer);
+      panel.classList.add('vis');
+    }
+    function hidePanel() {
+      hideTimer = setTimeout(() => panel.classList.remove('vis'), 120);
+    }
+
+    kealNode.addEventListener('mouseenter', showPanel);
+    kealNode.addEventListener('mouseleave', hidePanel);
+    panel.addEventListener('mouseenter', showPanel);   // keep open if hovering panel itself
+    panel.addEventListener('mouseleave', hidePanel);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initKealPanel);
+  } else {
+    initKealPanel();
+  }
+})();
+// === End Keal Skills Hover Panel ===
+
+</script>
 </body>
 </html>
