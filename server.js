@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
 
@@ -339,7 +339,7 @@ app.post('/api/geo/run', async (req, res) => {
     const quickWins = [];
     for (const r of urlResults) {
       const d = r.url.replace('https://', '');
-      if (!r.ssr) criticalIssues.push(`${d}: client-side only â€” AI crawlers see no content`);
+      if (!r.ssr) criticalIssues.push(`${d}: client-side only - AI crawlers see no content`);
       if (!r.robots_txt) criticalIssues.push(`${d}: no robots.txt`);
       if (!r.llms_txt && r.url.includes('kaskad.app')) quickWins.push(`${d}: add llms.txt`);
       if (!r.structured_data) quickWins.push(`${d}: add JSON-LD structured data`);
