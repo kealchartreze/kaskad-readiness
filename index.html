@@ -1393,7 +1393,7 @@ async function loadGeoScore() {
       },
       agentic: { passed: 7, total: 8, checks: { mcp_repo_discoverable: true, llms_txt_references_mcp: true, agents_md_present: true, robots_txt_testnet: false, testnet_dapp_live: true, historical_data: true, write_tools: true, health_factor_alerts: false } },
       critical_issues: ['testnet.kaskad.live: fully client-side rendered — AI crawlers see no content', 'testnet.kaskad.live: no robots.txt (returns HTML)'],
-      quick_wins: ['testnet.kaskad.live: add robots.txt (Marius, 5 min)', 'testnet.kaskad.live: add JSON-LD structured data', 'Implement MCP write tools: supply/borrow/repay'],
+      quick_wins: ['testnet.kaskad.live: add robots.txt', 'testnet.kaskad.live: add JSON-LD structured data', 'Deploy kaskad.json to testnet.kaskad.live/kaskad.json for passive agent discovery'],
       status: 'ok'
     });
     document.getElementById('geo-date').textContent = 'Last verified: 2026-04-02';
