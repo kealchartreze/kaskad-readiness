@@ -14,7 +14,7 @@ const pool = new Pool({
 
 app.use(express.json());
 
-// Basic Auth — protects all routes except /health
+// Basic Auth â€” protects all routes except /health
 const DASH_USER = process.env.DASHBOARD_USER || 'kaskad';
 const DASH_PASS = process.env.DASHBOARD_PASSWORD || '';
 app.use((req, res, next) => {
@@ -28,7 +28,7 @@ app.use((req, res, next) => {
   res.status(401).send('Unauthorized');
 });
 
-// Serve static files — no-cache for HTML to always get fresh deploys
+// Serve static files â€” no-cache for HTML to always get fresh deploys
 app.use(express.static(__dirname, {
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.html')) {
@@ -55,7 +55,7 @@ async function initDb() {
   }
 }
 
-// GET /api/state — load all keys
+// GET /api/state â€” load all keys
 app.get('/api/state', async (req, res) => {
   try {
     const result = await pool.query('SELECT key, value FROM kaskad_state');
@@ -70,7 +70,7 @@ app.get('/api/state', async (req, res) => {
   }
 });
 
-// POST /api/state — save all keys
+// POST /api/state â€” save all keys
 app.post('/api/state', async (req, res) => {
   try {
     const { state } = req.body;
@@ -91,7 +91,7 @@ app.post('/api/state', async (req, res) => {
   }
 });
 
-// ── GEO BENCHMARK ──
+// â”€â”€ GEO BENCHMARK â”€â”€
 const https = require('https');
 const http = require('http');
 const GEO_ADMIN_TOKEN = process.env.GEO_ADMIN_TOKEN || 'kaskad-geo-admin-2026';
@@ -164,7 +164,7 @@ function computeGeoScore(urlResults) {
   return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 }
 
-// Agentic readiness checks — full agent capability map (discovery + what agents can actually do)
+// Agentic readiness checks â€” full agent capability map (discovery + what agents can actually do)
 async function auditAgenticReadiness() {
   const checks = {
     // --- DISCOVERY ---
@@ -182,7 +182,7 @@ async function auditAgenticReadiness() {
 
   // MCP repo discoverable
   try {
-    const r = await fetchUrl('https://api.github.com/repos/kealchartreze/kaskad-mcp', 8000, 0, {'User-Agent': 'kaskad-readiness/1.0'});
+    const r = await fetchUrl('https://api.github.com/repos/Kaskad-Lending/kaskad-mcp', 8000, 0, {'User-Agent': 'kaskad-readiness/1.0'});
     if (r.status === 200) {
       const data = JSON.parse(r.body);
       checks.mcp_repo_discoverable = !data.private && (data.size > 0 || data.pushed_at != null);
@@ -199,7 +199,7 @@ async function auditAgenticReadiness() {
 
   // AGENTS.md present in MCP repo with comprehensive tokenomics (>5KB)
   try {
-    const r = await fetchUrl('https://api.github.com/repos/kealchartreze/kaskad-mcp/contents/AGENTS.md', 8000, 0, {'User-Agent': 'kaskad-readiness/1.0'});
+    const r = await fetchUrl('https://api.github.com/repos/Kaskad-Lending/kaskad-mcp/contents/AGENTS.md', 8000, 0, {'User-Agent': 'kaskad-readiness/1.0'});
     if (r.status === 200) {
       const data = JSON.parse(r.body);
       checks.agents_md_present = data.size > 5000;
@@ -218,7 +218,7 @@ async function auditAgenticReadiness() {
     checks.testnet_dapp_live = r.status === 200;
   } catch(e) {}
 
-  // Historical data — subgraph live check (POST required for GraphQL)
+  // Historical data â€” subgraph live check (POST required for GraphQL)
   try {
     const sgPostData = JSON.stringify({ query: '{ reserves(first: 1) { id symbol } }' });
     const sgResult = await new Promise((resolve, reject) => {
@@ -244,10 +244,15 @@ async function auditAgenticReadiness() {
     }
   } catch(e) {}
 
-  // Write tools — check MCP package.json version tag or a /capabilities endpoint (future)
-  // checks.write_tools = false; // hardcoded until write tools are built
+  // Write tools - verify supply/borrow/repay exist in Kaskad-Lending/kaskad-mcp
+  try {
+    const wtR = await fetchUrl('https://raw.githubusercontent.com/Kaskad-Lending/kaskad-mcp/main/src/index.ts', 8000, 0, {'User-Agent': 'kaskad-readiness/1.0'});
+    if (wtR.status === 200) {
+      checks.write_tools = wtR.body.includes('"supply"') && wtR.body.includes('"borrow"') && wtR.body.includes('"repay"');
+    }
+  } catch(e) {}
 
-  // Health factor alerts — check for webhook/alert endpoint
+  // Health factor alerts â€” check for webhook/alert endpoint
   // checks.health_factor_alerts = false; // hardcoded until alert system is built
 
   const passed = Object.values(checks).filter(Boolean).length;
@@ -257,7 +262,7 @@ async function auditAgenticReadiness() {
   return { checks, score, passed, total };
 }
 
-// POST /api/autocheck — run all automatable checks, update geo_benchmark + critical issues list
+// POST /api/autocheck â€” run all automatable checks, update geo_benchmark + critical issues list
 app.post('/api/autocheck', async (req, res) => {
   const token = req.headers['x-admin-token'] || '';
   if (token !== GEO_ADMIN_TOKEN) return res.status(403).json({ error: 'Forbidden' });
@@ -278,7 +283,7 @@ app.post('/api/autocheck', async (req, res) => {
 
     // Rebuild critical_issues list preserving manual ones, updating auto ones
     // Only preserve manually-set critical issues (Track 1 discoverability)
-    // Auto-checks now surface in Track 2 UI directly — no duplicate critical issue entries
+    // Auto-checks now surface in Track 2 UI directly â€” no duplicate critical issue entries
     const AUTO_ISSUE_KEYS = ['No MCP server', 'Testnet RPC', 'GitHub repo', 'galleon-testnet'];
     const existingIssues = (geo.critical_issues || []).filter(i =>
       !AUTO_ISSUE_KEYS.some(k => i.includes(k))
@@ -291,7 +296,7 @@ app.post('/api/autocheck', async (req, res) => {
       !AUTO_WIN_KEYS.some(k => w.includes(k))
     );
     const autoWins = [];
-    if (!checks.llms_txt_references_mcp) autoWins.push('Add MCP reference to kaskad.app/llms.txt (2 lines — Marius)');
+    if (!checks.llms_txt_references_mcp) autoWins.push('Add MCP reference to kaskad.app/llms.txt (2 lines â€” Marius)');
     geo.quick_wins = [...existingWins, ...autoWins];
 
     await pool.query(`
@@ -305,7 +310,7 @@ app.post('/api/autocheck', async (req, res) => {
   }
 });
 
-// GET /api/geo/score — public
+// GET /api/geo/score â€” public
 app.get('/api/geo/score', async (req, res) => {
   try {
     const result = await pool.query("SELECT value FROM kaskad_state WHERE key = 'geo_benchmark'");
@@ -317,7 +322,7 @@ app.get('/api/geo/score', async (req, res) => {
   }
 });
 
-// POST /api/geo/run — admin only
+// POST /api/geo/run â€” admin only
 app.post('/api/geo/run', async (req, res) => {
   const token = req.headers['x-admin-token'] || '';
   if (token !== GEO_ADMIN_TOKEN) return res.status(403).json({ error: 'Forbidden' });
@@ -334,7 +339,7 @@ app.post('/api/geo/run', async (req, res) => {
     const quickWins = [];
     for (const r of urlResults) {
       const d = r.url.replace('https://', '');
-      if (!r.ssr) criticalIssues.push(`${d}: client-side only — AI crawlers see no content`);
+      if (!r.ssr) criticalIssues.push(`${d}: client-side only â€” AI crawlers see no content`);
       if (!r.robots_txt) criticalIssues.push(`${d}: no robots.txt`);
       if (!r.llms_txt && r.url.includes('kaskad.app')) quickWins.push(`${d}: add llms.txt`);
       if (!r.structured_data) quickWins.push(`${d}: add JSON-LD structured data`);
@@ -342,7 +347,7 @@ app.post('/api/geo/run', async (req, res) => {
 
     // Agentic issues
     const ag = agenticResult.checks;
-    if (!ag.mcp_server) criticalIssues.push('No MCP server detected — kaskad-mcp repo missing or private');
+    if (!ag.mcp_server) criticalIssues.push('No MCP server detected â€” kaskad-mcp repo missing or private');
     if (!ag.llms_txt_references_mcp) quickWins.push('Add MCP reference to kaskad.app/llms.txt (Marius, 5 min)');
 
     // Composite score: Track 1 discoverability (60%) + Track 2 agentic (40%)
