@@ -1201,40 +1201,61 @@ canvas { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
   <div id="geo-widget" style="display:none; margin-top:32px;">
     <style>
       #geo-widget { max-width: 100%; overflow: hidden; }
+      #geo-widget .geo-card { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 20px; padding: 28px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+      #geo-widget .geo-sub-card { background: var(--detail-bg); border: 1px solid var(--border-card); border-radius: 12px; padding: 14px 16px; }
+      #geo-widget .geo-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+      #geo-widget .geo-check { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+      #geo-widget .geo-check span { font-size: 12px; }
+      #geo-dual-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+      #geo-blended-bar { height: 8px; background: var(--bar-track); border-radius: 5px; overflow: hidden; margin: 8px 0 4px; }
       @media (max-width: 768px) {
         #geo-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+        #geo-dual-scores { grid-template-columns: 1fr !important; }
         #geo-tracks { grid-template-columns: 1fr !important; }
         #geo-issues-grid { grid-template-columns: 1fr !important; }
-        #geo-score-num { font-size: 34px !important; }
-        #geo-widget > div { padding: 20px 16px !important; }
+        #geo-widget .geo-card { padding: 20px 16px !important; }
       }
     </style>
-    <div style="background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:20px; padding:28px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
-      <div id="geo-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; gap:12px;">
+    <div class="geo-card">
+      <!-- Header -->
+      <div id="geo-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; gap:12px;">
         <div>
-          <div style="font-size:16px; font-weight:700; color:#1A1A1A; letter-spacing:-0.02em;">🤖 AI Discoverability Benchmark</div>
-          <div style="font-size:13px; color:#6B7280; margin-top:3px;">GEO Score — how visible Kaskad is to AI crawlers and search agents</div>
+          <div style="font-size:16px; font-weight:700; color:var(--text-primary); letter-spacing:-0.02em;">🤖 AI Agentic Readiness Benchmark</div>
+          <div style="font-size:13px; color:var(--text-secondary); margin-top:3px;">How ready Kaskad is to be discovered, read, and operated by AI agents</div>
         </div>
         <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
-          <span id="geo-date" style="font-size:12px; color:#9CA3AF;"></span>
-          <button id="geo-run-btn" onclick="runGeoBenchmark()" style="display:none; background:#6366F1; color:#fff; border:none; border-radius:10px; padding:8px 18px; font-size:13px; font-weight:600; font-family:Inter,sans-serif; cursor:pointer; transition:opacity 0.15s; white-space:nowrap;" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
-            ▶ Run Benchmark
-          </button>
+          <span id="geo-date" style="font-size:12px; color:var(--text-muted);"></span>
+          <button id="geo-run-btn" onclick="runGeoBenchmark()" style="display:none; background:#6366F1; color:#fff; border:none; border-radius:10px; padding:8px 18px; font-size:13px; font-weight:600; font-family:Inter,sans-serif; cursor:pointer; transition:opacity 0.15s; white-space:nowrap;" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">▶ Run</button>
         </div>
       </div>
 
-      <!-- Score bar -->
-      <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
-        <div style="font-size:48px; font-weight:800; letter-spacing:-0.05em; color:#6366F1; flex-shrink:0;" id="geo-score-num">—</div>
-        <div style="flex:1; min-width:0;">
-          <div style="height:10px; background:rgba(0,0,0,0.06); border-radius:6px; overflow:hidden;">
-            <div id="geo-score-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#6366F1,#8B5CF6); border-radius:6px; transition:width 0.8s cubic-bezier(.4,0,.2,1);"></div>
+      <!-- Dual score cards -->
+      <div id="geo-dual-scores">
+        <!-- Blended score -->
+        <div class="geo-sub-card" style="border-color:rgba(99,102,241,0.2);">
+          <div class="geo-label" style="color:#6366F1; margin-bottom:10px;">Overall Score</div>
+          <div style="display:flex; align-items:baseline; gap:8px;">
+            <span id="geo-score-num" style="font-size:52px; font-weight:800; letter-spacing:-0.05em; color:#6366F1; line-height:1;">—</span>
+            <span style="font-size:18px; font-weight:600; color:var(--text-tertiary);">/100</span>
           </div>
-          <div style="display:flex; justify-content:space-between; margin-top:4px;">
-            <span style="font-size:11px; color:#9CA3AF;">0</span>
-            <span id="geo-verdict" style="font-size:11px; font-weight:600; color:#6B7280;"></span>
-            <span style="font-size:11px; color:#9CA3AF;">100</span>
+          <div id="geo-blended-bar">
+            <div id="geo-score-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#6366F1,#8B5CF6); border-radius:5px; transition:width 0.8s cubic-bezier(.4,0,.2,1);"></div>
           </div>
+          <div id="geo-verdict" style="font-size:12px; font-weight:700; color:#6B7280;"></div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">50% discoverability + 50% agentic</div>
+        </div>
+        <!-- Agentic score -->
+        <div class="geo-sub-card" id="geo-agentic-hero" style="border-color:rgba(16,185,129,0.2);">
+          <div class="geo-label" style="color:#10B981; margin-bottom:10px;">Agentic Readiness</div>
+          <div style="display:flex; align-items:baseline; gap:8px;">
+            <span id="geo-ag-score" style="font-size:52px; font-weight:800; letter-spacing:-0.05em; color:#10B981; line-height:1;">—</span>
+            <span style="font-size:18px; font-weight:600; color:var(--text-tertiary);">/100</span>
+          </div>
+          <div style="height:8px; background:var(--bar-track); border-radius:5px; overflow:hidden; margin:8px 0 4px;">
+            <div id="geo-ag-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#10B981,#34D399); border-radius:5px; transition:width 0.8s cubic-bezier(.4,0,.2,1);"></div>
+          </div>
+          <div id="geo-ag-verdict" style="font-size:12px; font-weight:700; color:#10B981;"></div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">MCP tools · llms.txt · write ops · monitoring</div>
         </div>
       </div>
 
@@ -1242,14 +1263,14 @@ canvas { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
       <div id="geo-tracks" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
         <!-- Track 1: Discoverability -->
         <div>
-          <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#6366F1; margin-bottom:10px;">Track 1 — Discoverability</div>
+          <div class="geo-label" style="color:#6366F1; margin-bottom:10px;">Track 1 — Discoverability</div>
           <div id="geo-urls" style="display:flex; flex-direction:column; gap:8px;"></div>
         </div>
-        <!-- Track 2: Agentic Readiness -->
+        <!-- Track 2: Agentic checks -->
         <div>
-          <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#10B981; margin-bottom:10px;">Track 2 — Agentic Readiness</div>
-          <div id="geo-agentic" style="background:#F9F9F7; border:1px solid rgba(0,0,0,0.06); border-radius:12px; padding:14px 16px;">
-            <div style="font-size:12px; color:#9CA3AF; font-style:italic;">Run benchmark to check</div>
+          <div class="geo-label" style="color:#10B981; margin-bottom:10px;">Track 2 — Agentic Checks</div>
+          <div id="geo-agentic" class="geo-sub-card">
+            <div style="font-size:12px; color:var(--text-muted); font-style:italic;">Run benchmark to check</div>
           </div>
         </div>
       </div>
@@ -1258,18 +1279,18 @@ canvas { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
       <div id="geo-issues" style="display:none;">
         <div id="geo-issues-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
           <div>
-            <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#EF4444; margin-bottom:8px;">Critical Issues</div>
+            <div class="geo-label" style="color:#EF4444; margin-bottom:8px;">Critical Issues</div>
             <ul id="geo-critical-list" style="list-style:none; display:flex; flex-direction:column; gap:5px;"></ul>
           </div>
           <div>
-            <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#10B981; margin-bottom:8px;">Quick Wins</div>
+            <div class="geo-label" style="color:#10B981; margin-bottom:8px;">Next Steps</div>
             <ul id="geo-wins-list" style="list-style:none; display:flex; flex-direction:column; gap:5px;"></ul>
           </div>
         </div>
       </div>
 
       <!-- Running state -->
-      <div id="geo-running" style="display:none; text-align:center; padding:16px; color:#6B7280; font-size:13px;">
+      <div id="geo-running" style="display:none; text-align:center; padding:16px; color:var(--text-secondary); font-size:13px;">
         ⏳ Running benchmark... this takes ~30 seconds
       </div>
     </div>
@@ -1300,8 +1321,24 @@ function renderGeoScore(data) {
   vEl.style.color = v.color;
   document.getElementById('geo-score-num').style.color = v.color;
 
+  // Agentic hero score
+  if (data.agentic) {
+    const agPct = Math.round((data.agentic.passed / data.agentic.total) * 100);
+    const agEl = document.getElementById('geo-ag-score');
+    agEl.textContent = agPct;
+    document.getElementById('geo-ag-bar').style.width = agPct + '%';
+    const agVerdict = agPct >= 80 ? 'Agent-Ready' : agPct >= 60 ? 'Mostly Ready' : agPct >= 40 ? 'Partial' : 'Early Stage';
+    const agColor = agPct >= 80 ? '#10B981' : agPct >= 60 ? '#6366F1' : '#F59E0B';
+    agEl.style.color = agColor;
+    document.getElementById('geo-ag-bar').style.background = `linear-gradient(90deg,${agColor},${agColor}99)`;
+    const agVerdictEl = document.getElementById('geo-ag-verdict');
+    agVerdictEl.textContent = `${data.agentic.passed}/${data.agentic.total} checks — ${agVerdict}`;
+    agVerdictEl.style.color = agColor;
+    document.getElementById('geo-agentic-hero').style.borderColor = agColor + '33';
+  }
+
   if (data.date) {
-    document.getElementById('geo-date').textContent = 'Last run: ' + data.date;
+    document.getElementById('geo-date').textContent = 'Last verified: ' + data.date;
   }
 
   // Track 1: URL breakdown
@@ -1386,7 +1423,7 @@ async function loadGeoScore() {
   } catch(e) {
     // API not running — silent, widget still shows with cached data
     renderGeoScore({
-      geo_score: 51, date: '2026-04-02',
+      geo_score: 72, date: '2026-04-02',
       urls: {
         'kaskad.app': { robots_txt: true, llms_txt: true, ssr: true, structured_data: true },
         'testnet.kaskad.live': { robots_txt: false, llms_txt: false, ssr: false, structured_data: false }
