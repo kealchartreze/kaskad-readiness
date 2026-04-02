@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
 
@@ -252,8 +252,13 @@ async function auditAgenticReadiness() {
     }
   } catch(e) {}
 
-  // Health factor alerts â€” check for webhook/alert endpoint
-  // checks.health_factor_alerts = false; // hardcoded until alert system is built
+  // Health factor alerts - check if checkHealthFactor tool exists in MCP
+  try {
+    const hfR = await fetchUrl('https://raw.githubusercontent.com/Kaskad-Lending/kaskad-mcp/main/src/index.ts', 8000, 0, {'User-Agent': 'kaskad-readiness/1.0'});
+    if (hfR.status === 200) {
+      checks.health_factor_alerts = hfR.body.includes('checkHealthFactor');
+    }
+  } catch(e) {}
 
   const passed = Object.values(checks).filter(Boolean).length;
   const total = Object.keys(checks).length;

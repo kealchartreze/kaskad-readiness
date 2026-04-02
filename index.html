@@ -1428,9 +1428,9 @@ async function loadGeoScore() {
         'kaskad.app': { robots_txt: true, llms_txt: true, ssr: true, structured_data: true },
         'testnet.kaskad.live': { robots_txt: false, llms_txt: false, ssr: false, structured_data: false }
       },
-      agentic: { passed: 6, total: 8, checks: { mcp_repo_discoverable: true, llms_txt_references_mcp: true, agents_md_present: true, robots_txt_testnet: false, testnet_dapp_live: true, historical_data: true, write_tools: true, health_factor_alerts: false } },
-      critical_issues: ['testnet.kaskad.live: client-side only — AI crawlers see no content', 'testnet.kaskad.live: no robots.txt'],
-      quick_wins: ['testnet.kaskad.live: add robots.txt', 'testnet.kaskad.live: add JSON-LD structured data', 'Implement health factor alert tool in MCP (last remaining agentic gap)'],
+      agentic: { passed: 7, total: 8, checks: { mcp_repo_discoverable: true, llms_txt_references_mcp: true, agents_md_present: true, robots_txt_testnet: false, testnet_dapp_live: true, historical_data: true, write_tools: true, health_factor_alerts: true } },
+      critical_issues: ['testnet.kaskad.live: client-side only - AI crawlers see no content', 'testnet.kaskad.live: no robots.txt'],
+      quick_wins: ['testnet.kaskad.live: add robots.txt + llms.txt (files ready in kaskad-mcp/public/, awaiting deploy)', 'testnet.kaskad.live: add JSON-LD structured data'],
       status: 'ok'
     });
     document.getElementById('geo-date').textContent = 'Last verified: 2026-04-02';
