@@ -349,10 +349,10 @@ app.post('/api/geo/run', async (req, res) => {
     const quickWins = [];
     for (const r of urlResults) {
       const d = r.url.replace('https://', '');
-      if (!r.ssr) criticalIssues.push(`${d}: client-side only - AI crawlers see no content`);
+      if (!r.ssr && !PURE_DAPP_URLS.includes(r.url)) criticalIssues.push(`${d}: client-side only - AI crawlers see no content`);
       if (!r.robots_txt) criticalIssues.push(`${d}: no robots.txt`);
       if (!r.llms_txt && r.url.includes('kaskad.app')) quickWins.push(`${d}: add llms.txt`);
-      if (!r.structured_data) quickWins.push(`${d}: add JSON-LD structured data`);
+      if (!r.structured_data && !PURE_DAPP_URLS.includes(r.url)) quickWins.push(`${d}: add JSON-LD structured data`);
     }
 
     // Agentic issues
