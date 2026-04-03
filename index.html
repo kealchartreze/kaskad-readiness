@@ -1346,19 +1346,20 @@ function renderGeoScore(data) {
   urlsEl.innerHTML = '';
   if (data.urls) {
     Object.entries(data.urls).forEach(([domain, info]) => {
+      const isPureDapp = info.ssr === null || info.ssr === undefined;
       const checks = [
-        { label: 'robots.txt', ok: info.robots_txt },
-        { label: 'llms.txt', ok: info.llms_txt },
-        { label: 'SSR / crawlable', ok: info.ssr },
-        { label: 'Structured data', ok: info.structured_data },
+        { label: 'robots.txt', ok: info.robots_txt, na: false },
+        { label: 'llms.txt', ok: info.llms_txt, na: false },
+        { label: 'SSR / crawlable', ok: info.ssr, na: isPureDapp },
+        { label: 'Structured data', ok: info.structured_data, na: isPureDapp },
       ];
       urlsEl.innerHTML += `
         <div style="background:#F9F9F7; border:1px solid rgba(0,0,0,0.06); border-radius:12px; padding:14px 16px;">
           <div style="font-size:12px; font-weight:700; color:#1A1A1A; margin-bottom:8px;">${domain}</div>
           ${checks.map(c => `
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-              <span style="font-size:12px;">${c.ok ? '✅' : '❌'}</span>
-              <span style="font-size:12px; color:${c.ok ? '#374151' : '#9CA3AF'};">${c.label}</span>
+              <span style="font-size:12px;">${c.na ? '—' : c.ok ? '✅' : '❌'}</span>
+              <span style="font-size:12px; color:${c.na ? '#9CA3AF' : c.ok ? '#374151' : '#9CA3AF'};">${c.label}</span>
             </div>
           `).join('')}
         </div>`;
@@ -1395,7 +1396,7 @@ function renderGeoScore(data) {
           ${agChecks.filter(c => c.group === g).map(c => `
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
               <span style="font-size:12px;">${c.ok ? '✅' : '⬜'}</span>
-              <span style="font-size:12px; color:${c.ok ? '#374151' : '#9CA3AF'};">${c.label}</span>
+              <span style="font-size:12px; color:${c.na ? '#9CA3AF' : c.ok ? '#374151' : '#9CA3AF'};">${c.label}</span>
             </div>
           `).join('')}
         `).join('');
@@ -1429,7 +1430,7 @@ async function loadGeoScore() {
         'testnet.kaskad.live': { robots_txt: false, llms_txt: false, ssr: false, structured_data: false }
       },
       agentic: { passed: 7, total: 8, checks: { mcp_repo_discoverable: true, llms_txt_references_mcp: true, agents_md_present: true, robots_txt_testnet: false, testnet_dapp_live: true, historical_data: true, write_tools: true, health_factor_alerts: true } },
-      critical_issues: ['testnet.kaskad.live: client-side only - AI crawlers see no content', 'testnet.kaskad.live: no robots.txt'],
+      critical_issues: ['testnet.kaskad.live: no robots.txt'],
       quick_wins: ['testnet.kaskad.live: add robots.txt + llms.txt (files ready in kaskad-mcp/public/, awaiting deploy)', 'testnet.kaskad.live: add JSON-LD structured data'],
       status: 'ok'
     });
@@ -1650,8 +1651,7 @@ const PILLARS = [
       { text: 'GitHub repo (kaskad-mcp) public and discoverable' },
       { text: 'Testnet RPC responding (galleon-testnet.igralabs.com)' },
       { text: 'Robots.txt on both kaskad.app and testnet.kaskad.live' },
-      { text: 'SSR or pre-rendering for testnet.kaskad.live (AI crawler support)' },
-    ]
+      ]
   },
   {
     id: 'p3', label: 'Pillar 3 - Road to Kaskad L1', icon: '⛓️', colorClass: 'c-p3', barClass: 'bar-p3', numClass: 'num-p3',
