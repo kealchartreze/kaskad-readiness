@@ -143,11 +143,14 @@ async function auditUrl(url) {
   try {
     const r = await fetchUrl(url);
     const body = r.body;
-    // SSR check: meaningful text content server-rendered
-    const textLen = body.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().length;
-    result.ssr = textLen > 500;
-    // Structured data check
-    result.structured_data = body.includes('application/ld+json') || body.includes('schema.org');
+    // SSR/structured_data not applicable for pure dApps (blockchain IS the backend)
+    if (!isPureDapp) {
+      // SSR check: meaningful text content server-rendered
+      const textLen = body.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().length;
+      result.ssr = textLen > 500;
+      // Structured data check
+      result.structured_data = body.includes('application/ld+json') || body.includes('schema.org');
+    }
     // Citability: count paragraphs with 100+ chars
     const paras = (body.match(/<p[^>]*>([^<]{100,})<\/p>/gi) || []).length;
     result.citability_score = Math.min(paras * 5, 15);
