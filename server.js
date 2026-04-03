@@ -119,8 +119,12 @@ function fetchUrl(url, timeoutMs = 10000, redirectCount = 0, extraHeaders = {}) 
   });
 }
 
+// Pure blockchain dApps (no SSR/structured data by architecture)
+const PURE_DAPP_URLS = ['https://testnet.kaskad.live'];
+
 async function auditUrl(url) {
-  const result = { url, robots_txt: false, llms_txt: false, ssr: false, structured_data: false, citability_score: 0 };
+  const isPureDapp = PURE_DAPP_URLS.includes(url);
+  const result = { url, robots_txt: false, llms_txt: false, ssr: isPureDapp ? null : false, structured_data: isPureDapp ? null : false, citability_score: 0 };
   const domain = url.replace('https://', '');
 
   try {
