@@ -19,6 +19,7 @@ const DASH_USER = process.env.DASHBOARD_USER || 'kaskad';
 const DASH_PASS = process.env.DASHBOARD_PASSWORD || '';
 app.use((req, res, next) => {
   if (req.path === '/health') return next(); // allow health checks unauthenticated
+  if (req.path === '/api/geo/run' || req.path === '/api/autocheck') return next(); // protected by x-admin-token
   const auth = req.headers['authorization'];
   if (auth && auth.startsWith('Basic ')) {
     const [user, pass] = Buffer.from(auth.slice(6), 'base64').toString().split(':');
