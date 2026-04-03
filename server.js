@@ -158,13 +158,17 @@ async function auditUrl(url) {
 
 function computeGeoScore(urlResults) {
   const scores = urlResults.map(r => {
+    const isPureDapp = PURE_DAPP_URLS.includes(r.url);
+    // Max points available for this URL (SSR+structured_data not applicable for pure dApps)
+    const maxPoints = isPureDapp ? 50 : 100; // 15+20+15(citability) vs full 100
     let s = 0;
     if (r.robots_txt) s += 15;
     if (r.llms_txt) s += 20;
-    if (r.ssr) s += 30;
-    if (r.structured_data) s += 20;
+    if (!isPureDapp && r.ssr) s += 30;
+    if (!isPureDapp && r.structured_data) s += 20;
     s += r.citability_score || 0;
-    return s;
+    // Normalize to 100-point scale so pure dApps aren't penalized
+    return Math.round((s / maxPoints) * 100);
   });
   return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 }
