@@ -1354,12 +1354,12 @@ function renderGeoScore(data) {
         { label: 'Structured data', ok: info.structured_data, na: isPureDapp },
       ];
       urlsEl.innerHTML += `
-        <div style="background:#F9F9F7; border:1px solid rgba(0,0,0,0.06); border-radius:12px; padding:14px 16px;">
-          <div style="font-size:12px; font-weight:700; color:#1A1A1A; margin-bottom:8px;">${domain}</div>
+        <div style="background:var(--detail-bg); border:1px solid var(--border-card); border-radius:12px; padding:14px 16px;">
+          <div style="font-size:12px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">${domain}</div>
           ${checks.map(c => `
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
               <span style="font-size:12px;">${c.na ? '—' : c.ok ? '✅' : '❌'}</span>
-              <span style="font-size:12px; color:${c.na ? '#9CA3AF' : c.ok ? '#374151' : '#9CA3AF'};">${c.label}</span>
+              <span style="font-size:12px; color:${c.na ? '#9CA3AF' : c.ok ? 'var(--text-secondary)' : '#9CA3AF'};">${c.label}</span>
             </div>
           `).join('')}
         </div>`;
@@ -1383,7 +1383,7 @@ function renderGeoScore(data) {
     const pct = Math.round((ag.passed / ag.total) * 100);
     agEl.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <span style="font-size:12px; font-weight:700; color:#1A1A1A;">testnet.kaskad.live</span>
+        <span style="font-size:12px; font-weight:700; color:var(--text-primary);">testnet.kaskad.live</span>
         <span style="font-size:12px; font-weight:700; color:${pct >= 60 ? '#10B981' : pct >= 30 ? '#F59E0B' : '#EF4444'};">${ag.passed}/${ag.total} checks</span>
       </div>
       <div style="height:4px; background:rgba(0,0,0,0.06); border-radius:3px; margin-bottom:10px; overflow:hidden;">
@@ -1396,7 +1396,7 @@ function renderGeoScore(data) {
           ${agChecks.filter(c => c.group === g).map(c => `
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
               <span style="font-size:12px;">${c.ok ? '✅' : '⬜'}</span>
-              <span style="font-size:12px; color:${c.na ? '#9CA3AF' : c.ok ? '#374151' : '#9CA3AF'};">${c.label}</span>
+              <span style="font-size:12px; color:${c.na ? '#9CA3AF' : c.ok ? 'var(--text-secondary)' : '#9CA3AF'};">${c.label}</span>
             </div>
           `).join('')}
         `).join('');
