@@ -2721,6 +2721,12 @@ function evLoadAll() {
 function evSaveAll() {
   localStorage.setItem(EV_KEY, JSON.stringify(evEvents));
 }
+function localISO(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
 function evWeekStart(off) {
   const now = new Date();
   const d = now.getDay();
@@ -2751,7 +2757,7 @@ function renderWeekGrid() {
   const fmt = d => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   label.textContent = fmt(ws) + ' - ' + fmt(we);
 
-  const todayISO = new Date().toISOString().slice(0,10);
+  const todayISO = localISO(new Date());
   const weekDays = Array.from({length:7}, (_,i) => {
     const d = new Date(ws); d.setDate(ws.getDate() + i); return d;
   });
@@ -2763,7 +2769,7 @@ function renderWeekGrid() {
   // (moved below)
   let _unused = '';
   weekDays.forEach(d => {
-    const iso = d.toISOString().slice(0,10);
+    const iso = localISO(d);
     const isToday = iso === todayISO;
     headerHtml += `<div class="week-col-header${isToday?' today-col':''}">
       <div class="day-name">${EV_DAYS_LABEL[d.getDay()]}</div>
@@ -2776,7 +2782,7 @@ function renderWeekGrid() {
     const hLabel = h === 0 ? '12am' : h < 12 ? h + ':00' : h === 12 ? '12pm' : (h - 12) + 'pm';
     html += `<div class="ev-time-slot time-col-cell">${hLabel}</div>`;
     weekDays.forEach((d, di) => {
-      const iso = d.toISOString().slice(0,10);
+      const iso = localISO(d);
       const dow = d.getDay();
       const cellEvs = evEvents.filter(ev => {
         if (!evMatchesCell(ev, iso, dow)) return false;
@@ -2811,7 +2817,7 @@ function openEvModal(date, time, evId) {
   evSelColor = 'c-teal';
 
   document.getElementById('evTitle').value = '';
-  document.getElementById('evDate').value = date || new Date().toISOString().slice(0,10);
+  document.getElementById('evDate').value = date || localISO(new Date());
   document.getElementById('evStart').value = time || '10:00';
   document.getElementById('evEnd').value = time ? (String(parseInt(time)+1).padStart(2,'0') + ':00') : '10:30';
   document.getElementById('evRepeat').value = 'none';
