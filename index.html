@@ -3959,6 +3959,7 @@ setInterval(refreshAll,60000);
         <button class="tw-fbtn active" onclick="twSetFilter('all')">All</button>
         <button class="tw-fbtn" onclick="twSetFilter('supply')">Supply Only</button>
         <button class="tw-fbtn" onclick="twSetFilter('borrow')">Debt Only</button>
+        <button class="tw-fbtn" onclick="twSetFilter('treasury')">Uninvested Treasury</button>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
@@ -4148,14 +4149,19 @@ function twRenderWallet(w, data) {
 
   // Build asset rows
   let rows = "";
-  const showSupply = twFilter === "all" || twFilter === "supply";
-  const showBorrow = twFilter === "all" || twFilter === "borrow";
+  const showSupply   = twFilter === "all" || twFilter === "supply";
+  const showBorrow   = twFilter === "all" || twFilter === "borrow";
+  const showTreasury = twFilter === "all" || twFilter === "treasury";
 
   for(const sym of Object.keys(TW_ASSETS)) {
-    const s = data.supply[sym] || 0;
-    const b = data.borrow[sym] || 0;
-    const liq = data.liquid[sym] || 0;
-    const price = twPrices[sym] || 0;
+    const s     = data.supply[sym]  || 0;
+    const b     = data.borrow[sym]  || 0;
+    const liq   = data.liquid[sym]  || 0;
+    const price = twPrices[sym]     || 0;
+    // borrowed_liquid = how much of the liquid balance came from a borrow (capped at liq)
+    const borrowedLiq   = Math.min(b, liq);
+    // native_treasury = liquid balance that was never borrowed (pure undeployed capital)
+    const nativeTreasury = Math.max(0, liq - borrowedLiq);
 
     if(showSupply && s > 0.0001) {
       rows += `<tr>
@@ -4163,8 +4169,8 @@ function twRenderWallet(w, data) {
         <td><span class="tw-badge tw-badge-s">Supply</span></td>
         <td class="tw-supply">${twFmtAmt(s,sym) || "—"}</td>
         <td class="tw-supply">${twFmt(s*price)}</td>
-        <td style="color:rgba(255,255,255,0.3)">${twFmt(liq*price)}</td>
-        <td></td>
+        <td style="color:#F59E0B;font-size:12px">${borrowedLiq > 0.0001 ? twFmt(borrowedLiq*price) : "—"}</td>
+        <td style="color:#00B896;font-size:12px">${nativeTreasury > 0.0001 ? twFmt(nativeTreasury*price) : "—"}</td>
       </tr>`;
     }
     if(showBorrow && b > 0.0001) {
@@ -4173,14 +4179,50 @@ function twRenderWallet(w, data) {
         <td><span class="tw-badge tw-badge-b">Debt</span></td>
         <td class="tw-debt">${twFmtAmt(b,sym) || "—"}</td>
         <td class="tw-debt">${twFmt(b*price)}</td>
-        <td style="color:rgba(255,255,255,0.3)">${twFmt(liq*price)}</td>
-        <td></td>
+        <td style="color:#F59E0B;font-size:12px">${borrowedLiq > 0.0001 ? twFmt(borrowedLiq*price) : "—"}</td>
+        <td style="color:#00B896;font-size:12px">${nativeTreasury > 0.0001 ? twFmt(nativeTreasury*price) : "—"}</td>
       </tr>`;
+    }
+    // Treasury filter: show assets with uninvested treasury even if not in protocol
+    if(twFilter === "treasury" && !showSupply && !showBorrow) {
+      if(nativeTreasury > 0.0001) {
+        rows += `<tr>
+          <td><span class="tw-asym">${sym}</span></td>
+          <td><span class="tw-badge tw-badge-n">Liquid</span></td>
+          <td style="color:rgba(255,255,255,0.6)">${twFmtAmt(nativeTreasury,sym) || "—"}</td>
+          <td style="color:rgba(255,255,255,0.6)">${twFmt(nativeTreasury*price)}</td>
+          <td>—</td>
+          <td style="color:#00B896">${twFmt(nativeTreasury*price)}</td>
+        </tr>`;
+      }
     }
   }
 
-  // If all hidden by filter
-  if(!rows) {
+  // Treasury-only mode: show all assets with uninvested capital
+  if(twFilter === "treasury") {
+    rows = "";
+    for(const sym of Object.keys(TW_ASSETS)) {
+      const b   = data.borrow[sym]  || 0;
+      const liq = data.liquid[sym]  || 0;
+      const price = twPrices[sym]   || 0;
+      const borrowedLiq    = Math.min(b, liq);
+      const nativeTreasury = Math.max(0, liq - borrowedLiq);
+      if(nativeTreasury > 0.0001) {
+        rows += `<tr>
+          <td><span class="tw-asym">${sym}</span></td>
+          <td><span class="tw-badge tw-badge-n">Uninvested</span></td>
+          <td style="color:rgba(255,255,255,0.75)">${twFmtAmt(nativeTreasury,sym)}</td>
+          <td style="color:rgba(255,255,255,0.75)">${twFmt(nativeTreasury*price)}</td>
+          <td style="color:#F59E0B;font-size:12px">${borrowedLiq > 0.0001 ? twFmt(borrowedLiq*price)+' (loaned)' : '—'}</td>
+          <td style="color:#00B896">${twFmt(nativeTreasury*price)}</td>
+        </tr>`;
+      }
+    }
+    if(!rows) rows = `<tr><td colspan="6" class="tw-empty">No uninvested treasury in this wallet</td></tr>`;
+  }
+
+  // If all hidden by filter (non-treasury modes)
+  if(!rows && twFilter !== "treasury") {
     if(twFilter === "supply" && data.totalSupplyUSD < 0.01) rows = `<tr><td colspan="6" class="tw-empty">No supply position</td></tr>`;
     else if(twFilter === "borrow" && data.totalDebtUSD < 0.01) rows = `<tr><td colspan="6" class="tw-empty">No debt position</td></tr>`;
     else rows = `<tr><td colspan="6" class="tw-empty">No active positions</td></tr>`;
@@ -4220,7 +4262,7 @@ function twRenderWallet(w, data) {
     <div class="tw-wbody">
       <table class="tw-table">
         <thead><tr>
-          <th>Asset</th><th>Type</th><th>Amount</th><th>USD Value</th><th>Wallet Balance</th><th></th>
+          <th>Asset</th><th>Type</th><th>Amount</th><th>USD Value</th><th style="color:#F59E0B">Loan in Wallet</th><th style="color:#00B896">Uninvested Treasury</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -4258,7 +4300,7 @@ function twRender() {
 function twSetFilter(f) {
   twFilter = f;
   document.querySelectorAll("#team-root .tw-fbtn").forEach((b,i) => {
-    b.classList.toggle("active", ["all","supply","borrow"][i] === f);
+    b.classList.toggle("active", ["all","supply","borrow","treasury"][i] === f);
   });
   twRender();
 }
