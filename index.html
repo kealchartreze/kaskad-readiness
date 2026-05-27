@@ -4108,13 +4108,12 @@ async function twFetchWallet(wallet) {
     } catch(e) { supply[sym]=0; borrow[sym]=0; liquid[sym]=0; }
   }
 
-  // Native iKAS gas balance (eth_getBalance — not an ERC-20)
+  // Native iKAS gas balance (eth_getBalance — separate from wrapped iKAS ERC-20)
+  let nativeIkasAmt = 0;
   try {
     const rawNative = await twRpc("eth_getBalance", [wallet, "latest"]);
-    const nativeIkas = Number(BigInt(rawNative)) / 1e18;
-    // Add to existing iKAS liquid (iKAS wrapped ERC-20 + native iKAS)
-    liquid["iKAS"] = (liquid["iKAS"] || 0) + nativeIkas;
-    totalLiquidUSD += nativeIkas * (twPrices["iKAS"] || 0);
+    nativeIkasAmt = Number(BigInt(rawNative)) / 1e18;
+    totalLiquidUSD += nativeIkasAmt * (twPrices["iKAS"] || 0);
   } catch(e) {}
 
   // Health factor from Pool.getUserAccountData(address)
@@ -4128,7 +4127,7 @@ async function twFetchWallet(wallet) {
     if(hf > 1e10) hf = null; // no debt = effectively infinite
   } catch(e) {}
 
-  return { supply, borrow, liquid, totalSupplyUSD, totalDebtUSD, totalLiquidUSD, hf };
+  return { supply, borrow, liquid, nativeIkasAmt, totalSupplyUSD, totalDebtUSD, totalLiquidUSD, hf };
 }
 
 function twFmt(v) {
@@ -4161,6 +4160,31 @@ function twRenderWallet(w, data) {
   const showSupply   = twFilter === "all" || twFilter === "supply";
   const showBorrow   = twFilter === "all" || twFilter === "borrow";
   const showTreasury = twFilter === "all" || twFilter === "treasury";
+  const nativeIkas   = data.nativeIkasAmt || 0;
+  const iKasPrice    = twPrices["iKAS"] || 0;
+
+  // Always render native iKAS gas row if non-zero (visible in all filter modes)
+  if(nativeIkas > 0.0001 && twFilter !== "supply" && twFilter !== "borrow") {
+    rows += `<tr style="background:rgba(0,184,150,0.04);">
+      <td><span class="tw-asym">iKAS</span> <span style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:400;">(gas)</span></td>
+      <td><span class="tw-badge" style="background:rgba(99,102,241,0.15);color:#818cf8;">WALLET</span></td>
+      <td style="color:rgba(255,255,255,0.85);font-weight:600;">${twFmtAmt(nativeIkas,"iKAS")}</td>
+      <td style="color:rgba(255,255,255,0.85);font-weight:600;">${twFmt(nativeIkas*iKasPrice)}</td>
+      <td>—</td>
+      <td style="color:#00B896;font-weight:600;">${twFmt(nativeIkas*iKasPrice)}</td>
+    </tr>`;
+  }
+  // Show native iKAS row in Supply-only filter too (it's relevant context)
+  if(nativeIkas > 0.0001 && twFilter === "supply") {
+    rows += `<tr style="background:rgba(0,184,150,0.04);">
+      <td><span class="tw-asym">iKAS</span> <span style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:400;">(gas)</span></td>
+      <td><span class="tw-badge" style="background:rgba(99,102,241,0.15);color:#818cf8;">WALLET</span></td>
+      <td style="color:rgba(255,255,255,0.85);font-weight:600;">${twFmtAmt(nativeIkas,"iKAS")}</td>
+      <td style="color:rgba(255,255,255,0.85);font-weight:600;">${twFmt(nativeIkas*iKasPrice)}</td>
+      <td>—</td>
+      <td style="color:#00B896;font-weight:600;">${twFmt(nativeIkas*iKasPrice)}</td>
+    </tr>`;
+  }
 
   for(const sym of Object.keys(TW_ASSETS)) {
     const s     = data.supply[sym]  || 0;
@@ -4210,6 +4234,17 @@ function twRenderWallet(w, data) {
   // Treasury-only mode: show all assets with uninvested capital
   if(twFilter === "treasury") {
     rows = "";
+    // Native iKAS always shows first in treasury mode
+    if(nativeIkas > 0.0001) {
+      rows += `<tr style="background:rgba(0,184,150,0.04);">
+        <td><span class="tw-asym">iKAS</span> <span style="font-size:10px;color:rgba(255,255,255,0.3);font-weight:400;">(gas)</span></td>
+        <td><span class="tw-badge" style="background:rgba(99,102,241,0.15);color:#818cf8;">WALLET</span></td>
+        <td style="color:rgba(255,255,255,0.85);font-weight:600;">${twFmtAmt(nativeIkas,"iKAS")}</td>
+        <td style="color:rgba(255,255,255,0.85);font-weight:600;">${twFmt(nativeIkas*iKasPrice)}</td>
+        <td>—</td>
+        <td style="color:#00B896;font-weight:600;">${twFmt(nativeIkas*iKasPrice)}</td>
+      </tr>`;
+    }
     for(const sym of Object.keys(TW_ASSETS)) {
       const b   = data.borrow[sym]  || 0;
       const liq = data.liquid[sym]  || 0;
