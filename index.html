@@ -1090,6 +1090,7 @@ canvas { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
     <button class="nav-tab" onclick="switchTab('pillars')">⚡ Strategic Pillars</button>
     <button class="nav-tab" onclick="switchTab('events')">📅 Events</button>
     <button class="nav-tab" onclick="switchTab('squad')">🤖 Squad</button>
+    <button class="nav-tab" onclick="switchTab('tvl')">📊 TVL Tracker</button>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode">
       <span class="tt-icon" id="themeIcon">🌙</span>
       <span id="themeLabel">Dark</span>
@@ -2017,15 +2018,23 @@ function switchTab(tab) {
   document.getElementById('tab-pillars').style.display = tab === 'pillars' ? '' : 'none';
   document.getElementById('tab-events').style.display = tab === 'events' ? '' : 'none';
   document.getElementById('tab-squad').style.display = tab === 'squad' ? '' : 'none';
+  document.getElementById('tab-tvl').style.display = tab === 'tvl' ? '' : 'none';
   document.querySelectorAll('.nav-tab').forEach((btn, i) => {
     btn.classList.toggle('active',
       (i === 0 && tab === 'launch') ||
       (i === 1 && tab === 'pillars') ||
       (i === 2 && tab === 'events') ||
-      (i === 3 && tab === 'squad')
+      (i === 3 && tab === 'squad') ||
+      (i === 4 && tab === 'tvl')
     );
   });
   if (tab === 'events') renderWeekGrid();
+  if (tab === 'tvl') {
+    const iframe = document.getElementById('tvl-iframe');
+    if (iframe && !iframe.src.startsWith('http')) {
+      iframe.src = iframe.getAttribute('data-src');
+    }
+  }
   if (tab === 'squad') { setTimeout(function(){ if(window.sfInit) window.sfInit(); }, 100); }
   closeModal();
 }
@@ -3305,6 +3314,17 @@ loadFromServer().then(() => {
   </div>
   <div class="hint">Hover a task to trace its signal stream</div>
     </div>
+  </div>
+
+  <!-- TAB: TVL TRACKER -->
+  <div id="tab-tvl" style="display:none; padding:0; height:calc(100vh - 56px);">
+    <iframe
+      id="tvl-iframe"
+      src="about:blank"
+      style="width:100%; height:100%; border:none; display:block;"
+      data-src="/tvl-tracker.html"
+      title="TVL Referral Tracker"
+    ></iframe>
   </div>
 
 <script>
