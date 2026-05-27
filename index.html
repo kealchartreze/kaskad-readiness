@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1090,6 +1090,7 @@ canvas { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
     <button class="nav-tab" onclick="switchTab('pillars')">⚡ Strategic Pillars</button>
     <button class="nav-tab" onclick="switchTab('events')">📅 Events</button>
     <button class="nav-tab" onclick="switchTab('squad')">🤖 Squad</button>
+    <button class="nav-tab" onclick="switchTab('team')">💼 Team Wallets</button>
     <button class="nav-tab" onclick="switchTab('tvl')">📊 TVL Tracker</button>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode">
       <span class="tt-icon" id="themeIcon">🌙</span>
@@ -2019,13 +2020,15 @@ function switchTab(tab) {
   document.getElementById('tab-events').style.display = tab === 'events' ? '' : 'none';
   document.getElementById('tab-squad').style.display = tab === 'squad' ? '' : 'none';
   document.getElementById('tab-tvl').style.display = tab === 'tvl' ? '' : 'none';
+  document.getElementById('tab-team').style.display = tab === 'team' ? '' : 'none';
   document.querySelectorAll('.nav-tab').forEach((btn, i) => {
     btn.classList.toggle('active',
       (i === 0 && tab === 'launch') ||
       (i === 1 && tab === 'pillars') ||
       (i === 2 && tab === 'events') ||
       (i === 3 && tab === 'squad') ||
-      (i === 4 && tab === 'tvl')
+      (i === 4 && tab === 'tvl') ||
+      (i === 5 && tab === 'team')
     );
   });
   if (tab === 'events') renderWeekGrid();
@@ -3883,6 +3886,407 @@ setInterval(refreshAll,60000);
 </script>
     </div>
   </div>
+
+
+<!-- TAB: TEAM WALLETS -->
+<div id="tab-team" style="display:none;">
+<style>
+#team-root{font-family:Outfit,system-ui,sans-serif;background:var(--bg,#060B28);color:var(--text,rgba(255,255,255,0.92));-webkit-font-smoothing:antialiased}
+#team-root .tw-subbar{background:rgba(6,11,40,0.85);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.07);padding:10px 32px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:50;}
+#team-root .tw-subbar-left{display:flex;align-items:center;gap:10px;}
+#team-root .tw-chain{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#00B896;background:rgba(0,184,150,0.1);padding:3px 10px;border-radius:6px;border:1px solid rgba(0,184,150,0.2);}
+#team-root .tw-filter{display:flex;gap:6px;}
+#team-root .tw-fbtn{font-size:11px;font-weight:600;padding:4px 12px;border-radius:6px;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);font-family:inherit;transition:all 150ms;}
+#team-root .tw-fbtn.active{background:rgba(0,184,150,0.15);border-color:rgba(0,184,150,0.3);color:#00B896;}
+#team-root .tw-rbtn{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);padding:6px 14px;border-radius:8px;cursor:pointer;font-family:inherit;transition:background 150ms;}
+#team-root .tw-rbtn:hover{background:rgba(255,255,255,0.09);}
+#team-root .tw-wrap{max-width:1280px;margin:0 auto;padding:32px 32px 80px;}
+#team-root .tw-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px;}
+#team-root .tw-scard{background:rgba(11,20,55,0.6);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:18px 20px;backdrop-filter:blur(20px);}
+#team-root .tw-slabel{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:8px;}
+#team-root .tw-sval{font-size:24px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;}
+#team-root .tw-ssub{font-size:12px;color:rgba(255,255,255,0.4);margin-top:3px;}
+#team-root .tw-wallets{display:flex;flex-direction:column;gap:16px;}
+#team-root .tw-wcard{background:rgba(11,20,55,0.6);border:1px solid rgba(255,255,255,0.07);border-radius:20px;overflow:hidden;backdrop-filter:blur(20px);}
+#team-root .tw-wheader{padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);}
+#team-root .tw-wleft{display:flex;align-items:center;gap:12px;}
+#team-root .tw-wavatar{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+#team-root .tw-wname{font-size:14px;font-weight:700;}
+#team-root .tw-waddr{font-family:monospace;font-size:11px;color:rgba(255,255,255,0.35);margin-top:2px;}
+#team-root .tw-wstats{display:flex;gap:24px;}
+#team-root .tw-wstat{text-align:right;}
+#team-root .tw-wstat-val{font-size:18px;font-weight:800;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;}
+#team-root .tw-wstat-lbl{font-size:10px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.08em;}
+#team-root .tw-wbody{padding:0 24px 20px;}
+#team-root .tw-table{width:100%;border-collapse:collapse;margin-top:16px;}
+#team-root .tw-table th{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding:8px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.06);}
+#team-root .tw-table td{font-size:13px;padding:11px 10px;border-bottom:1px solid rgba(255,255,255,0.03);font-variant-numeric:tabular-nums;color:rgba(255,255,255,0.75);}
+#team-root .tw-table tr:last-child td{border-bottom:none;}
+#team-root .tw-table tr:hover td{background:rgba(255,255,255,0.02);}
+#team-root .tw-asym{font-weight:700;color:rgba(255,255,255,0.92);}
+#team-root .tw-supply{color:#00B896;font-weight:600;}
+#team-root .tw-debt{color:#F59E0B;font-weight:600;}
+#team-root .tw-net{font-weight:700;}
+#team-root .tw-net.pos{color:#00B896;}
+#team-root .tw-net.neg{color:#EF4444;}
+#team-root .tw-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.05em;}
+#team-root .tw-badge-s{background:rgba(0,184,150,0.12);color:#00B896;}
+#team-root .tw-badge-b{background:rgba(245,158,11,0.12);color:#F59E0B;}
+#team-root .tw-badge-n{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.3);}
+#team-root .tw-hf{font-size:13px;font-weight:700;padding:2px 8px;border-radius:5px;}
+#team-root .tw-hf-safe{color:#00B896;background:rgba(0,184,150,0.1);}
+#team-root .tw-hf-warn{color:#F59E0B;background:rgba(245,158,11,0.1);}
+#team-root .tw-hf-danger{color:#EF4444;background:rgba(239,68,68,0.1);}
+#team-root .tw-hf-none{color:rgba(255,255,255,0.3);}
+#team-root .tw-section-lbl{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding:12px 0 6px;border-top:1px solid rgba(255,255,255,0.05);margin-top:6px;}
+#team-root .tw-empty{color:rgba(255,255,255,0.25);font-size:12px;padding:14px 0;}
+#team-root .tw-loading{color:rgba(255,255,255,0.25);font-size:12px;animation:tw-pulse 1.5s ease-in-out infinite;}
+#team-root .tw-ts{font-size:12px;color:rgba(255,255,255,0.25);}
+#team-root a.tw-scan{color:#00B896;text-decoration:none;opacity:0.6;}
+#team-root a.tw-scan:hover{opacity:1;}
+@keyframes tw-pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes tw-spin{to{transform:rotate(360deg)}}
+#team-root .tw-spin{animation:tw-spin 1s linear infinite;}
+@media(max-width:900px){#team-root .tw-summary{grid-template-columns:repeat(2,1fr)}#team-root .tw-wstats{gap:12px}}
+</style>
+
+<div id="team-root">
+  <!-- Sub-header -->
+  <div class="tw-subbar">
+    <div class="tw-subbar-left">
+      <span class="tw-chain">Igra Mainnet</span>
+      <div class="tw-filter">
+        <button class="tw-fbtn active" onclick="twSetFilter('all')">All</button>
+        <button class="tw-fbtn" onclick="twSetFilter('supply')">Supply Only</button>
+        <button class="tw-fbtn" onclick="twSetFilter('borrow')">Debt Only</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="tw-rbtn" onclick="twRefresh()">
+        <svg id="tw-ricon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Refresh
+      </button>
+      <span class="tw-ts" id="tw-ts">--</span>
+    </div>
+  </div>
+
+  <div class="tw-wrap">
+    <!-- Summary cards -->
+    <div class="tw-summary">
+      <div class="tw-scard">
+        <div class="tw-slabel">Total Supplied</div>
+        <div class="tw-sval" id="tw-total-supply">$--</div>
+        <div class="tw-ssub">across 3 wallets</div>
+      </div>
+      <div class="tw-scard">
+        <div class="tw-slabel">Total Debt</div>
+        <div class="tw-sval" id="tw-total-debt" style="color:#F59E0B;">$--</div>
+        <div class="tw-ssub">outstanding borrows</div>
+      </div>
+      <div class="tw-scard">
+        <div class="tw-slabel">Net Position</div>
+        <div class="tw-sval" id="tw-net-pos">$--</div>
+        <div class="tw-ssub">supply − debt</div>
+      </div>
+      <div class="tw-scard">
+        <div class="tw-slabel">Wallet Balance (liquid)</div>
+        <div class="tw-sval" id="tw-liquid">$--</div>
+        <div class="tw-ssub">not in protocol</div>
+      </div>
+    </div>
+
+    <!-- Wallet cards -->
+    <div class="tw-wallets" id="tw-wallet-list"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+const TW_RPC = "https://rpc.igralabs.com:8545";
+const TW_POOL = "0x1Fc4f91E99eFDC90c4B2B8F69fE0b4BFd819a330";
+const TW_POOL_DP = "0xC76656F7dd9B155DaA57430cb5B5b97eAB64B4b5";
+const TW_PROVIDER = "0x4e718714BF19c7BBcf402ecA92f971B8a65c716D";
+
+const TW_ASSETS = {
+  iKAS:  { addr:"0x17Ec7E1768c813E2a3a9b0f94A35605CA520C242", dec:18, gecko:"kaspa",               sym:"iKAS"  },
+  USDC:  { addr:"0xA5b8BF902b2844dA17d4506cc827F7F1681735E7", dec:6,  gecko:"usd-coin",            sym:"USDC"  },
+  USDT:  { addr:"0x46346F49b4fe8c640c5FCdbed2d6741056FEB959", dec:6,  gecko:"tether",              sym:"USDT"  },
+  WETH:  { addr:"0x69790024D44504F05973E127197E6df17e283859", dec:18, gecko:"ethereum",            sym:"WETH"  },
+  cbBTC: { addr:"0xF2B48b6e560af8834622203a8EEff6960d6172De", dec:8,  gecko:"coinbase-wrapped-btc",sym:"cbBTC" },
+};
+
+const TW_WALLETS = [
+  { id:"w1", name:"iKAS Yield Wallet",       addr:"0xdf5F4FD90246Ca0Da83fFF90E674CD0Ce5e13EeF", emoji:"⚡", color:"rgba(0,184,150,0.15)"  },
+  { id:"w2", name:"Stablecoins Yield Wallet",addr:"0x05b20CB922097117b00C13D8A1E3AD5e62E1d0ba", emoji:"💵", color:"rgba(67,56,202,0.15)"  },
+  { id:"w3", name:"Debug / Testing Wallet",  addr:"0x2f296ed8E58a53c9642581e04Da794Bdd20431E6", emoji:"🔧", color:"rgba(245,158,11,0.12)"  },
+];
+
+let twPrices = { iKAS:0.12, USDC:1, USDT:1, WETH:3500, cbBTC:100000 };
+let twData = {};   // addr -> { supply:{sym:usd}, borrow:{sym:usd}, liquid:{sym:usd}, hf }
+let twATokens = {};  // sym -> aToken addr
+let twDebtTokens = {}; // sym -> variableDebtToken addr
+let twFilter = 'all';
+let twLoaded = false;
+
+async function twRpc(method, params) {
+  const r = await fetch(TW_RPC, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({jsonrpc:"2.0",id:1,method,params})
+  });
+  const j = await r.json();
+  if(j.error) throw new Error(j.error.message);
+  return j.result;
+}
+
+function twPad(addr) { return addr.replace("0x","").toLowerCase().padStart(64,"0"); }
+function twBalOf(token, wallet) { return token + "70a08231" + twPad(wallet); }
+
+async function twFetchPrices() {
+  try {
+    const ids = Object.values(TW_ASSETS).map(a=>a.gecko).join(",");
+    const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
+    const d = await r.json();
+    for(const [sym,info] of Object.entries(TW_ASSETS)) {
+      if(d[info.gecko]?.usd) twPrices[sym] = d[info.gecko].usd;
+    }
+  } catch(e) {}
+}
+
+async function twLoadTokens() {
+  if(Object.keys(twATokens).length) return;
+  // getReserveTokensAddresses(asset) on UI Pool Data Provider
+  // sig: 0xd2493b6c (getReserveData) — returns struct with aTokenAddress at known offset
+  // Actually use Pool.getReserveData(asset) — aToken is at offset in the returned struct
+  // Pool.getReserveData selector: 0x35ea6a75
+  await Promise.all(Object.entries(TW_ASSETS).map(async ([sym, info]) => {
+    try {
+      const data = "0x35ea6a75" + twPad(info.addr);
+      const raw = await twRpc("eth_call", [{to:TW_POOL, data}, "latest"]);
+      // ReserveData struct: config(32) + liqIdx(32) + currentLiqRate(32) + varBorrowIdx(32) +
+      // currentVarBorrowRate(32) + stableBorrowRate(32) + lastUpdateTimestamp(32) +
+      // id(32) + aTokenAddress(32) + stableDebtAddress(32) + variableDebtAddress(32)
+      // aToken is at offset 8*32 = 256 bytes = 512 hex chars after "0x"
+      const hex = raw.slice(2);
+      twATokens[sym]     = "0x" + hex.slice(8*64+24, 8*64+64);
+      twDebtTokens[sym]  = "0x" + hex.slice(10*64+24,10*64+64);
+    } catch(e) { twATokens[sym] = null; twDebtTokens[sym] = null; }
+  }));
+}
+
+async function twFetchWallet(wallet) {
+  const supply = {}, borrow = {}, liquid = {};
+  let totalSupplyUSD = 0, totalDebtUSD = 0, totalLiquidUSD = 0;
+
+  await twLoadTokens();
+
+  for(const [sym, info] of Object.entries(TW_ASSETS)) {
+    try {
+      // aToken balance = supply
+      const at = twATokens[sym];
+      if(at && at !== "0x0000000000000000000000000000000000000000") {
+        const raw = await twRpc("eth_call", [{to:at, data:"0x70a08231"+twPad(wallet)}, "latest"]);
+        const val = Number(BigInt(raw)) / Math.pow(10, info.dec);
+        supply[sym] = val;
+        totalSupplyUSD += val * (twPrices[sym]||0);
+      } else { supply[sym] = 0; }
+
+      // variableDebtToken balance = borrow
+      const dt = twDebtTokens[sym];
+      if(dt && dt !== "0x0000000000000000000000000000000000000000") {
+        const raw = await twRpc("eth_call", [{to:dt, data:"0x70a08231"+twPad(wallet)}, "latest"]);
+        const val = Number(BigInt(raw)) / Math.pow(10, info.dec);
+        borrow[sym] = val;
+        totalDebtUSD += val * (twPrices[sym]||0);
+      } else { borrow[sym] = 0; }
+
+      // Underlying wallet balance (liquid/unwrapped)
+      const raw2 = await twRpc("eth_call", [{to:info.addr, data:"0x70a08231"+twPad(wallet)}, "latest"]);
+      const liq = Number(BigInt(raw2)) / Math.pow(10, info.dec);
+      liquid[sym] = liq;
+      totalLiquidUSD += liq * (twPrices[sym]||0);
+    } catch(e) { supply[sym]=0; borrow[sym]=0; liquid[sym]=0; }
+  }
+
+  // Health factor from Pool.getUserAccountData(address)
+  let hf = null;
+  try {
+    const raw = await twRpc("eth_call", [{to:TW_POOL, data:"0xbf92857c"+twPad(wallet)}, "latest"]);
+    const hex = raw.slice(2);
+    // Returns: totalCollateralBase, totalDebtBase, availableBorrowsBase, currentLiquidationThreshold, ltv, healthFactor
+    const hfRaw = BigInt("0x"+hex.slice(5*64, 6*64));
+    hf = Number(hfRaw) / 1e18;
+    if(hf > 1e10) hf = null; // no debt = effectively infinite
+  } catch(e) {}
+
+  return { supply, borrow, liquid, totalSupplyUSD, totalDebtUSD, totalLiquidUSD, hf };
+}
+
+function twFmt(v) {
+  if(v === null || v === undefined) return "$--";
+  if(v >= 1e6) return "$"+(v/1e6).toFixed(2)+"M";
+  if(v >= 1e3) return "$"+(v/1e3).toFixed(2)+"K";
+  return "$"+v.toFixed(2);
+}
+function twFmtAmt(v, sym) {
+  if(!v || v < 0.0001) return null;
+  const dec = v < 0.01 ? 6 : v < 1 ? 4 : v < 1000 ? 4 : 2;
+  return v.toLocaleString("en-US",{maximumFractionDigits:dec}) + " " + sym;
+}
+
+function twHfBadge(hf) {
+  if(hf === null) return '<span class="tw-hf tw-hf-none">—</span>';
+  if(hf > 2)  return `<span class="tw-hf tw-hf-safe">${hf.toFixed(2)}</span>`;
+  if(hf > 1.1) return `<span class="tw-hf tw-hf-warn">${hf.toFixed(2)}</span>`;
+  return `<span class="tw-hf tw-hf-danger">${hf.toFixed(2)}</span>`;
+}
+
+function twShortAddr(a) { return a.slice(0,6)+"…"+a.slice(-4); }
+
+function twRenderWallet(w, data) {
+  const netUSD = data.totalSupplyUSD - data.totalDebtUSD;
+  const netCls = netUSD >= 0 ? "pos" : "neg";
+
+  // Build asset rows
+  let rows = "";
+  const showSupply = twFilter === "all" || twFilter === "supply";
+  const showBorrow = twFilter === "all" || twFilter === "borrow";
+
+  for(const sym of Object.keys(TW_ASSETS)) {
+    const s = data.supply[sym] || 0;
+    const b = data.borrow[sym] || 0;
+    const liq = data.liquid[sym] || 0;
+    const price = twPrices[sym] || 0;
+
+    if(showSupply && s > 0.0001) {
+      rows += `<tr>
+        <td><span class="tw-asym">${sym}</span></td>
+        <td><span class="tw-badge tw-badge-s">Supply</span></td>
+        <td class="tw-supply">${twFmtAmt(s,sym) || "—"}</td>
+        <td class="tw-supply">${twFmt(s*price)}</td>
+        <td style="color:rgba(255,255,255,0.3)">${twFmt(liq*price)}</td>
+        <td></td>
+      </tr>`;
+    }
+    if(showBorrow && b > 0.0001) {
+      rows += `<tr>
+        <td><span class="tw-asym">${sym}</span></td>
+        <td><span class="tw-badge tw-badge-b">Debt</span></td>
+        <td class="tw-debt">${twFmtAmt(b,sym) || "—"}</td>
+        <td class="tw-debt">${twFmt(b*price)}</td>
+        <td style="color:rgba(255,255,255,0.3)">${twFmt(liq*price)}</td>
+        <td></td>
+      </tr>`;
+    }
+  }
+
+  // If all hidden by filter
+  if(!rows) {
+    if(twFilter === "supply" && data.totalSupplyUSD < 0.01) rows = `<tr><td colspan="6" class="tw-empty">No supply position</td></tr>`;
+    else if(twFilter === "borrow" && data.totalDebtUSD < 0.01) rows = `<tr><td colspan="6" class="tw-empty">No debt position</td></tr>`;
+    else rows = `<tr><td colspan="6" class="tw-empty">No active positions</td></tr>`;
+  }
+
+  return `<div class="tw-wcard">
+    <div class="tw-wheader">
+      <div class="tw-wleft">
+        <div class="tw-wavatar" style="background:${w.color}">${w.emoji}</div>
+        <div>
+          <div class="tw-wname">${w.name}</div>
+          <div class="tw-waddr">
+            ${twShortAddr(w.addr)}
+            <a class="tw-scan" href="https://igrascan.com/address/${w.addr}" target="_blank" style="margin-left:6px;">↗</a>
+          </div>
+        </div>
+      </div>
+      <div class="tw-wstats">
+        <div class="tw-wstat">
+          <div class="tw-wstat-val" style="color:#00B896">${twFmt(data.totalSupplyUSD)}</div>
+          <div class="tw-wstat-lbl">Supplied</div>
+        </div>
+        <div class="tw-wstat">
+          <div class="tw-wstat-val" style="color:#F59E0B">${twFmt(data.totalDebtUSD)}</div>
+          <div class="tw-wstat-lbl">Debt</div>
+        </div>
+        <div class="tw-wstat">
+          <div class="tw-wstat-val tw-net ${netCls}">${twFmt(Math.abs(netUSD))}</div>
+          <div class="tw-wstat-lbl">Net</div>
+        </div>
+        <div class="tw-wstat">
+          ${twHfBadge(data.hf)}
+          <div class="tw-wstat-lbl" style="margin-top:2px">Health</div>
+        </div>
+      </div>
+    </div>
+    <div class="tw-wbody">
+      <table class="tw-table">
+        <thead><tr>
+          <th>Asset</th><th>Type</th><th>Amount</th><th>USD Value</th><th>Wallet Balance</th><th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function twRenderSummary() {
+  let totalS=0, totalD=0, totalL=0;
+  for(const d of Object.values(twData)) {
+    totalS += d.totalSupplyUSD||0;
+    totalD += d.totalDebtUSD||0;
+    totalL += d.totalLiquidUSD||0;
+  }
+  const net = totalS - totalD;
+  document.getElementById("tw-total-supply").textContent = twFmt(totalS);
+  document.getElementById("tw-total-debt").textContent = twFmt(totalD);
+  const netEl = document.getElementById("tw-net-pos");
+  netEl.textContent = (net >= 0 ? "" : "-") + twFmt(Math.abs(net));
+  netEl.style.color = net >= 0 ? "#00B896" : "#EF4444";
+  document.getElementById("tw-liquid").textContent = twFmt(totalL);
+}
+
+function twRender() {
+  const el = document.getElementById("tw-wallet-list");
+  if(!twLoaded) { el.innerHTML = '<div style="padding:40px;text-align:center;color:rgba(255,255,255,0.25);font-size:13px;" class="tw-loading">Loading wallet data from Igra Mainnet…</div>'; return; }
+  el.innerHTML = TW_WALLETS.map(w => {
+    const d = twData[w.addr.toLowerCase()];
+    if(!d) return `<div class="tw-wcard" style="padding:30px;text-align:center;color:rgba(255,255,255,0.2);font-size:13px;">Loading ${w.name}…</div>`;
+    return twRenderWallet(w, d);
+  }).join("");
+  twRenderSummary();
+}
+
+function twSetFilter(f) {
+  twFilter = f;
+  document.querySelectorAll("#team-root .tw-fbtn").forEach((b,i) => {
+    b.classList.toggle("active", ["all","supply","borrow"][i] === f);
+  });
+  twRender();
+}
+
+async function twRefresh() {
+  const icon = document.getElementById("tw-ricon");
+  icon.classList.add("tw-spin");
+  try {
+    await twFetchPrices();
+    await Promise.all(TW_WALLETS.map(async w => {
+      twData[w.addr.toLowerCase()] = await twFetchWallet(w.addr);
+    }));
+    twLoaded = true;
+    twRender();
+    document.getElementById("tw-ts").textContent = "Updated " + new Date().toLocaleTimeString();
+  } catch(e) {
+    console.error("TW refresh error:", e);
+  } finally {
+    icon.classList.remove("tw-spin");
+  }
+}
+
+// Auto-refresh every 90 seconds
+twRefresh();
+setInterval(twRefresh, 90000);
+})();
+</script>
+</div>
 
 
 <script>
