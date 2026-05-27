@@ -140,7 +140,7 @@ textarea{resize:vertical;min-height:80px;font-family:monospace;font-size:12px}
 <body>
 <div class="bg-orbs"></div>
 
-<nav>
+<nav id="tvl-nav">
   <div class="nav-inner">
     <div class="nav-logo"><div class="nav-dot"></div>Kaskad TVL Tracker</div>
     <div style="display:flex;align-items:center;gap:12px">
@@ -253,10 +253,18 @@ textarea{resize:vertical;min-height:80px;font-family:monospace;font-size:12px}
 <div class="toast" id="toast"><div class="toast-dot" id="tdot"></div><span id="tmsg"></span></div>
 
 <script>
+// Hide nav when embedded as iframe
+if (window.self !== window.top) {
+  document.addEventListener('DOMContentLoaded', function() {
+    const nav = document.getElementById('tvl-nav');
+    if (nav) nav.style.display = 'none';
+  });
+}
+
 const SHEET_ID="1ZAFmW7qIst7ubDEszb-3faPv0TtIS-AXOVctD0Hb2jk";
 const RPC="https://rpc.igralabs.com:8545";
 const POOL_DP="0xFEaD8E14e58ecF72B5cD585458f07523F173E2F4";
-const EPOCH_START=1748174400;
+const EPOCH_START=1779710400;
 const EPOCH_DUR=2592000;
 const COMM_RATE=0.01;
 const KSKD_PRICE=0.05;
