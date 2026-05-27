@@ -3892,7 +3892,7 @@ setInterval(refreshAll,60000);
 <div id="tab-team" style="display:none;">
 <style>
 #team-root{font-family:Outfit,system-ui,sans-serif;background:var(--bg,#060B28);color:var(--text,rgba(255,255,255,0.92));-webkit-font-smoothing:antialiased}
-#team-root .tw-subbar{background:rgba(6,11,40,0.85);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.07);padding:10px 32px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:50;}
+#team-root .tw-subbar{background:rgba(6,11,40,0.85);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.07);padding:10px 32px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative;z-index:10;}
 #team-root .tw-subbar-left{display:flex;align-items:center;gap:10px;}
 #team-root .tw-chain{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#00B896;background:rgba(0,184,150,0.1);padding:3px 10px;border-radius:6px;border:1px solid rgba(0,184,150,0.2);}
 #team-root .tw-filter{display:flex;gap:6px;}
@@ -4100,13 +4100,22 @@ async function twFetchWallet(wallet) {
         totalDebtUSD += val * (twPrices[sym]||0);
       } else { borrow[sym] = 0; }
 
-      // Underlying wallet balance (liquid/unwrapped)
+      // Underlying wallet balance (liquid/unwrapped ERC-20)
       const raw2 = await twRpc("eth_call", [{to:info.addr, data:"0x70a08231"+twPad(wallet)}, "latest"]);
       const liq = Number(BigInt(raw2)) / Math.pow(10, info.dec);
       liquid[sym] = liq;
       totalLiquidUSD += liq * (twPrices[sym]||0);
     } catch(e) { supply[sym]=0; borrow[sym]=0; liquid[sym]=0; }
   }
+
+  // Native iKAS gas balance (eth_getBalance — not an ERC-20)
+  try {
+    const rawNative = await twRpc("eth_getBalance", [wallet, "latest"]);
+    const nativeIkas = Number(BigInt(rawNative)) / 1e18;
+    // Add to existing iKAS liquid (iKAS wrapped ERC-20 + native iKAS)
+    liquid["iKAS"] = (liquid["iKAS"] || 0) + nativeIkas;
+    totalLiquidUSD += nativeIkas * (twPrices["iKAS"] || 0);
+  } catch(e) {}
 
   // Health factor from Pool.getUserAccountData(address)
   let hf = null;
@@ -4236,7 +4245,7 @@ function twRenderWallet(w, data) {
           <div class="tw-wname">${w.name}</div>
           <div class="tw-waddr">
             ${twShortAddr(w.addr)}
-            <a class="tw-scan" href="https://igrascan.com/address/${w.addr}" target="_blank" style="margin-left:6px;">↗</a>
+            <a class="tw-scan" href="https://explorer.igralabs.com/address/${w.addr}" target="_blank" style="margin-left:6px;">↗</a>
           </div>
         </div>
       </div>
