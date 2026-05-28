@@ -4192,43 +4192,39 @@ function twRenderWallet(w, data) {
     const b     = data.borrow[sym]  || 0;
     const liq   = data.liquid[sym]  || 0;
     const price = twPrices[sym]     || 0;
-    // borrowed_liquid = how much of the liquid balance came from a borrow (capped at liq)
-    const borrowedLiq   = Math.min(b, liq);
-    // native_treasury = liquid balance that was never borrowed (pure undeployed capital)
-    const nativeTreasury = Math.max(0, liq - borrowedLiq);
+    // liq = raw ERC-20 wallet balance = on-chain uninvested treasury
+    // aToken balance (s) = exact protocol supply — no math inference needed
 
     if(showSupply && s > 0.0001) {
       rows += `<tr>
         <td><span class="tw-asym">${sym}</span></td>
         <td><span class="tw-badge tw-badge-s">Supply</span></td>
-        <td class="tw-supply">${twFmtAmt(s,sym) || "—"}</td>
+        <td class="tw-supply">${twFmtAmt(s,sym) || "-"}</td>
         <td class="tw-supply">${twFmt(s*price)}</td>
-        <td style="color:#F59E0B;font-size:12px">${borrowedLiq > 0.0001 ? twFmt(borrowedLiq*price) : "—"}</td>
-        <td style="color:#00B896;font-size:12px">${nativeTreasury > 0.0001 ? twFmt(nativeTreasury*price) : "—"}</td>
+        <td>-</td>
+        <td style="color:#00B896;font-size:12px">${liq > 0.0001 ? twFmt(liq*price) : "-"}</td>
       </tr>`;
     }
     if(showBorrow && b > 0.0001) {
       rows += `<tr>
         <td><span class="tw-asym">${sym}</span></td>
         <td><span class="tw-badge tw-badge-b">Debt</span></td>
-        <td class="tw-debt">${twFmtAmt(b,sym) || "—"}</td>
+        <td class="tw-debt">${twFmtAmt(b,sym) || "-"}</td>
         <td class="tw-debt">${twFmt(b*price)}</td>
-        <td style="color:#F59E0B;font-size:12px">${borrowedLiq > 0.0001 ? twFmt(borrowedLiq*price) : "—"}</td>
-        <td style="color:#00B896;font-size:12px">${nativeTreasury > 0.0001 ? twFmt(nativeTreasury*price) : "—"}</td>
+        <td>-</td>
+        <td style="color:#00B896;font-size:12px">${liq > 0.0001 ? twFmt(liq*price) : "-"}</td>
       </tr>`;
     }
-    // Treasury filter: show assets with uninvested treasury even if not in protocol
-    if(twFilter === "treasury" && !showSupply && !showBorrow) {
-      if(nativeTreasury > 0.0001) {
-        rows += `<tr>
-          <td><span class="tw-asym">${sym}</span></td>
-          <td><span class="tw-badge tw-badge-n">Liquid</span></td>
-          <td style="color:rgba(255,255,255,0.6)">${twFmtAmt(nativeTreasury,sym) || "—"}</td>
-          <td style="color:rgba(255,255,255,0.6)">${twFmt(nativeTreasury*price)}</td>
-          <td>—</td>
-          <td style="color:#00B896">${twFmt(nativeTreasury*price)}</td>
-        </tr>`;
-      }
+        // Show Liquid row in "all" view: on-chain exact (raw ERC-20 = uninvested capital)
+    if(twFilter === "all" && liq > 0.0001 && s <= 0.0001 && b <= 0.0001) {
+      rows += `<tr style="background:rgba(99,102,241,0.04);">
+        <td><span class="tw-asym">${sym}</span></td>
+        <td><span class="tw-badge tw-badge-n">Liquid</span></td>
+        <td style="color:rgba(255,255,255,0.7)">${twFmtAmt(liq,sym) || "-"}</td>
+        <td style="color:rgba(255,255,255,0.7)">${twFmt(liq*price)}</td>
+        <td>-</td>
+        <td style="color:#00B896">${twFmt(liq*price)}</td>
+      </tr>`;
     }
   }
 
@@ -4250,19 +4246,18 @@ function twRenderWallet(w, data) {
       const b   = data.borrow[sym]  || 0;
       const liq = data.liquid[sym]  || 0;
       const price = twPrices[sym]   || 0;
-      const borrowedLiq    = Math.min(b, liq);
-      const nativeTreasury = Math.max(0, liq - borrowedLiq);
-      if(nativeTreasury > 0.0001) {
+      if(liq > 0.0001) {
         rows += `<tr>
           <td><span class="tw-asym">${sym}</span></td>
           <td><span class="tw-badge tw-badge-n">Uninvested</span></td>
-          <td style="color:rgba(255,255,255,0.75)">${twFmtAmt(nativeTreasury,sym)}</td>
-          <td style="color:rgba(255,255,255,0.75)">${twFmt(nativeTreasury*price)}</td>
-          <td style="color:#F59E0B;font-size:12px">${borrowedLiq > 0.0001 ? twFmt(borrowedLiq*price)+' (loaned)' : '—'}</td>
-          <td style="color:#00B896">${twFmt(nativeTreasury*price)}</td>
+          <td style="color:rgba(255,255,255,0.75)">${twFmtAmt(liq,sym)}</td>
+          <td style="color:rgba(255,255,255,0.75)">${twFmt(liq*price)}</td>
+          <td>-</td>
+          <td style="color:#00B896">${twFmt(liq*price)}</td>
         </tr>`;
       }
     }
+ }
     if(!rows) rows = `<tr><td colspan="6" class="tw-empty">No uninvested treasury in this wallet</td></tr>`;
   }
 
