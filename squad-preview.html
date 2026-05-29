@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Squad - Kaskad</title>
+<link rel="icon" type="image/png" href="https://www.kaskad.app/icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0D0F14;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+.page { padding: 40px 36px 80px; max-width: 1700px; margin: 0 auto; }
+h1 { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.2); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 40px; }
+
+#stage { position: relative; width: 100%; height: 600px; }
+canvas { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
+
+.col { position: absolute; top:0; height:100%; display:flex; flex-direction:column; justify-content:center; z-index:2; }
+
+/* Column positions */
+#col-jack       { left:0;    width:118px; align-items:center; }
+#col-keal       { left:158px; width:138px; align-items:center; }
+#col-spec       { left:346px; width:170px; gap:9px; }
+#col-tasks      { left:568px; width:188px; gap:6px; }
+#col-goals      { right:0;   width:152px; gap:12px; }
+
+/* Jack */
+.node-jack { background:#1A2E2A; border:2px solid rgba(0,184,150,0.5); border-radius:13px; padding:13px 16px; text-align:center; width:112px; }
+.node-jack .role { font-size:8.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(0,184,150,0.6); margin-bottom:3px; }
+.node-jack .name { font-size:15px; font-weight:800; color:#fff; }
+.node-jack .sub  { font-size:9.5px; color:rgba(255,255,255,0.32); margin-top:2px; }
+
+/* Keal */
+.node-keal { background:#1A2E2A; border:2px solid rgba(0,184,150,0.32); border-radius:13px; padding:13px 16px; text-align:center; width:130px; }
+.node-keal .role { font-size:8.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(0,184,150,0.5); margin-bottom:3px; }
+.node-keal .name { font-size:14px; font-weight:800; color:#fff; }
+.node-keal .sub  { font-size:9px; color:rgba(255,255,255,0.3); margin-top:2px; line-height:1.4; }
+.node-keal .cmds { margin-top:8px; display:flex; flex-wrap:wrap; gap:3px; justify-content:center; }
+.node-keal .cmd  { font-size:8.5px; font-weight:600; padding:2px 5px; border-radius:4px; background:rgba(0,184,150,0.12); color:rgba(0,184,150,0.7); }
+
+/* Specialists */
+.node-spec { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:9px; padding:8px 11px; width:166px; }
+.node-spec .sp-name { font-size:11px; font-weight:700; color:rgba(255,255,255,0.82); }
+.node-spec .sp-sub  { font-size:9px; color:rgba(255,255,255,0.28); margin-top:1px; }
+.sp-dot { display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+
+/* Tasks */
+.node-task { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:7px; padding:6px 9px; width:184px; cursor:pointer; transition:background .2s,opacity .25s; display:flex; align-items:center; gap:7px; }
+.node-task:hover { background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.11); }
+.node-task.dimmed { opacity:0.1; }
+.task-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.task-label { font-size:10px; font-weight:600; color:rgba(255,255,255,0.8); line-height:1.3; }
+.task-sub   { font-size:8.5px; color:rgba(255,255,255,0.26); }
+
+/* Goals */
+.node-goal { display:flex; align-items:center; gap:8px; padding:9px 11px; border-radius:8px; border:1px solid rgba(255,255,255,0.07); background:rgba(255,255,255,0.03); width:149px; transition:all .25s; }
+.goal-dot  { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.goal-type { font-size:8px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:rgba(255,255,255,0.22); margin-bottom:1px; }
+.goal-name { font-size:10px; font-weight:700; color:rgba(255,255,255,0.58); line-height:1.3; }
+
+/* Popup */
+#popup { position:fixed; z-index:100; background:#1A1D27; border:1px solid rgba(255,255,255,0.12); border-radius:11px; padding:12px 14px; width:205px; box-shadow:0 8px 32px rgba(0,0,0,0.6); pointer-events:none; opacity:0; transform:translateY(4px); transition:opacity .15s,transform .15s; }
+#popup.vis { opacity:1; transform:translateY(0); }
+#p-title { font-size:11px; font-weight:700; margin-bottom:2px; }
+#p-sched { font-size:9px; color:rgba(255,255,255,0.3); margin-bottom:8px; }
+.p-div { height:1px; background:rgba(255,255,255,0.07); margin-bottom:7px; }
+#p-pts { list-style:none; display:flex; flex-direction:column; gap:4px; }
+#p-pts li { font-size:10px; color:rgba(255,255,255,0.62); line-height:1.4; display:flex; gap:6px; align-items:flex-start; }
+#p-pts li span.dot { display:block; width:4px; height:4px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+
+/* Legend */
+.legend { margin-top:36px; display:flex; gap:18px; flex-wrap:wrap; align-items:center; }
+.leg { display:flex; align-items:center; gap:5px; font-size:9.5px; color:rgba(255,255,255,0.28); }
+.leg-dot { width:6px; height:6px; border-radius:50%; }
+.hint { font-size:9.5px; color:rgba(255,255,255,0.16); margin-top:8px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Kaskad - Squad</h1>
+  <div id="stage">
+    <canvas id="cv"></canvas>
+
+    <!-- POPUP -->
+    <div id="popup">
+      <div id="p-title"></div><div id="p-sched"></div>
+      <div class="p-div"></div>
+      <ul id="p-pts"></ul>
+    </div>
+
+    <!-- COL 1: JACK -->
+    <div class="col" id="col-jack">
+      <div class="node-jack" id="node-jack">
+        <div class="role">Supervisor</div>
+        <div class="name">Jack</div>
+        <div class="sub">COO · Human</div>
+      </div>
+    </div>
+
+    <!-- COL 2: KEAL -->
+    <div class="col" id="col-keal">
+      <div class="node-keal" id="node-keal">
+        <div class="role">Orchestrator</div>
+        <div class="name">Keal</div>
+        <div class="sub">Local OpenClaw<br>on Claude 4.6</div>
+        <div class="cmds">
+          <span class="cmd">/ceo-review</span>
+          <span class="cmd">/ship</span>
+          <span class="cmd">/retro</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- COL 3: SPECIALISTS -->
+    <div class="col" id="col-spec">
+      <div class="node-spec" data-spec="qa">
+        <div class="sp-name"><span class="sp-dot" style="background:#00B896;box-shadow:0 0 4px #00B896;"></span>QA Specialist</div>
+        <div class="sp-sub">Mon/Wed 10:00 · Audits</div>
+      </div>
+      <div class="node-spec" data-spec="research">
+        <div class="sp-name"><span class="sp-dot" style="background:#A78BFA;box-shadow:0 0 4px #A78BFA;"></span>Research Agent</div>
+        <div class="sp-sub">Every 3d · DeFi intel</div>
+      </div>
+      <div class="node-spec" data-spec="comms">
+        <div class="sp-name"><span class="sp-dot" style="background:#EC4899;box-shadow:0 0 4px #EC4899;"></span>SEO/GEO Comms</div>
+        <div class="sp-sub">Daily · Content drafts</div>
+      </div>
+      <div class="node-spec" data-spec="deploy">
+        <div class="sp-name"><span class="sp-dot" style="background:#60A5FA;box-shadow:0 0 4px #60A5FA;"></span>Deployment Agent</div>
+        <div class="sp-sub">On-demand · Railway</div>
+      </div>
+      <div class="node-spec" data-spec="advisor">
+        <div class="sp-name"><span class="sp-dot" style="background:#FBBF24;box-shadow:0 0 4px #FBBF24;"></span>Advisor Research</div>
+        <div class="sp-sub">Nightly 02:00 · ~2M profiles</div>
+      </div>
+    </div>
+
+    <!-- COL 4: TASKS -->
+    <div class="col" id="col-tasks">
+
+      <div class="node-task sf-task" data-id="xdrafts" data-goals="g1,g3" data-color="#EC4899"
+        data-name="X Content Drafts" data-sched="Daily · 07:00 CET → #prep-content"
+        data-pts="Generates 3 posts in COO founder voice|Labels: Technical, Narrative, Engagement|Checks latest trend scan for context|Posts to #prep-content for Jack">
+        <div class="task-dot" style="background:#EC4899;box-shadow:0 0 5px #EC4899;"></div>
+        <div><div class="task-label">X Content Drafts</div><div class="task-sub">Daily 07:00</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="trendscan" data-goals="g1,g2,g3" data-color="#00B896"
+        data-name="DeFi Trend Scan" data-sched="Every 2 days → #cut-through-noise"
+        data-pts="Searches X + Reddit for top DeFi posts|Answers 5 CEO questions on market signals|Splits: Jack decisions vs Keal actions|One-sentence LP pitch recommendation">
+        <div class="task-dot" style="background:#00B896;box-shadow:0 0 5px #00B896;"></div>
+        <div><div class="task-label">DeFi Trend Scan</div><div class="task-sub">Every 2d</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="pillar2" data-goals="g1,g2,p2" data-color="#A78BFA"
+        data-name="AI Discoverability (Pillar 2)" data-sched="Daily 16:00 → #cut-through-noise"
+        data-pts="Scans for new DeFi MCP server launches|Tracks agent-native protocol announcements|Identifies Kaskad's positioning angle|One actionable recommendation per run">
+        <div class="task-dot" style="background:#A78BFA;box-shadow:0 0 5px #A78BFA;"></div>
+        <div><div class="task-label">AI Discoverability</div><div class="task-sub">Daily 16:00</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="secmon" data-goals="p1" data-color="#F87171"
+        data-name="Security Monitor" data-sched="Daily 08:00 → #orchestration-general"
+        data-pts="Scrapes rekt.news + ChainSec for exploits|Filters NEW-only, never repeats|Cross-references vs Kaskad stack|Oracle risk assessment per incident">
+        <div class="task-dot" style="background:#F87171;box-shadow:0 0 5px #F87171;"></div>
+        <div><div class="task-label">Security Monitor</div><div class="task-sub">Daily 08:00</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="autores" data-goals="g1,g2,p1,g3" data-color="#4ADE80"
+        data-name="Kaskad Autoresearch" data-sched="Daily 02:00 → #orchestration-general"
+        data-pts="Computes Weighted Omega score (bull/bear/base)|Generates governance param recommendations|Flags anomalies before they compound|Tracks regime signal day-over-day">
+        <div class="task-dot" style="background:#4ADE80;box-shadow:0 0 5px #4ADE80;"></div>
+        <div><div class="task-label">Kaskad Autoresearch</div><div class="task-sub">Daily 02:00</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="pillar3" data-goals="g1,g2,p2" data-color="#60A5FA"
+        data-name="Covenants/vProg Scout" data-sched="Monday 10:00 → #orchestration-general"
+        data-pts="Scans Kaspa covenant + vProg developments|Reads exploration status from roadmap|Proposes one 2-week buildable demo|Flags blockers on Kaspa L1 primitives">
+        <div class="task-dot" style="background:#60A5FA;box-shadow:0 0 5px #60A5FA;"></div>
+        <div><div class="task-label">Covenants/vProg Scout</div><div class="task-sub">Monday 10:00</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="emerge" data-goals="g1" data-color="#FBBF24"
+        data-name="Emergence Scorer" data-sched="Monday 08:00 → #orchestration-general"
+        data-pts="Scores absorption signal week-over-week|Tracks friction score shifts|Interprets creation event delta|Early warning if growth is stalling">
+        <div class="task-dot" style="background:#FBBF24;box-shadow:0 0 5px #FBBF24;"></div>
+        <div><div class="task-label">Emergence Scorer</div><div class="task-sub">Monday 08:00</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="dashboard" data-goals="g1,g2,g3,p1,p2,pm" data-color="#F0ABFC"
+        data-name="Kaskad Dashboard" data-sched="Live · kaskad-readiness-production.up.railway.app"
+        data-pts="Launch readiness tracker across all teams|Strategic pillars + covenant roadmap|Events calendar + live ticker|Signal flow - this view">
+        <div class="task-dot" style="background:#F0ABFC;box-shadow:0 0 5px #F0ABFC;"></div>
+        <div><div class="task-label">Kaskad Dashboard</div><div class="task-sub">Always-on</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="checks" data-goals="pm" data-color="#94A3B8"
+        data-name="Morning + Afternoon Checks" data-sched="08:00 + 14:00 daily"
+        data-pts="Scans inbox for urgent items|Checks calendar 24-48h ahead|Verifies port 18789 loopback-only|Silent when nothing needs attention">
+        <div class="task-dot" style="background:#94A3B8;box-shadow:0 0 5px #94A3B8;"></div>
+        <div><div class="task-label">Daily Checks</div><div class="task-sub">08:00 + 14:00</div></div>
+      </div>
+
+      <div class="node-task sf-task" data-id="backup" data-goals="pm" data-color="#64748B"
+        data-name="USB Backup" data-sched="Daily 02:00 · silent"
+        data-pts="Mirrors workspace to D: via robocopy|Copies credentials folder|Silent if USB unplugged|Runs before other nightly tasks">
+        <div class="task-dot" style="background:#64748B;box-shadow:0 0 5px #64748B;"></div>
+        <div><div class="task-label">USB Backup</div><div class="task-sub">Daily 02:00</div></div>
+      </div>
+
+    </div>
+
+    <!-- COL 5: GOALS -->
+    <div class="col" id="col-goals">
+      <div class="node-goal sf-goal" data-id="g1" data-gc="#00B896" style="--gc:#00B896;">
+        <div class="goal-dot" style="background:#00B896;"></div>
+        <div><div class="goal-type">Goal 1</div><div class="goal-name">Top 100<br>Lending</div></div>
+      </div>
+      <div class="node-goal sf-goal" data-id="g2" data-gc="#818CF8" style="--gc:#818CF8;">
+        <div class="goal-dot" style="background:#818CF8;"></div>
+        <div><div class="goal-type">Goal 2</div><div class="goal-name">Best-in-class<br>dApp</div></div>
+      </div>
+      <div class="node-goal sf-goal" data-id="g3" data-gc="#F59E0B" style="--gc:#F59E0B;">
+        <div class="goal-dot" style="background:#F59E0B;"></div>
+        <div><div class="goal-type">Goal 3</div><div class="goal-name">Team<br>Value</div></div>
+      </div>
+      <div class="node-goal sf-goal" data-id="p1" data-gc="#F87171" style="--gc:#F87171;">
+        <div class="goal-dot" style="background:#F87171;"></div>
+        <div><div class="goal-type">Pillar 1</div><div class="goal-name">Protocol<br>Safety</div></div>
+      </div>
+      <div class="node-goal sf-goal" data-id="p2" data-gc="#C084FC" style="--gc:#C084FC;">
+        <div class="goal-dot" style="background:#C084FC;"></div>
+        <div><div class="goal-type">Pillar 2</div><div class="goal-name">Agent<br>Readiness</div></div>
+      </div>
+      <div class="node-goal sf-goal" data-id="pm" data-gc="#94A3B8" style="--gc:#94A3B8;">
+        <div class="goal-dot" style="background:#94A3B8;"></div>
+        <div><div class="goal-type">Personal Mastery</div><div class="goal-name">Jack's<br>Leverage</div></div>
+      </div>
+    </div>
+
+  </div><!-- /stage -->
+
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:#EC4899;"></div>Growth</div>
+    <div class="leg"><div class="leg-dot" style="background:#F87171;"></div>Security</div>
+    <div class="leg"><div class="leg-dot" style="background:#60A5FA;"></div>Technical</div>
+    <div class="leg"><div class="leg-dot" style="background:#94A3B8;"></div>Operations</div>
+    <div class="leg"><div class="leg-dot" style="background:#F0ABFC;"></div>Dashboard</div>
+  </div>
+  <div class="hint">Hover a task to trace its signal stream</div>
+</div>
+
+<script>
+(function(){
+  const stage = document.getElementById('stage');
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const popup = document.getElementById('popup');
+  let hov = null, conns = [], pmap = {}, started = false;
+  // Pulse particles for org lines
+  let orgPulses = [];
+
+  function resize(){
+    cv.width = stage.offsetWidth;
+    cv.height = stage.offsetHeight;
+  }
+
+  function toHex(a){ return Math.round(Math.max(0,Math.min(1,a))*255).toString(16).padStart(2,'0'); }
+
+  function rightEdge(el){
+    if(!el) return null;
+    const sr=stage.getBoundingClientRect(), r=el.getBoundingClientRect();
+    return {x:r.right-sr.left, y:r.top-sr.top+r.height/2};
+  }
+  function leftEdge(el){
+    if(!el) return null;
+    const sr=stage.getBoundingClientRect(), r=el.getBoundingClientRect();
+    return {x:r.left-sr.left, y:r.top-sr.top+r.height/2};
+  }
+
+  function bz(p0,p1,p2,p3,t){
+    const m=1-t;
+    return {x:m*m*m*p0.x+3*m*m*t*p1.x+3*m*t*t*p2.x+t*t*t*p3.x,
+            y:m*m*m*p0.y+3*m*m*t*p1.y+3*m*t*t*p2.y+t*t*t*p3.y};
+  }
+
+  // Signal stream particle
+  class StreamP {
+    constructor(col){ this.t=Math.random(); this.spd=0.001+Math.random()*0.0007; this.sz=1.5+Math.random()*1.4; this.col=col; }
+    tick(){ this.t+=this.spd; if(this.t>1)this.t=0; }
+    draw(f,c1,c2,to,al){
+      const p=bz(f,c1,c2,to,this.t), fd=Math.sin(this.t*Math.PI), a=Math.min(1,fd*al);
+      ctx.beginPath(); ctx.arc(p.x,p.y,this.sz,0,Math.PI*2); ctx.fillStyle=this.col+toHex(a); ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x,p.y,this.sz*3,0,Math.PI*2); ctx.fillStyle=this.col+toHex(a*0.18); ctx.fill();
+    }
+  }
+
+  // Org pulse - slower, rounder, softer pulse along a bezier
+  class OrgPulse {
+    constructor(from, to, color){
+      this.from=from; this.to=to; this.color=color;
+      this.t=Math.random();
+      this.spd=0.0004+Math.random()*0.0003;
+      this.sz=3+Math.random()*2;
+    }
+    tick(){ this.t+=this.spd; if(this.t>1)this.t=0; }
+    draw(){
+      const cpX=(this.from.x+this.to.x)/2;
+      const cp1={x:cpX, y:this.from.y}, cp2={x:cpX, y:this.to.y};
+      const p=bz(this.from,cp1,cp2,this.to,this.t);
+      const fade=Math.sin(this.t*Math.PI);
+      const a=fade*0.55;
+      // Outer glow
+      ctx.beginPath(); ctx.arc(p.x,p.y,this.sz*3,0,Math.PI*2);
+      ctx.fillStyle=this.color+toHex(a*0.15); ctx.fill();
+      // Core
+      ctx.beginPath(); ctx.arc(p.x,p.y,this.sz,0,Math.PI*2);
+      ctx.fillStyle=this.color+toHex(a); ctx.fill();
+    }
+  }
+
+  function buildConns(){
+    conns=[]; pmap={};
+    document.querySelectorAll('.sf-task').forEach(t=>{
+      const id=t.dataset.id, col=t.dataset.color;
+      t.dataset.goals.split(',').forEach(g=>{
+        const k=`${id}-${g.trim()}`;
+        conns.push({id,col,gid:g.trim(),k});
+        pmap[k]=Array.from({length:5},()=>new StreamP(col));
+      });
+    });
+  }
+
+  function buildOrgPulses(){
+    orgPulses=[];
+    const jackEl=document.getElementById('node-jack');
+    const kealEl=document.getElementById('node-keal');
+    const specs=document.querySelectorAll('.node-spec');
+    const tasks=document.querySelectorAll('.sf-task');
+    if(!jackEl||!kealEl) return;
+
+    // Jack → Keal pulse
+    const jr=rightEdge(jackEl), kl=leftEdge(kealEl);
+    for(let i=0;i<3;i++) orgPulses.push(new OrgPulse(jr,kl,'#00B896'));
+
+    // Keal → each specialist
+    const kr=rightEdge(kealEl);
+    specs.forEach(sp=>{
+      const sl=leftEdge(sp);
+      for(let i=0;i<2;i++) orgPulses.push(new OrgPulse(kr,sl,'#00B896'));
+    });
+
+    // Keal → tasks DIRECT (parallel branch - Keal directly executes some tasks)
+    const kealDirect=['trendscan','pillar2','pillar3','secmon','autores','emerge','checks','backup','dashboard'];
+    tasks.forEach(t=>{
+      if(kealDirect.includes(t.dataset.id)){
+        const tl=leftEdge(t);
+        if(tl) orgPulses.push(new OrgPulse(kr, tl, '#00B896'));
+      }
+    });
+
+    // Specialist → tasks (each specialist feeds relevant tasks)
+    const specTaskMap = {
+      qa:       ['secmon'],
+      research: ['trendscan','pillar2','pillar3','emerge'],
+      comms:    ['xdrafts'],
+      deploy:   ['dashboard'],
+      advisor:  ['autores']
+    };
+    specs.forEach(sp=>{
+      const specId=sp.dataset.spec;
+      const sr=rightEdge(sp);
+      const mapped=specTaskMap[specId]||[];
+      mapped.forEach(tid=>{
+        const tEl=document.querySelector(`.sf-task[data-id="${tid}"]`);
+        if(!tEl) return;
+        const tl=leftEdge(tEl);
+        orgPulses.push(new OrgPulse(sr,tl, getSpecColor(specId)));
+      });
+    });
+  }
+
+  function getSpecColor(id){
+    const m={qa:'#00B896',research:'#A78BFA',comms:'#EC4899',deploy:'#60A5FA',advisor:'#FBBF24'};
+    return m[id]||'#ffffff';
+  }
+
+  function drawOrgLines(){
+    const jackEl=document.getElementById('node-jack');
+    const kealEl=document.getElementById('node-keal');
+    const specs=document.querySelectorAll('.node-spec');
+    const tasks=document.querySelectorAll('.sf-task');
+    if(!jackEl||!kealEl) return;
+
+    ctx.setLineDash([3,4]);
+
+    // Jack → Keal
+    const jr=rightEdge(jackEl), kl=leftEdge(kealEl);
+    ctx.beginPath(); ctx.moveTo(jr.x,jr.y); ctx.lineTo(kl.x,kl.y);
+    ctx.strokeStyle='rgba(0,184,150,0.2)'; ctx.lineWidth=1.5; ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    // Keal → specialists
+    const kr=rightEdge(kealEl);
+    specs.forEach(sp=>{
+      const sl=leftEdge(sp);
+      const mx=(kr.x+sl.x)/2;
+      ctx.beginPath(); ctx.moveTo(kr.x,kr.y); ctx.bezierCurveTo(mx,kr.y,mx,sl.y,sl.x,sl.y);
+      ctx.strokeStyle='rgba(0,184,150,0.1)'; ctx.lineWidth=1; ctx.stroke();
+    });
+
+    // Keal → tasks DIRECT (lighter, dashed)
+    ctx.setLineDash([2,5]);
+    const kealDirect=['trendscan','pillar2','pillar3','secmon','autores','emerge','checks','backup','dashboard'];
+    tasks.forEach(t=>{
+      if(!kealDirect.includes(t.dataset.id)) return;
+      const tl=leftEdge(t);
+      if(!tl) return;
+      const mx=(kr.x+tl.x)/2;
+      ctx.beginPath(); ctx.moveTo(kr.x,kr.y); ctx.bezierCurveTo(mx,kr.y,mx,tl.y,tl.x,tl.y);
+      ctx.strokeStyle='rgba(0,184,150,0.06)'; ctx.lineWidth=0.8; ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    // Specialists → tasks
+    const specTaskMap={
+      qa:['secmon'],research:['trendscan','pillar2','pillar3','emerge'],
+      comms:['xdrafts'],deploy:['dashboard'],advisor:['autores']
+    };
+    specs.forEach(sp=>{
+      const specId=sp.dataset.spec, sr=rightEdge(sp);
+      const col=getSpecColor(specId);
+      (specTaskMap[specId]||[]).forEach(tid=>{
+        const tEl=document.querySelector(`.sf-task[data-id="${tid}"]`);
+        if(!tEl) return;
+        const tl=leftEdge(tEl);
+        const mx=(sr.x+tl.x)/2;
+        ctx.beginPath(); ctx.moveTo(sr.x,sr.y); ctx.bezierCurveTo(mx,sr.y,mx,tl.y,tl.x,tl.y);
+        ctx.strokeStyle=col+toHex(0.12); ctx.lineWidth=0.9; ctx.stroke();
+      });
+    });
+  }
+
+  function frame(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    drawOrgLines();
+
+    // Draw org pulses
+    orgPulses.forEach(p=>{ p.tick(); p.draw(); });
+
+    // Signal streams
+    const anyHov=hov!==null;
+    conns.forEach(({id,col,gid,k})=>{
+      const tEl=document.querySelector(`.sf-task[data-id="${id}"]`);
+      const gEl=document.querySelector(`.sf-goal[data-id="${gid}"]`);
+      if(!tEl||!gEl) return;
+      const f=rightEdge(tEl), to=leftEdge(gEl);
+      const cpX=(f.x+to.x)/2;
+      const c1={x:cpX,y:f.y}, c2={x:cpX,y:to.y};
+      const isAct=hov===id;
+      const ca=anyHov?(isAct?0.6:0.03):0.12;
+      const pa=anyHov?(isAct?1.0:0.03):0.45;
+
+      ctx.beginPath(); ctx.moveTo(f.x,f.y);
+      ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,to.x,to.y);
+      ctx.strokeStyle=col+toHex(ca); ctx.lineWidth=isAct?2.5:0.8; ctx.stroke();
+      (pmap[k]||[]).forEach(p=>{ p.tick(); p.draw(f,c1,c2,to,pa); });
+    });
+
+    // Goal glow
+    document.querySelectorAll('.sf-goal').forEach(g=>{
+      const gc=g.dataset.gc;
+      if(anyHov){
+        const tEl=document.querySelector(`.sf-task[data-id="${hov}"]`);
+        const rel=tEl?tEl.dataset.goals.split(',').map(x=>x.trim()):[];
+        if(rel.includes(g.dataset.id)){
+          g.style.borderColor=gc; g.style.background=gc+'1E'; g.style.boxShadow=`0 0 18px ${gc}28`;
+        } else {
+          g.style.borderColor='rgba(255,255,255,0.07)'; g.style.background='rgba(255,255,255,0.03)'; g.style.boxShadow='none';
+        }
+      } else {
+        g.style.borderColor='rgba(255,255,255,0.07)'; g.style.background='rgba(255,255,255,0.03)'; g.style.boxShadow='none';
+      }
+    });
+
+    requestAnimationFrame(frame);
+  }
+
+  function showPopup(task,e){
+    const col=task.dataset.color;
+    document.getElementById('p-title').textContent=task.dataset.name;
+    document.getElementById('p-title').style.color=col;
+    document.getElementById('p-sched').textContent=task.dataset.sched;
+    const ul=document.getElementById('p-pts'); ul.innerHTML='';
+    task.dataset.pts.split('|').forEach(pt=>{
+      const li=document.createElement('li');
+      const dot=document.createElement('span'); dot.className='dot'; dot.style.background=col;
+      const txt=document.createElement('span'); txt.textContent=pt;
+      li.appendChild(dot); li.appendChild(txt); ul.appendChild(li);
+    });
+    let x=e.clientX+16, y=e.clientY-60;
+    if(x+215>window.innerWidth) x=e.clientX-225;
+    if(y+210>window.innerHeight) y=window.innerHeight-215;
+    if(y<8)y=8;
+    popup.style.left=x+'px'; popup.style.top=y+'px';
+    popup.classList.add('vis');
+  }
+
+  document.querySelectorAll('.sf-task').forEach(t=>{
+    t.addEventListener('mouseenter',e=>{
+      hov=t.dataset.id;
+      document.querySelectorAll('.sf-task').forEach(x=>{ x.style.opacity=x.dataset.id===hov?'1':'0.1'; });
+      showPopup(t,e);
+    });
+    t.addEventListener('mousemove',e=>{ showPopup(t,e); });
+    t.addEventListener('mouseleave',()=>{
+      hov=null;
+      document.querySelectorAll('.sf-task').forEach(x=>{ x.style.opacity='1'; });
+      popup.classList.remove('vis');
+    });
+  });
+
+  window.addEventListener('resize',()=>{ resize(); buildConns(); buildOrgPulses(); });
+
+  function init(){
+    resize(); buildConns(); buildOrgPulses();
+    if(!started){ started=true; frame(); }
+  }
+  requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ setTimeout(init,200); }); });
+})();
+</script>
+</body>
+</html>
