@@ -2028,8 +2028,8 @@ function switchTab(tab) {
       (i === 1 && tab === 'pillars') ||
       (i === 2 && tab === 'events') ||
       (i === 3 && tab === 'squad') ||
-      (i === 4 && tab === 'tvl') ||
-      (i === 5 && tab === 'team')
+      (i === 4 && tab === 'team') ||
+      (i === 5 && tab === 'tvl')
     );
   });
   if (tab === 'events') renderWeekGrid();
@@ -4402,6 +4402,9 @@ async function twRefresh() {
 // Auto-refresh every 90 seconds
 twRefresh();
 setInterval(twRefresh, 90000);
+// Expose to global scope for onclick handlers
+window.twSetFilter = twSetFilter;
+window.twRefresh = twRefresh;
 })();
 </script>
 </div>
