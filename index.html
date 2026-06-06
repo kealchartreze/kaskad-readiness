@@ -4154,18 +4154,21 @@ async function twFetchWallet(wallet) {
     totalLiquidUSD += nativeIkasAmt * (twPrices["iKAS"] || 0);
   } catch(e) {}
 
-  // Health factor from Pool.getUserAccountData(address)
-  let hf = null;
+  // Health factor + liq threshold from Pool.getUserAccountData(address)
+  let hf = null, liqThresholdBps = null, totalCollateralUSD = null, totalDebtUSDChain = null;
   try {
     const raw = await twRpc("eth_call", [{to:TW_POOL, data:"0xbf92857c"+twPad(wallet)}, "latest"]);
     const hex = raw.slice(2);
-    // Returns: totalCollateralBase, totalDebtBase, availableBorrowsBase, currentLiquidationThreshold, ltv, healthFactor
+    // Returns: totalCollateralBase(8dec), totalDebtBase(8dec), availableBorrowsBase, currentLiquidationThreshold(bps), ltv, healthFactor(18dec)
+    totalCollateralUSD = Number(BigInt("0x"+hex.slice(0*64, 1*64))) / 1e8;
+    totalDebtUSDChain  = Number(BigInt("0x"+hex.slice(1*64, 2*64))) / 1e8;
+    liqThresholdBps    = Number(BigInt("0x"+hex.slice(3*64, 4*64))); // e.g. 5500 = 55%
     const hfRaw = BigInt("0x"+hex.slice(5*64, 6*64));
     hf = Number(hfRaw) / 1e18;
     if(hf > 1e10) hf = null; // no debt = effectively infinite
   } catch(e) {}
 
-  return { supply, borrow, liquid, nativeIkasAmt, totalSupplyUSD, totalDebtUSD, totalLiquidUSD, hf };
+  return { supply, borrow, liquid, nativeIkasAmt, totalSupplyUSD, totalDebtUSD, totalLiquidUSD, hf, liqThresholdBps, totalCollateralUSD, totalDebtUSDChain };
 }
 
 function twFmt(v) {
@@ -4304,6 +4307,50 @@ function twRenderWallet(w, data) {
     else rows = `<tr><td colspan="6" class="tw-empty">No active positions</td></tr>`;
   }
 
+  // Liquidation price block — only for iKAS Yield Wallet (w1) when it has iKAS collateral + debt
+  let liqBlock = "";
+  if(w.id === "w1" && data.liqThresholdBps && data.totalDebtUSDChain > 0.01) {
+    const ikasSupplied = data.supply["iKAS"] || 0;
+    const ikasPriceNow = twPrices["iKAS"] || 0;
+    const liqThresholdPct = data.liqThresholdBps / 10000;
+    // liqPrice = debtUSD / (ikasSupplied * liqThresholdPct)
+    const liqPrice = ikasSupplied > 0 ? (data.totalDebtUSDChain / (ikasSupplied * liqThresholdPct)) : 0;
+    const dropPct = ikasPriceNow > 0 ? ((ikasPriceNow - liqPrice) / ikasPriceNow * 100) : 0;
+    const safeWidthPct = ikasPriceNow > 0 ? Math.min(100, (1 - liqPrice/ikasPriceNow)*100).toFixed(1) : 66.7;
+    const dangerWidthPct = (100 - parseFloat(safeWidthPct)).toFixed(1);
+    const liqStatus = dropPct > 40 ? {color:"#00B896",icon:"✓",label:"Safe"} : dropPct > 15 ? {color:"#F59E0B",icon:"⚠",label:"Watch"} : {color:"#EF4444",icon:"!",label:"At Risk"};
+    liqBlock = `
+    <div style="margin:0 24px 20px;padding:16px;border-radius:12px;background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);">iKAS Liquidation Price</span>
+        <span style="font-size:11px;font-weight:700;color:${liqStatus.color};background:${liqStatus.color}18;padding:2px 9px;border-radius:5px;">${liqStatus.icon} ${liqStatus.label}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+        <div style="padding:10px 12px;border-radius:9px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
+          <div style="font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;color:#00B896;">$${ikasPriceNow.toFixed(5)}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;margin-top:3px;">Current Price</div>
+        </div>
+        <div style="padding:10px 12px;border-radius:9px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.18);">
+          <div style="font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;color:#EF4444;">$${liqPrice.toFixed(5)}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;margin-top:3px;">Liq. Price</div>
+        </div>
+        <div style="padding:10px 12px;border-radius:9px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
+          <div style="font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;color:${liqStatus.color};">−${dropPct.toFixed(1)}%</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;margin-top:3px;">Drop to Liq</div>
+        </div>
+        <div style="padding:10px 12px;border-radius:9px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
+          <div style="font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;color:rgba(255,255,255,0.85);">${(data.liqThresholdBps/100).toFixed(0)}%</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;margin-top:3px;">Liq Threshold</div>
+        </div>
+      </div>
+      <div style="height:6px;border-radius:3px;background:rgba(255,255,255,0.06);overflow:hidden;position:relative;">
+        <div style="position:absolute;left:0;top:0;height:100%;width:${dangerWidthPct}%;background:linear-gradient(90deg,#EF4444,#ff8c42);border-radius:3px 0 0 3px;"></div>
+        <div style="position:absolute;left:${dangerWidthPct}%;top:0;height:100%;width:${safeWidthPct}%;background:linear-gradient(90deg,#00B89666,#00B896);border-radius:0 3px 3px 0;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:rgba(255,255,255,0.25);font-family:monospace;"><span>$0</span><span style="color:rgba(239,68,68,0.7);">$${liqPrice.toFixed(5)} LIQ</span><span style="color:#00B896;">$${ikasPriceNow.toFixed(5)} NOW</span></div>
+    </div>`;
+  }
+
   return `<div class="tw-wcard">
     <div class="tw-wheader">
       <div class="tw-wleft">
@@ -4343,6 +4390,7 @@ function twRenderWallet(w, data) {
         <tbody>${rows}</tbody>
       </table>
     </div>
+    ${liqBlock}
   </div>`;
 }
 
