@@ -368,8 +368,10 @@ body {
 /* MODAL */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 100; display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
 .modal-overlay.open { display: flex; }
-.modal { background: var(--bg-card, #fff); border: 1px solid var(--border-card, rgba(0,0,0,0.08)); border-radius: 22px; width: 100%; max-width: 760px; padding: 36px; position: relative; box-shadow: 0 24px 72px rgba(0,0,0,0.14); max-height: 85vh; overflow-y: auto; }
-.modal-close { position: sticky; top: 0; float: right; margin-left: auto; margin-bottom: -34px; background: #F5F0E8; border: none; color: #6B7280; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background 0.15s, color 0.15s; z-index: 10; flex-shrink: 0; }
+.modal { background: var(--bg-card, #fff); border: 1px solid var(--border-card, rgba(0,0,0,0.08)); border-radius: 22px; width: 100%; max-width: 760px; position: relative; box-shadow: 0 24px 72px rgba(0,0,0,0.14); max-height: 85vh; overflow: hidden; display: flex; flex-direction: column; }
+.modal-header { padding: 28px 36px 0 36px; flex-shrink: 0; position: relative; }
+.modal-body { padding: 0 36px 36px 36px; overflow-y: auto; flex: 1; }
+.modal-close { position: absolute; top: 18px; right: 18px; background: #F5F0E8; border: none; color: #6B7280; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background 0.15s, color 0.15s; z-index: 10; }
 .modal-close:hover { color: #1A1A1A; background: #E5DDD0; }
 .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; color: #111827; letter-spacing: -0.02em; }
 .modal-sub { font-size: 13px; color: #9CA3AF; margin-bottom: 24px; }
@@ -1497,17 +1499,21 @@ setInterval(checkPillarsVisible, 300);
 <!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
   <div class="modal" id="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <div class="modal-title" id="modalTitle"></div>
-    <div class="modal-sub" id="modalSub"></div>
-    <div class="modal-score-row">
-      <div>
-        <div class="ms-pct" id="modalPct">0%</div>
-        <div class="ms-label">Complete</div>
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-sub" id="modalSub"></div>
+      <div class="modal-score-row">
+        <div>
+          <div class="ms-pct" id="modalPct">0%</div>
+          <div class="ms-label">Complete</div>
+        </div>
+        <div class="ms-bar-track"><div class="ms-bar-fill" id="modalBar"></div></div>
       </div>
-      <div class="ms-bar-track"><div class="ms-bar-fill" id="modalBar"></div></div>
     </div>
-    <div id="modalItems"></div>
+    <div class="modal-body">
+      <div id="modalItems"></div>
+    </div>
   </div>
 </div>
 
