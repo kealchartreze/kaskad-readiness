@@ -2968,30 +2968,7 @@ loadFromServer().then(() => {
 </script>
 
 <!-- page-agent: natural language GUI control -->
-<script src="https://cdn.jsdelivr.net/npm/page-agent@1.6.0/dist/iife/page-agent.demo.js" crossorigin="true"></script>
-<script>
-  // Initialize page-agent after DOM is ready
-  // Provides a floating chat widget - type natural language commands to control the dashboard
-  // Examples:
-  //   "Mark smart contract audit as complete"
-  //   "Add a blocker: oracle deployment delayed"
-  //   "Set target launch date to April 15"
-  //   "Show me all incomplete items in Pillar 2"
-  document.addEventListener('DOMContentLoaded', function() {
-    if (window.PageAgent) {
-      window.PageAgent.init({
-        // Context prompt helps the agent understand the app
-        systemPrompt: [
-          'You are an AI assistant helping to manage the Kaskad Protocol mainnet readiness dashboard.',
-          'The dashboard tracks launch requirements across 7 pillars: Smart Contracts, Frontend, Infrastructure, Security, Legal/Compliance, Marketing, and Operations.',
-          'You can check/uncheck readiness items, add blockers, update the target launch date, and read the current state.',
-          'Admin actions (editing items, adding blockers) require the admin panel to be unlocked first - ask the user to unlock it if needed.',
-          'Be concise and confirm what you did after each action.'
-        ].join(' ')
-      });
-    }
-  });
-</script>
+
 
 
   <!-- TAB: EVENTS -->
