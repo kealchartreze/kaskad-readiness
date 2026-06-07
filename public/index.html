@@ -3430,11 +3430,11 @@ h1 span{color:var(--teal)}
 .r2{background:rgba(99,102,241,0.12);color:#818CF8}
 .r3{background:rgba(0,184,150,0.12);color:var(--teal)}
 .rn{background:rgba(255,255,255,0.06);color:var(--text-muted)}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
-.modal-overlay.open{display:flex}
-.modal{background:#0B1437;border:1px solid var(--card-border);border-radius:20px;padding:28px;max-width:520px;width:100%;animation:fadeUp 0.3s cubic-bezier(0.16,1,0.3,1) both}
-.modal-title{font-size:18px;font-weight:700;margin-bottom:6px}
-.modal-sub{font-size:13px;color:var(--text-secondary);margin-bottom:24px}
+#tab-tvl .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+#tab-tvl .modal-overlay.open{display:flex}
+#tab-tvl .modal-overlay .modal{background:#0B1437;border:1px solid var(--card-border);border-radius:20px;padding:28px;max-width:520px;width:100%;animation:fadeUp 0.3s cubic-bezier(0.16,1,0.3,1) both}
+#tab-tvl .modal-title{font-size:18px;font-weight:700;margin-bottom:6px}
+#tab-tvl .modal-sub{font-size:13px;color:var(--text-secondary);margin-bottom:24px}
 .fg{margin-bottom:16px}
 label{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:6px}
 input,select,textarea{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--card-border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:Outfit,sans-serif;font-size:13px;transition:border-color 200ms,background 200ms;outline:none}
@@ -3564,7 +3564,7 @@ textarea{resize:vertical;min-height:80px;font-family:monospace;font-size:12px}
       <select id="m-color"><option value="teal">Teal</option><option value="indigo">Indigo</option><option value="amber">Amber</option><option value="rose">Rose</option></select>
     </div>
     <div class="mactions">
-      <button class="btn btn-g" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-g" onclick="closeTvlModal()">Cancel</button>
       <button class="btn btn-p" onclick="saveModal()">Save</button>
     </div>
   </div>
@@ -3849,23 +3849,23 @@ function addWallets(id){
   document.getElementById("add-modal").classList.add("open");
   document.getElementById("m-wallets").focus();
 }
-function closeModal(){document.getElementById("add-modal").classList.remove("open");modalTarget=null}
-function closeOut(e){if(e.target===document.getElementById("add-modal"))closeModal()}
+function closeTvlModal(){document.getElementById("add-modal").classList.remove("open");modalTarget=null}
+function closeOut(e){if(e.target===document.getElementById("add-modal"))closeTvlModal()}
 
 function saveModal(){
   const raw=document.getElementById("m-wallets").value.trim();
   const wallets=raw.split("\n").map(w=>w.trim()).filter(w=>w.startsWith("0x")&&w.length>=40);
   if(modalTarget){
     const a=aggs.find(x=>x.id===modalTarget);
-    if(a&&wallets.length){a.wallets=[...new Set([...a.wallets,...wallets])];save();closeModal();toast("Wallets added","#00B896");refreshAll();}
-    else closeModal();
+    if(a&&wallets.length){a.wallets=[...new Set([...a.wallets,...wallets])];save();closeTvlModal();toast("Wallets added","#00B896");refreshAll();}
+    else closeTvlModal();
     return;
   }
   const name=document.getElementById("m-name").value.trim();
   const color=document.getElementById("m-color").value;
   if(!name){toast("Name required","#EF4444");return}
   aggs.push({id:"a"+Date.now(),name,color,wallets});
-  save();closeModal();toast(name+" added","#00B896");refreshAll();
+  save();closeTvlModal();toast(name+" added","#00B896");refreshAll();
 }
 
 function delAgg(id){aggs=aggs.filter(a=>a.id!==id);save();renderAll();toast("Removed","#F59E0B")}
