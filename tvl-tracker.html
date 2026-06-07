@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -284,17 +284,44 @@ const COLORS={
   rose:{bg:"rgba(190,24,93,0.12)",text:"#F472B6",grad:"#BE185D,#EC4899",av:"rgba(190,24,93,0.2)"}
 };
 
-let aggs=JSON.parse(localStorage.getItem("kagg")||"[]");
+let aggs=[];
 let prices={iKAS:0.12,USDC:1,USDT:1,WETH:3500,cbBTC:100000};
 let bals={};
 let aTokens={};
 let modalTarget=null;
+let _stateSaving=false;
 
-if(!aggs.length){
-  aggs=[{id:"a1",name:"Aggregator 1",color:"teal",wallets:[]},{id:"a2",name:"Aggregator 2",color:"indigo",wallets:[]}];
-  save();
+async function loadState(){
+  try{
+    const r=await fetch('/api/state');
+    const d=await r.json();
+    if(d.ok&&d.state&&d.state.tvl_aggregators&&d.state.tvl_aggregators.length){
+      aggs=d.state.tvl_aggregators;
+    } else {
+      // Migrate from localStorage if present, then clear it
+      const ls=localStorage.getItem("kagg");
+      if(ls){try{aggs=JSON.parse(ls);}catch{}}
+      if(!aggs.length){
+        aggs=[{id:"a1",name:"Aggregator 1",color:"teal",wallets:[]},{id:"a2",name:"Aggregator 2",color:"indigo",wallets:[]}];
+      }
+      await save();
+      localStorage.removeItem("kagg");
+    }
+  }catch(e){
+    // Fallback to localStorage if API unreachable
+    const ls=localStorage.getItem("kagg");
+    if(ls){try{aggs=JSON.parse(ls);}catch{}}
+    if(!aggs.length)aggs=[{id:"a1",name:"Aggregator 1",color:"teal",wallets:[]},{id:"a2",name:"Aggregator 2",color:"indigo",wallets:[]}];
+  }
 }
-function save(){localStorage.setItem("kagg",JSON.stringify(aggs))}
+async function save(){
+  if(_stateSaving)return;
+  _stateSaving=true;
+  try{
+    await fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:{tvl_aggregators:aggs}})});
+  }catch{}
+  _stateSaving=false;
+}
 
 async function syncFromSheet(){
   const ic=document.getElementById("sicon");
@@ -571,8 +598,7 @@ async function refreshAll(){
   }finally{ic.classList.remove("spin")}
 }
 
-renderAll();
-refreshAll();
+loadState().then(()=>{renderAll();refreshAll();});
 setInterval(refreshAll,60000);
 </script>
 </body>
