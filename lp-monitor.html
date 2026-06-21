@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaskad LP Monitor</title>
+<link rel="icon" type="image/png" href="https://www.kaskad.app/icon.png">
+<style>
+@import url(https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap);
+:root {
+  --bg:#060B28;--card:rgba(11,20,55,0.6);--card-border:rgba(255,255,255,0.07);
+  --text:rgba(255,255,255,0.92);--text-secondary:rgba(255,255,255,0.55);--text-muted:rgba(255,255,255,0.30);
+  --teal:#00B896;--teal-dark:#00875A;--teal-glow:rgba(0,184,150,0.28);
+  --amber:#D97706;--amber-bg:rgba(217,119,6,0.12);--amber-border:rgba(217,119,6,0.25);
+  --red:#EF4444;--red-bg:rgba(239,68,68,0.12);--red-border:rgba(239,68,68,0.25);
+  --green:#22C55E;--green-bg:rgba(34,197,94,0.10);--green-border:rgba(34,197,94,0.20);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Outfit,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.bg-orbs{position:fixed;inset:0;pointer-events:none;z-index:0}
+.bg-orbs::before{content:"";position:absolute;top:-20%;left:-10%;width:60vw;height:60vw;border-radius:50%;background:radial-gradient(circle,rgba(0,184,150,0.10) 0%,transparent 70%);filter:blur(40px)}
+.bg-orbs::after{content:"";position:absolute;bottom:-10%;right:-10%;width:50vw;height:50vw;border-radius:50%;background:radial-gradient(circle,rgba(67,56,202,0.08) 0%,transparent 70%);filter:blur(40px)}
+nav{background:rgba(6,11,40,0.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--card-border);position:sticky;top:0;z-index:100}
+.nav-inner{max-width:1280px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.nav-logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;letter-spacing:-0.01em}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal-glow);animation:pulse 2s ease-in-out infinite}
+.nav-chain{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--teal);background:rgba(0,184,150,0.1);padding:3px 10px;border-radius:6px;border:1px solid rgba(0,184,150,0.2)}
+.nav-links{display:flex;gap:8px;flex-wrap:wrap}
+.nav-link{font-size:12px;font-weight:600;color:var(--text-secondary);text-decoration:none;padding:6px 12px;border-radius:8px;border:1px solid transparent;transition:all 200ms}
+.nav-link:hover{color:var(--text);background:rgba(255,255,255,0.05);border-color:var(--card-border)}
+.nav-link.active{color:var(--teal);background:rgba(0,184,150,0.08);border-color:rgba(0,184,150,0.2)}
+.nav-meta{font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(0.85)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.wrap{max-width:1280px;margin:0 auto;padding:48px 32px 100px;position:relative;z-index:2}
+.header{margin-bottom:40px;animation:fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+h1{font-size:32px;font-weight:800;letter-spacing:-0.03em;line-height:1.1}
+h1 span{color:var(--teal)}
+.header-sub{font-size:14px;color:var(--text-secondary);margin-top:8px}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px}
+@media(max-width:900px){.summary-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.summary-grid{grid-template-columns:1fr}}
+.stat-card{background:var(--card);border:1px solid var(--card-border);border-radius:20px;padding:22px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:relative;overflow:hidden;animation:fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both;transition:transform 250ms ease,box-shadow 250ms ease}
+.stat-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),#00D4A8);opacity:0;transition:opacity 250ms ease}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,184,150,0.08)}
+.stat-card:hover::before{opacity:1}
+.stat-label{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px}
+.stat-value{font-size:28px;font-weight:800;letter-spacing:-0.04em;font-variant-numeric:tabular-nums}
+.stat-sub{font-size:12px;color:var(--text-secondary);margin-top:4px}
+.stat-badge{font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px;display:inline-block;margin-top:6px}
+.badge-ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.badge-warn{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.badge-danger{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.badge-neutral{background:rgba(255,255,255,0.06);color:var(--text-muted);border:1px solid var(--card-border)}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.section-title{font-size:16px;font-weight:700;letter-spacing:-0.02em}
+.refresh-btn{font-size:12px;font-weight:600;color:var(--teal);background:rgba(0,184,150,0.1);border:1px solid rgba(0,184,150,0.2);padding:6px 14px;border-radius:8px;cursor:pointer;transition:background 200ms ease,transform 200ms ease;display:flex;align-items:center;gap:6px}
+.refresh-btn:hover{background:rgba(0,184,150,0.18);transform:translateY(-1px)}
+.refresh-btn:active{transform:scale(0.98)}
+.refresh-btn.loading .spin-icon{animation:spin 0.8s linear infinite}
+.lp-cards{display:flex;flex-direction:column;gap:24px;margin-bottom:40px}
+.lp-card{background:var(--card);border:1px solid var(--card-border);border-radius:20px;overflow:hidden;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);animation:fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both;transition:box-shadow 250ms ease}
+.lp-card:hover{box-shadow:0 8px 40px rgba(0,0,0,0.2)}
+.lp-card-header{padding:22px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--card-border);gap:16px;flex-wrap:wrap}
+.lp-name-row{display:flex;align-items:center;gap:12px}
+.lp-avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,rgba(0,184,150,0.2),rgba(67,56,202,0.2));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--teal);flex-shrink:0}
+.lp-name{font-size:16px;font-weight:700}
+.lp-addr{font-size:11px;color:var(--text-muted);font-variant-numeric:tabular-nums;font-family:monospace;margin-top:2px}
+.lp-header-stats{display:flex;gap:24px;flex-wrap:wrap}
+.lp-hstat{text-align:right}
+.lp-hstat-val{font-size:18px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
+.lp-hstat-lbl{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-top:2px}
+.hf-value{font-size:18px;font-weight:800}
+.hf-safe{color:var(--green)}
+.hf-warn{color:var(--amber)}
+.hf-danger{color:var(--red)}
+.lp-card-body{padding:22px 28px}
+.positions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.pos-item{background:rgba(255,255,255,0.03);border:1px solid var(--card-border);border-radius:12px;padding:14px 16px}
+.pos-asset{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+.pos-supply{font-size:15px;font-weight:700;color:var(--teal)}
+.pos-borrow{font-size:15px;font-weight:700;color:var(--amber)}
+.pos-usd{font-size:11px;color:var(--text-secondary);margin-top:2px}
+.pos-empty{color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center;grid-column:1/-1}
+.staking-row{display:flex;align-items:center;gap:16px;margin-top:16px;padding-top:16px;border-top:1px solid var(--card-border);flex-wrap:wrap}
+.staking-label{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted)}
+.staking-val{font-size:14px;font-weight:700;color:var(--teal)}
+.staking-dur{font-size:12px;color:var(--text-secondary)}
+.no-stake{font-size:13px;color:var(--text-muted)}
+.alert-banner{background:var(--red-bg);border:1px solid var(--red-border);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--red)}
+.warn-banner{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--amber)}
+.skeleton{background:linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel-line{height:14px;border-radius:4px;margin-bottom:8px}
+.error-state{background:var(--red-bg);border:1px solid var(--red-border);border-radius:14px;padding:20px;text-align:center;color:var(--red);font-size:14px}
+.last-updated{font-size:11px;color:var(--text-muted);text-align:right;margin-top:8px}
+.hf-bar-wrap{height:3px;background:rgba(255,255,255,0.06);border-radius:9999px;overflow:hidden;margin-top:6px;width:80px}
+.hf-bar{height:100%;border-radius:9999px;transition:width 0.8s cubic-bezier(0.16,1,0.3,1)}
+</style>
+</head>
+<body>
+<div class="bg-orbs"></div>
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <span class="nav-dot"></span>
+      Kaskad Dashboard
+      <span class="nav-chain">Mainnet</span>
+    </div>
+    <div class="nav-links">
+      <a href="/" class="nav-link">Readiness</a>
+      <a href="/tvl-tracker.html" class="nav-link">TVL Tracker</a>
+      <a href="/lp-monitor.html" class="nav-link active">LP Monitor</a>
+    </div>
+    <div class="nav-meta" id="nav-time">—</div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="header">
+    <div class="eyebrow">Live Mainnet</div>
+    <h1>LP <span>Monitor</span></h1>
+    <div class="header-sub">Real-time position tracking for Kaskad liquidity providers</div>
+  </div>
+
+  <!-- Summary strip -->
+  <div class="summary-grid" id="summary-grid">
+    <div class="stat-card" style="animation-delay:0s">
+      <div class="stat-label">Total LP Supplied</div>
+      <div class="stat-value skeleton skel-line" id="s-total-supply" style="width:120px;height:28px">&nbsp;</div>
+      <div class="stat-sub" id="s-total-supply-sub">Loading…</div>
+    </div>
+    <div class="stat-card" style="animation-delay:0.05s">
+      <div class="stat-label">Total LP Borrowed</div>
+      <div class="stat-value skeleton skel-line" id="s-total-borrow" style="width:100px;height:28px">&nbsp;</div>
+      <div class="stat-sub" id="s-total-borrow-sub">Loading…</div>
+    </div>
+    <div class="stat-card" style="animation-delay:0.1s">
+      <div class="stat-label">Active LPs</div>
+      <div class="stat-value skeleton skel-line" id="s-active" style="width:60px;height:28px">&nbsp;</div>
+      <div class="stat-sub" id="s-active-sub">Loading…</div>
+    </div>
+    <div class="stat-card" style="animation-delay:0.15s">
+      <div class="stat-label">HF Alerts</div>
+      <div class="stat-value skeleton skel-line" id="s-hf-alerts" style="width:60px;height:28px">&nbsp;</div>
+      <div class="stat-sub" id="s-hf-alerts-sub">Loading…</div>
+    </div>
+  </div>
+
+  <!-- LP cards -->
+  <div class="section-header">
+    <div class="section-title">LP Positions</div>
+    <button class="refresh-btn" id="refresh-btn" onclick="loadAll()">
+      <svg class="spin-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+      Refresh
+    </button>
+  </div>
+
+  <div class="lp-cards" id="lp-cards">
+    <div class="lp-card"><div class="lp-card-body"><div class="skeleton skel-line" style="width:60%;height:16px"></div><div class="skeleton skel-line" style="width:40%;height:12px;margin-top:12px"></div></div></div>
+    <div class="lp-card"><div class="lp-card-body"><div class="skeleton skel-line" style="width:60%;height:16px"></div><div class="skeleton skel-line" style="width:40%;height:12px;margin-top:12px"></div></div></div>
+    <div class="lp-card"><div class="lp-card-body"><div class="skeleton skel-line" style="width:60%;height:16px"></div><div class="skeleton skel-line" style="width:40%;height:12px;margin-top:12px"></div></div></div>
+  </div>
+  <div class="last-updated" id="last-updated"></div>
+</div>
+
+<script>
+const RPC = 'https://rpc.igralabs.com:8545';
+const POOL = '0x794a61358D6845594F94dc1DB02A252b5b4814aD'; // Aave v3 Pool
+const DATA_PROVIDER = '0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654'; // AaveProtocolDataProvider
+const STKSKD_VAULT = '0xC86764586f2cF1D1014B88E51956965C6d7db524';
+
+const LP_WALLETS = [
+  { address: '0x8fce63D524eE52Ad4e5838F5B9Cb9224ec867fb6', label: 'LP Alpha', initials: 'LA' },
+  { address: '0x3C5E4f556C902237960300968BBf8a98E688144b', label: 'LP Beta',  initials: 'LB' },
+  { address: '0x5f3245e22bEc4ff546e97B6a0362507d90dffDb9', label: 'LP Gamma', initials: 'LG' },
+];
+
+// ABI-encoded calls
+function encodeCall(sig, ...args) {
+  const keccak4 = (s) => {
+    // Simple selector — we'll use known selectors directly
+  };
+  return null;
+}
+
+// eth_call helper
+async function ethCall(to, data) {
+  const body = JSON.stringify({
+    jsonrpc: '2.0', id: 1, method: 'eth_call',
+    params: [{ to, data }, 'latest']
+  });
+  const r = await fetch(RPC, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body
+  });
+  const j = await r.json();
+  if (j.error) throw new Error(j.error.message);
+  return j.result;
+}
+
+// Decode uint256 from hex result
+function decUint(hex, offset=0) {
+  return BigInt('0x' + hex.slice(2 + offset*64, 2 + (offset+1)*64));
+}
+
+// getUserAccountData(address) → (totalCollateralBase, totalDebtBase, availableBorrowsBase, currentLiquidationThreshold, ltv, healthFactor)
+// selector: 0xbf92857c
+async function getUserAccountData(addr) {
+  const padded = addr.toLowerCase().replace('0x','').padStart(64,'0');
+  const res = await ethCall(POOL, '0xbf92857c' + padded);
+  return {
+    collateral: decUint(res, 0),
+    debt:       decUint(res, 1),
+    available:  decUint(res, 2),
+    liqThreshold: decUint(res, 3),
+    ltv:        decUint(res, 4),
+    hf:         decUint(res, 5),
+  };
+}
+
+// getReservesList() selector: 0xd1946dbc
+async function getReservesList() {
+  const res = await ethCall(POOL, '0xd1946dbc');
+  // returns dynamic array: offset (32) + length (32) + addresses
+  const hex = res.slice(2);
+  const count = Number(BigInt('0x' + hex.slice(64, 128)));
+  const addrs = [];
+  for (let i = 0; i < count; i++) {
+    const raw = hex.slice(128 + i * 64, 128 + (i + 1) * 64);
+    addrs.push('0x' + raw.slice(24));
+  }
+  return addrs;
+}
+
+// getReserveTokensAddresses(address asset) selector: 0xd2493b6c
+async function getReserveTokensAddresses(asset) {
+  const padded = asset.toLowerCase().replace('0x','').padStart(64,'0');
+  const res = await ethCall(DATA_PROVIDER, '0xd2493b6c' + padded);
+  const hex = res.slice(2);
+  return {
+    aToken:    '0x' + hex.slice(24, 64),
+    stableDebt:'0x' + hex.slice(64 + 24, 64 + 64),
+    varDebt:   '0x' + hex.slice(128 + 24, 128 + 64),
+  };
+}
+
+// ERC20 symbol() selector: 0x95d89b41
+async function getSymbol(addr) {
+  try {
+    const res = await ethCall(addr, '0x95d89b41');
+    // decode string: offset(32) + length(32) + bytes
+    const hex = res.slice(2);
+    const len = Number(BigInt('0x' + hex.slice(64, 128)));
+    if (len === 0) return '???';
+    const bytes = hex.slice(128, 128 + len * 2);
+    return decodeURIComponent(bytes.replace(/../g, '%$&').replace(/%0+/g,''));
+  } catch { return '???'; }
+}
+
+// ERC20 decimals() selector: 0x313ce567
+async function getDecimals(addr) {
+  try {
+    const res = await ethCall(addr, '0x313ce567');
+    return Number(decUint(res));
+  } catch { return 18; }
+}
+
+// ERC20 balanceOf(address) selector: 0x70a08231
+async function balanceOf(token, addr) {
+  const padded = addr.toLowerCase().replace('0x','').padStart(64,'0');
+  const res = await ethCall(token, '0x70a08231' + padded);
+  return decUint(res);
+}
+
+// stKSKD balanceOf + holdingDuration(address) selector: 0x9ded06df
+async function getStaking(addr) {
+  try {
+    const [bal, durRes] = await Promise.all([
+      balanceOf(STKSKD_VAULT, addr),
+      ethCall(STKSKD_VAULT, '0x9ded06df' + addr.toLowerCase().replace('0x','').padStart(64,'0'))
+    ]);
+    const dur = decUint(durRes);
+    return { balance: bal, durationSec: dur };
+  } catch { return { balance: 0n, durationSec: 0n }; }
+}
+
+// Oracle getAssetPrice(address) selector: 0xb3596f07
+// We'll get oracle addr from pool's getPriceOracle: 0xfca513a8
+async function getPriceOracle() {
+  // Pool.ADDRESSES_PROVIDER → getPoolAddressesProvider: 0x0542975c
+  // Then provider.getPriceOracle: 0x569e75fc
+  // Shortcut: use known oracle address
+  return '0x54586bE62E3c3580375aE3723C145253060Ca0C2'; // Aave oracle on Igra mainnet (standard)
+}
+
+// Format utils
+const fmt = (n, dec=8) => {
+  const d = Number(n) / 10**dec;
+  return d.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+const fmtUSD = (n, dec=8) => '$' + fmt(n, dec);
+const fmtHF = (n) => {
+  const v = Number(n) / 1e18;
+  if (!isFinite(v) || v > 999) return '∞';
+  return v.toFixed(2);
+};
+const hfClass = (hfBig) => {
+  const v = Number(hfBig) / 1e18;
+  if (v > 2.0) return 'hf-safe';
+  if (v > 1.3) return 'hf-warn';
+  return 'hf-danger';
+};
+const hfBadge = (hfBig) => {
+  const v = Number(hfBig) / 1e18;
+  if (v > 2.0) return ['badge-ok', 'Safe'];
+  if (v > 1.3) return ['badge-warn', 'Warning'];
+  return ['badge-danger', 'Danger'];
+};
+const hfBarWidth = (hfBig) => {
+  const v = Number(hfBig) / 1e18;
+  const pct = Math.min((v / 3) * 100, 100);
+  return pct;
+};
+const hfBarColor = (hfBig) => {
+  const v = Number(hfBig) / 1e18;
+  if (v > 2.0) return 'var(--green)';
+  if (v > 1.3) return 'var(--amber)';
+  return 'var(--red)';
+};
+const shortAddr = (a) => a.slice(0,6) + '…' + a.slice(-4);
+const durLabel = (sec) => {
+  const s = Number(sec);
+  if (s < 3600) return Math.round(s / 60) + 'm';
+  if (s < 86400) return (s / 3600).toFixed(1) + 'h';
+  return (s / 86400).toFixed(1) + 'd';
+};
+const fmtKSKD = (big) => {
+  const v = Number(big) / 1e18;
+  if (v >= 1000000) return (v/1000000).toFixed(2) + 'M';
+  if (v >= 1000) return (v/1000).toFixed(1) + 'K';
+  return v.toFixed(2);
+};
+
+// Cache reserve info
+let reserveCache = null;
+
+async function getReserveInfo() {
+  if (reserveCache) return reserveCache;
+  const addrs = await getReservesList();
+  const infos = await Promise.all(addrs.map(async (a) => {
+    const tokens = await getReserveTokensAddresses(a);
+    const [sym, dec] = await Promise.all([getSymbol(a), getDecimals(a)]);
+    return { asset: a, sym, dec, ...tokens };
+  }));
+  reserveCache = infos;
+  return infos;
+}
+
+async function fetchWalletData(wallet) {
+  const [accountData, reserves, staking] = await Promise.all([
+    getUserAccountData(wallet.address),
+    getReserveInfo(),
+    getStaking(wallet.address),
+  ]);
+
+  // Fetch per-asset balances
+  const positions = await Promise.all(reserves.map(async (r) => {
+    const [supplyBal, debtBal] = await Promise.all([
+      balanceOf(r.aToken, wallet.address),
+      balanceOf(r.varDebt, wallet.address),
+    ]);
+    return { ...r, supplyBal, debtBal };
+  }));
+
+  return { ...wallet, accountData, positions, staking };
+}
+
+function renderLPCard(data, idx) {
+  const { label, address, initials, accountData, positions, staking } = data;
+  const { collateral, debt, hf } = accountData;
+
+  const hasPosition = collateral > 0n || debt > 0n;
+  const activePositions = positions.filter(p => p.supplyBal > 0n || p.debtBal > 0n);
+
+  const hfVal = Number(hf) / 1e18;
+  const [badgeCls, badgeTxt] = hfBadge(hf);
+  const isAlert = hfVal < 1.3 && hasPosition;
+  const isWarn  = hfVal >= 1.3 && hfVal <= 2.0 && hasPosition;
+
+  const alertHtml = isAlert
+    ? `<div class="alert-banner">⚠️ Health factor critically low — liquidation risk</div>`
+    : isWarn
+    ? `<div class="warn-banner">⚠ Health factor below 2.0 — monitor closely</div>`
+    : '';
+
+  const posHtml = activePositions.length === 0
+    ? `<div class="pos-empty">No active positions</div>`
+    : activePositions.map(p => {
+        const supplyUSD = Number(p.supplyBal) / 10**p.dec;
+        const debtUSD   = Number(p.debtBal)   / 10**p.dec;
+        return `
+          <div class="pos-item">
+            <div class="pos-asset">${p.sym}</div>
+            ${p.supplyBal > 0n ? `<div class="pos-supply">+$${supplyUSD.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div><div class="pos-usd">Supplied</div>` : ''}
+            ${p.debtBal > 0n   ? `<div class="pos-borrow">-$${debtUSD.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div><div class="pos-usd">Borrowed</div>` : ''}
+          </div>`;
+      }).join('');
+
+  const stakingHtml = staking.balance > 0n
+    ? `<div class="staking-row">
+        <div class="staking-label">stKSKD</div>
+        <div class="staking-val">${fmtKSKD(staking.balance)}</div>
+        <div class="staking-dur">staked for ${durLabel(staking.durationSec)}</div>
+       </div>`
+    : `<div class="staking-row"><div class="staking-label">stKSKD</div><div class="no-stake">No stake</div></div>`;
+
+  const hfDisplay = hasPosition
+    ? `<div class="hf-value ${hfClass(hf)}">${fmtHF(hf)}</div>
+       <div class="hf-bar-wrap"><div class="hf-bar" style="width:${hfBarWidth(hf)}%;background:${hfBarColor(hf)}"></div></div>`
+    : `<div class="hf-value" style="color:var(--text-muted)">—</div>`;
+
+  return `
+    <div class="lp-card" style="animation-delay:${idx*0.08}s">
+      <div class="lp-card-header">
+        <div class="lp-name-row">
+          <div class="lp-avatar">${initials}</div>
+          <div>
+            <div class="lp-name">${label}</div>
+            <div class="lp-addr">${shortAddr(address)}</div>
+          </div>
+        </div>
+        <div class="lp-header-stats">
+          <div class="lp-hstat">
+            <div class="lp-hstat-val">${hasPosition ? fmtUSD(collateral) : '—'}</div>
+            <div class="lp-hstat-lbl">Supplied</div>
+          </div>
+          <div class="lp-hstat">
+            <div class="lp-hstat-val" style="color:${debt>0n?'var(--amber)':'inherit'}">${hasPosition ? fmtUSD(debt) : '—'}</div>
+            <div class="lp-hstat-lbl">Borrowed</div>
+          </div>
+          <div class="lp-hstat">
+            ${hfDisplay}
+            <div class="lp-hstat-lbl">Health Factor</div>
+          </div>
+          <div class="lp-hstat">
+            <span class="stat-badge ${hasPosition ? badgeCls : 'badge-neutral'}">${hasPosition ? badgeTxt : 'No position'}</span>
+            <div class="lp-hstat-lbl">Status</div>
+          </div>
+        </div>
+      </div>
+      <div class="lp-card-body">
+        ${alertHtml}
+        <div class="positions-grid">${posHtml}</div>
+        ${stakingHtml}
+      </div>
+    </div>`;
+}
+
+async function loadAll() {
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  try {
+    const results = await Promise.allSettled(LP_WALLETS.map(fetchWalletData));
+
+    let totalSupply = 0n, totalDebt = 0n, active = 0, hfAlerts = 0;
+
+    const cardsHtml = results.map((r, i) => {
+      if (r.status === 'rejected') {
+        return `<div class="lp-card"><div class="lp-card-body"><div class="error-state">Failed to load ${LP_WALLETS[i].label}: ${r.reason?.message || 'RPC error'}</div></div></div>`;
+      }
+      const d = r.value;
+      if (d.accountData.collateral > 0n || d.accountData.debt > 0n) active++;
+      totalSupply += d.accountData.collateral;
+      totalDebt   += d.accountData.debt;
+      const hfVal = Number(d.accountData.hf) / 1e18;
+      if ((d.accountData.collateral > 0n || d.accountData.debt > 0n) && hfVal < 1.5) hfAlerts++;
+      return renderLPCard(d, i);
+    }).join('');
+
+    document.getElementById('lp-cards').innerHTML = cardsHtml;
+
+    // Summary stats
+    const supplyEl = document.getElementById('s-total-supply');
+    supplyEl.classList.remove('skeleton','skel-line');
+    supplyEl.style = '';
+    supplyEl.textContent = fmtUSD(totalSupply);
+    document.getElementById('s-total-supply-sub').textContent = 'across ' + active + ' active LP' + (active!==1?'s':'');
+
+    const debtEl = document.getElementById('s-total-borrow');
+    debtEl.classList.remove('skeleton','skel-line');
+    debtEl.style = '';
+    debtEl.textContent = fmtUSD(totalDebt);
+    document.getElementById('s-total-borrow-sub').textContent = totalDebt > 0n ? 'total outstanding' : 'no borrows';
+
+    const actEl = document.getElementById('s-active');
+    actEl.classList.remove('skeleton','skel-line');
+    actEl.style = '';
+    actEl.textContent = active + ' / ' + LP_WALLETS.length;
+    document.getElementById('s-active-sub').textContent = 'with open positions';
+
+    const hfEl = document.getElementById('s-hf-alerts');
+    hfEl.classList.remove('skeleton','skel-line');
+    hfEl.style = '';
+    hfEl.textContent = hfAlerts;
+    hfEl.style.color = hfAlerts > 0 ? 'var(--red)' : 'var(--green)';
+    document.getElementById('s-hf-alerts-sub').textContent = hfAlerts > 0 ? 'HF below 1.5' : 'All healthy';
+
+    document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+
+  } catch (err) {
+    document.getElementById('lp-cards').innerHTML = `<div class="error-state">RPC error: ${err.message}</div>`;
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+}
+
+// Clock
+setInterval(() => {
+  document.getElementById('nav-time').textContent = new Date().toLocaleTimeString();
+}, 1000);
+document.getElementById('nav-time').textContent = new Date().toLocaleTimeString();
+
+// Auto-refresh every 60s
+setInterval(loadAll, 60000);
+
+// Initial load
+loadAll();
+</script>
+</body>
+</html>
