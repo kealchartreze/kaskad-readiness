@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -4829,6 +4829,261 @@ window.twRefresh = twRefresh;
 // === End Keal Skills Hover Panel ===
 
 </script>
+
+  <!-- TAB: LP MONITOR -->
+  <div id="tab-lp" style="display:none; padding:32px; max-width:1280px; margin:0 auto;">
+    <style>
+      .lp-summary { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+      @media(max-width:900px){ .lp-summary { grid-template-columns:repeat(2,1fr); } }
+      @media(max-width:500px){ .lp-summary { grid-template-columns:1fr; } }
+      .lp-stat { background:var(--bg-card); border:1px solid var(--border-card); border-radius:16px; padding:20px; }
+      .lp-stat-lbl { font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-tertiary); margin-bottom:8px; }
+      .lp-stat-val { font-size:26px; font-weight:800; letter-spacing:-0.03em; font-variant-numeric:tabular-nums; color:var(--text-primary); }
+      .lp-stat-sub { font-size:12px; color:var(--text-secondary); margin-top:4px; }
+      .lp-cards { display:flex; flex-direction:column; gap:20px; }
+      .lp-c { background:var(--bg-card); border:1px solid var(--border-card); border-radius:20px; overflow:hidden; transition:box-shadow 250ms; }
+      .lp-c:hover { box-shadow:0 4px 24px rgba(0,0,0,0.08); }
+      .lp-c-head { padding:20px 24px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border-card); flex-wrap:wrap; gap:12px; }
+      .lp-c-name { display:flex; align-items:center; gap:12px; }
+      .lp-avatar { width:38px; height:38px; border-radius:10px; background:rgba(0,184,150,0.12); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; color:#00B896; flex-shrink:0; }
+      .lp-name { font-size:15px; font-weight:700; color:var(--text-primary); }
+      .lp-addr { font-size:11px; color:var(--text-tertiary); font-family:monospace; }
+      .lp-c-stats { display:flex; gap:20px; flex-wrap:wrap; }
+      .lp-hs { text-align:right; }
+      .lp-hs-val { font-size:17px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--text-primary); }
+      .lp-hs-lbl { font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-tertiary); margin-top:2px; }
+      .lp-c-body { padding:20px 24px; }
+      .lp-pos-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
+      .lp-pos { background:var(--bg-page); border:1px solid var(--border-card); border-radius:10px; padding:12px 14px; }
+      .lp-pos-asset { font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-tertiary); margin-bottom:5px; }
+      .lp-pos-sup { font-size:14px; font-weight:700; color:#00875A; }
+      .lp-pos-bor { font-size:14px; font-weight:700; color:#B45309; }
+      .lp-pos-usd { font-size:11px; color:var(--text-secondary); margin-top:2px; }
+      .lp-no-pos { color:var(--text-tertiary); font-size:13px; padding:16px 0; grid-column:1/-1; }
+      .lp-stake-row { display:flex; align-items:center; gap:14px; margin-top:14px; padding-top:14px; border-top:1px solid var(--border-card); flex-wrap:wrap; }
+      .lp-stake-lbl { font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-tertiary); }
+      .lp-stake-val { font-size:13px; font-weight:700; color:#00875A; }
+      .lp-stake-dur { font-size:12px; color:var(--text-secondary); }
+      .lp-hf-safe { color:#16A34A; }
+      .lp-hf-warn { color:#D97706; }
+      .lp-hf-danger { color:#DC2626; }
+      .lp-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:5px; letter-spacing:0.05em; text-transform:uppercase; }
+      .lp-badge-ok { background:rgba(22,163,74,0.1); color:#16A34A; }
+      .lp-badge-warn { background:rgba(217,119,6,0.1); color:#D97706; }
+      .lp-badge-danger { background:rgba(220,38,38,0.1); color:#DC2626; }
+      .lp-badge-none { background:rgba(0,0,0,0.05); color:var(--text-tertiary); }
+      .lp-alert { background:rgba(220,38,38,0.08); border:1px solid rgba(220,38,38,0.2); border-radius:10px; padding:10px 14px; margin-bottom:12px; font-size:13px; font-weight:600; color:#DC2626; }
+      .lp-warn-box { background:rgba(217,119,6,0.08); border:1px solid rgba(217,119,6,0.2); border-radius:10px; padding:10px 14px; margin-bottom:12px; font-size:13px; font-weight:600; color:#D97706; }
+      .lp-refresh-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+      .lp-refresh-btn { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:var(--text-secondary); background:var(--bg-card); border:1px solid var(--border-card); padding:6px 14px; border-radius:8px; cursor:pointer; font-family:inherit; transition:background 200ms; }
+      .lp-refresh-btn:hover { background:var(--bg-page); }
+      .lp-ts { font-size:11px; color:var(--text-tertiary); }
+      .lp-spin { animation:lp-spin 0.8s linear infinite; }
+      @keyframes lp-spin { to { transform:rotate(360deg); } }
+    </style>
+
+    <div style="margin-bottom:28px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#00875A;margin-bottom:8px;">Live Mainnet</div>
+      <h2 style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:var(--text-primary);">LP <span style="color:#00875A;">Monitor</span></h2>
+      <div style="font-size:13px;color:var(--text-secondary);margin-top:6px;">Real-time position tracking for Kaskad liquidity providers</div>
+    </div>
+
+    <div class="lp-summary">
+      <div class="lp-stat"><div class="lp-stat-lbl">Total LP Supplied</div><div class="lp-stat-val" id="lp-s-supply">—</div><div class="lp-stat-sub" id="lp-s-supply-sub">Loading…</div></div>
+      <div class="lp-stat"><div class="lp-stat-lbl">Total LP Borrowed</div><div class="lp-stat-val" id="lp-s-borrow">—</div><div class="lp-stat-sub" id="lp-s-borrow-sub">Loading…</div></div>
+      <div class="lp-stat"><div class="lp-stat-lbl">Active LPs</div><div class="lp-stat-val" id="lp-s-active">—</div><div class="lp-stat-sub" id="lp-s-active-sub">Loading…</div></div>
+      <div class="lp-stat"><div class="lp-stat-lbl">HF Alerts</div><div class="lp-stat-val" id="lp-s-alerts">—</div><div class="lp-stat-sub" id="lp-s-alerts-sub">Loading…</div></div>
+    </div>
+
+    <div class="lp-refresh-row">
+      <div style="font-size:15px;font-weight:700;color:var(--text-primary);">LP Positions</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="lp-ts" id="lp-ts"></span>
+        <button class="lp-refresh-btn" id="lp-rbtn" onclick="lpLoadAll()">
+          <svg id="lp-ricon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <div class="lp-cards" id="lp-cards">
+      <div style="color:var(--text-tertiary);font-size:13px;padding:40px;text-align:center;">Loading positions…</div>
+    </div>
+
+    <script>
+    (function(){
+      var LP_RPC='https://rpc.igralabs.com:8545';
+      var LP_POOL='0x794a61358D6845594F94dc1DB02A252b5b4814aD';
+      var LP_DP='0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654';
+      var LP_STKSKD='0xC86764586f2cF1D1014B88E51956965C6d7db524';
+      var LP_WALLETS=[
+        {address:'0x8fce63D524eE52Ad4e5838F5B9Cb9224ec867fb6',label:'LP Alpha',initials:'LA'},
+        {address:'0x3C5E4f556C902237960300968BBf8a98E688144b',label:'LP Beta',initials:'LB'},
+        {address:'0x5f3245e22bEc4ff546e97B6a0362507d90dffDb9',label:'LP Gamma',initials:'LG'}
+      ];
+
+      function lpCall(to,data){
+        return fetch(LP_RPC,{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_call',params:[{to:to,data:data},'latest']})})
+          .then(function(r){return r.json();}).then(function(j){if(j.error)throw new Error(j.error.message);return j.result;});
+      }
+      function lpDec(hex,o){o=o||0;return BigInt('0x'+hex.slice(2+o*64,2+(o+1)*64));}
+      function lpPad(addr){return addr.toLowerCase().replace('0x','').padStart(64,'0');}
+
+      function lpAccountData(addr){
+        return lpCall(LP_POOL,'0xbf92857c'+lpPad(addr)).then(function(res){
+          return {collateral:lpDec(res,0),debt:lpDec(res,1),hf:lpDec(res,5)};
+        });
+      }
+      function lpReserves(){
+        return lpCall(LP_POOL,'0xd1946dbc').then(function(res){
+          var hex=res.slice(2),count=Number(BigInt('0x'+hex.slice(64,128))),addrs=[];
+          for(var i=0;i<count;i++) addrs.push('0x'+hex.slice(128+i*64+24,128+(i+1)*64));
+          return addrs;
+        });
+      }
+      function lpTokenAddrs(asset){
+        return lpCall(LP_DP,'0xd2493b6c'+lpPad(asset)).then(function(res){
+          var h=res.slice(2);
+          return {aToken:'0x'+h.slice(24,64),varDebt:'0x'+h.slice(128+24,128+64)};
+        });
+      }
+      function lpSymbol(addr){
+        return lpCall(addr,'0x95d89b41').then(function(res){
+          var h=res.slice(2),len=Number(BigInt('0x'+h.slice(64,128)));
+          if(!len)return '???';
+          var bytes=h.slice(128,128+len*2);
+          return bytes.match(/../g).map(function(b){return String.fromCharCode(parseInt(b,16));}).join('').replace(/[^\x20-\x7E]/g,'');
+        }).catch(function(){return '???';});
+      }
+      function lpDecimals(addr){
+        return lpCall(addr,'0x313ce567').then(function(res){return Number(lpDec(res));}).catch(function(){return 18;});
+      }
+      function lpBalOf(token,addr){
+        return lpCall(token,'0x70a08231'+lpPad(addr)).then(function(res){return lpDec(res);});
+      }
+      function lpStaking(addr){
+        return Promise.all([
+          lpBalOf(LP_STKSKD,addr),
+          lpCall(LP_STKSKD,'0x9ded06df'+lpPad(addr)).then(function(r){return lpDec(r);})
+        ]).then(function(r){return {balance:r[0],durationSec:r[1]};}).catch(function(){return {balance:BigInt(0),durationSec:BigInt(0)};});
+      }
+
+      var lpReserveCache=null;
+      function lpGetReserves(){
+        if(lpReserveCache)return Promise.resolve(lpReserveCache);
+        return lpReserves().then(function(addrs){
+          return Promise.all(addrs.map(function(a){
+            return Promise.all([lpTokenAddrs(a),lpSymbol(a),lpDecimals(a)]).then(function(r){
+              return Object.assign({asset:a,sym:r[1],dec:r[2]},r[0]);
+            });
+          }));
+        }).then(function(infos){lpReserveCache=infos;return infos;});
+      }
+
+      function lpFmtUSD(big,dec){dec=dec||8;var v=Number(big)/Math.pow(10,dec);return '$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+      function lpFmtHF(big){var v=Number(big)/1e18;return(!isFinite(v)||v>999)?'\u221e':v.toFixed(2);}
+      function lpHfClass(big){var v=Number(big)/1e18;return v>2?'lp-hf-safe':v>1.3?'lp-hf-warn':'lp-hf-danger';}
+      function lpShort(a){return a.slice(0,6)+'\u2026'+a.slice(-4);}
+      function lpDurLbl(sec){var s=Number(sec);if(s<3600)return Math.round(s/60)+'m';if(s<86400)return (s/3600).toFixed(1)+'h';return (s/86400).toFixed(1)+'d';}
+      function lpFmtKSKD(big){var v=Number(big)/1e18;if(v>=1e6)return (v/1e6).toFixed(2)+'M';if(v>=1e3)return (v/1e3).toFixed(1)+'K';return v.toFixed(2);}
+
+      function lpRenderCard(data){
+        var label=data.label,initials=data.initials,address=data.address;
+        var collateral=data.accountData.collateral,debt=data.accountData.debt,hf=data.accountData.hf;
+        var hasPos=collateral>BigInt(0)||debt>BigInt(0);
+        var hfVal=Number(hf)/1e18;
+        var isAlert=hasPos&&hfVal<1.3,isWarn=hasPos&&hfVal>=1.3&&hfVal<=2.0;
+
+        var activePosHtml=data.positions.filter(function(p){return p.supplyBal>BigInt(0)||p.debtBal>BigInt(0);}).map(function(p){
+          var sv=Number(p.supplyBal)/Math.pow(10,p.dec),dv=Number(p.debtBal)/Math.pow(10,p.dec);
+          var html='<div class="lp-pos"><div class="lp-pos-asset">'+p.sym+'</div>';
+          if(p.supplyBal>BigInt(0)) html+='<div class="lp-pos-sup">+$'+sv.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div><div class="lp-pos-usd">Supplied</div>';
+          if(p.debtBal>BigInt(0)) html+='<div class="lp-pos-bor">-$'+dv.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div><div class="lp-pos-usd">Borrowed</div>';
+          return html+'</div>';
+        }).join('')||'<div class="lp-no-pos">No active positions</div>';
+
+        var stakingHtml=data.staking.balance>BigInt(0)
+          ?'<div class="lp-stake-row"><span class="lp-stake-lbl">stKSKD</span><span class="lp-stake-val">'+lpFmtKSKD(data.staking.balance)+'</span><span class="lp-stake-dur">staked '+lpDurLbl(data.staking.durationSec)+'</span></div>'
+          :'<div class="lp-stake-row"><span class="lp-stake-lbl">stKSKD</span><span style="font-size:12px;color:var(--text-tertiary)">No stake</span></div>';
+
+        var badgeCls=!hasPos?'lp-badge-none':hfVal>2?'lp-badge-ok':hfVal>1.3?'lp-badge-warn':'lp-badge-danger';
+        var badgeTxt=!hasPos?'No position':hfVal>2?'Safe':hfVal>1.3?'Warning':'Danger';
+
+        return '<div class="lp-c">'
+          +'<div class="lp-c-head">'
+            +'<div class="lp-c-name"><div class="lp-avatar">'+initials+'</div>'
+            +'<div><div class="lp-name">'+label+'</div><div class="lp-addr">'+lpShort(address)+'</div></div></div>'
+            +'<div class="lp-c-stats">'
+              +'<div class="lp-hs"><div class="lp-hs-val">'+(hasPos?lpFmtUSD(collateral):'—')+'</div><div class="lp-hs-lbl">Supplied</div></div>'
+              +'<div class="lp-hs"><div class="lp-hs-val" style="'+(debt>BigInt(0)?'color:#B45309':'')+'"> '+(hasPos?lpFmtUSD(debt):'—')+'</div><div class="lp-hs-lbl">Borrowed</div></div>'
+              +'<div class="lp-hs"><div class="lp-hs-val '+(hasPos?lpHfClass(hf):'')+'"> '+(hasPos?lpFmtHF(hf):'—')+'</div><div class="lp-hs-lbl">Health Factor</div></div>'
+              +'<div class="lp-hs"><span class="lp-badge '+badgeCls+'">'+badgeTxt+'</span></div>'
+            +'</div>'
+          +'</div>'
+          +'<div class="lp-c-body">'
+            +(isAlert?'<div class="lp-alert">&#9888;&#65039; Health factor critically low &mdash; liquidation risk</div>':'')
+            +(isWarn?'<div class="lp-warn-box">&#9888; Health factor below 2.0 &mdash; monitor closely</div>':'')
+            +'<div class="lp-pos-grid">'+activePosHtml+'</div>'
+            +stakingHtml
+          +'</div>'
+        +'</div>';
+      }
+
+      window.lpLoadAll=function(){
+        var btn=document.getElementById('lp-rbtn'),icon=document.getElementById('lp-ricon');
+        if(btn){btn.disabled=true;icon.classList.add('lp-spin');}
+        Promise.all(LP_WALLETS.map(function(w){
+          return Promise.all([lpAccountData(w.address),lpGetReserves(),lpStaking(w.address)]).then(function(r){
+            return Promise.all(r[1].map(function(res){
+              return Promise.all([lpBalOf(res.aToken,w.address),lpBalOf(res.varDebt,w.address)]).then(function(b){
+                return Object.assign({},res,{supplyBal:b[0],debtBal:b[1]});
+              });
+            })).then(function(positions){return Object.assign({},w,{accountData:r[0],positions:positions,staking:r[2]});});
+          });
+        })).then(function(results){
+          var totalSupply=BigInt(0),totalDebt=BigInt(0),active=0,alerts=0;
+          var cards=results.map(function(d){
+            if(d.accountData.collateral>BigInt(0)||d.accountData.debt>BigInt(0))active++;
+            totalSupply+=d.accountData.collateral;totalDebt+=d.accountData.debt;
+            var hfV=Number(d.accountData.hf)/1e18;
+            if((d.accountData.collateral>BigInt(0)||d.accountData.debt>BigInt(0))&&hfV<1.5)alerts++;
+            return lpRenderCard(d);
+          }).join('');
+          document.getElementById('lp-cards').innerHTML=cards;
+          document.getElementById('lp-s-supply').textContent=lpFmtUSD(totalSupply);
+          document.getElementById('lp-s-supply-sub').textContent=active+' active LP'+(active!==1?'s':'');
+          document.getElementById('lp-s-borrow').textContent=lpFmtUSD(totalDebt);
+          document.getElementById('lp-s-borrow-sub').textContent=totalDebt>BigInt(0)?'outstanding':'no borrows';
+          document.getElementById('lp-s-active').textContent=active+' / '+LP_WALLETS.length;
+          document.getElementById('lp-s-active-sub').textContent='with open positions';
+          var alertEl=document.getElementById('lp-s-alerts');
+          alertEl.textContent=alerts;alertEl.style.color=alerts>0?'#DC2626':'#16A34A';
+          document.getElementById('lp-s-alerts-sub').textContent=alerts>0?'HF below 1.5':'All healthy';
+          document.getElementById('lp-ts').textContent='Updated '+new Date().toLocaleTimeString();
+        }).catch(function(e){
+          document.getElementById('lp-cards').innerHTML='<div style="color:#DC2626;font-size:13px;padding:20px">RPC error: '+e.message+'</div>';
+        }).finally(function(){
+          if(btn){btn.disabled=false;icon.classList.remove('lp-spin');}
+        });
+      };
+
+      // Hook into switchTab
+      var _origSwitch=window.switchTab;
+      window.switchTab=function(tab){
+        if(_origSwitch)_origSwitch(tab);
+        if(tab==='lp')window.lpLoadAll();
+      };
+
+      // Auto-refresh every 60s if tab visible
+      setInterval(function(){
+        var el=document.getElementById('tab-lp');
+        if(el&&el.style.display!=='none')window.lpLoadAll();
+      },60000);
+    })();
+    <\/script>
+  </div>
+
 </body>
 </html>
 
