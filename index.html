@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -1093,6 +1093,7 @@ canvas { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
     <button class="nav-tab" onclick="switchTab('squad')">🤖 Squad</button>
     <button class="nav-tab" onclick="switchTab('team')">💼 Team Wallets</button>
     <button class="nav-tab" onclick="switchTab('tvl')">📊 TVL Tracker</button>
+    <button class="nav-tab" onclick="switchTab('lp')">&#128202; LP Monitor</button>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode">
       <span class="tt-icon" id="themeIcon">🌙</span>
       <span id="themeLabel">Dark</span>
@@ -2027,6 +2028,8 @@ function switchTab(tab) {
   document.getElementById('tab-squad').style.display = tab === 'squad' ? '' : 'none';
   document.getElementById('tab-tvl').style.display = tab === 'tvl' ? '' : 'none';
   document.getElementById('tab-team').style.display = tab === 'team' ? '' : 'none';
+  const tabLp = document.getElementById('tab-lp'); if(tabLp) tabLp.style.display = tab === 'lp' ? '' : 'none';
+  const tabLp = document.getElementById('tab-lp'); if(tabLp) tabLp.style.display = tab === 'lp' ? '' : 'none';
   document.querySelectorAll('.nav-tab').forEach((btn, i) => {
     btn.classList.toggle('active',
       (i === 0 && tab === 'launch') ||
@@ -2034,7 +2037,8 @@ function switchTab(tab) {
       (i === 2 && tab === 'events') ||
       (i === 3 && tab === 'squad') ||
       (i === 4 && tab === 'team') ||
-      (i === 5 && tab === 'tvl')
+      (i === 5 && tab === 'tvl') ||
+      (i === 6 && tab === 'lp')
     );
   });
   if (tab === 'events') renderWeekGrid();
