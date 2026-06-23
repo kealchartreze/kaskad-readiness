@@ -2029,7 +2029,6 @@ function switchTab(tab) {
   document.getElementById('tab-tvl').style.display = tab === 'tvl' ? '' : 'none';
   document.getElementById('tab-team').style.display = tab === 'team' ? '' : 'none';
   const tabLp = document.getElementById('tab-lp'); if(tabLp) tabLp.style.display = tab === 'lp' ? '' : 'none';
-  const tabLp = document.getElementById('tab-lp'); if(tabLp) tabLp.style.display = tab === 'lp' ? '' : 'none';
   document.querySelectorAll('.nav-tab').forEach((btn, i) => {
     btn.classList.toggle('active',
       (i === 0 && tab === 'launch') ||
