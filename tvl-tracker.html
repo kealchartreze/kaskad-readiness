@@ -268,7 +268,7 @@ const POOL_DP="0xFEaD8E14e58ecF72B5cD585458f07523F173E2F4";
 const EPOCH_START=1779710400;
 const EPOCH_DUR=2592000;
 const COMM_RATE=0.0015;
-const KSKD_PRICE=0.05;
+let KSKD_PRICE=0.05; // updated dynamically from CoinGecko
 
 const ASSETS={
   iKAS:{addr:"0x17Ec7E1768c813E2a3a9b0f94A35605CA520C242",dec:18,gecko:"kaspa"},
@@ -388,9 +388,10 @@ async function loadATokens(){
 async function fetchPrices(){
   try{
     const ids=Object.values(ASSETS).map(a=>a.gecko).join(",");
-    const r=await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
+    const r=await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids},kaskad&vs_currencies=usd`);
     const d=await r.json();
     for(const[sym,info]of Object.entries(ASSETS)){if(d[info.gecko]?.usd)prices[sym]=d[info.gecko].usd}
+    if(d.kaskad?.usd)KSKD_PRICE=d.kaskad.usd;
   }catch{}
 }
 
