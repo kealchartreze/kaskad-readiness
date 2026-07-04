@@ -168,8 +168,7 @@ h1 span{color:var(--teal)}
 
 <script>
 const RPC = 'https://rpc.igralabs.com:8545';
-const POOL = '0x794a61358D6845594F94dc1DB02A252b5b4814aD'; // Aave v3 Pool
-const DATA_PROVIDER = '0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654'; // AaveProtocolDataProvider
+const POOL = '0x1Fc4f91E99eFDC90c4B2B8F69fE0b4BFd819a330'; // Kaskad Pool (Igra mainnet)
 const STKSKD_VAULT = '0xC86764586f2cF1D1014B88E51956965C6d7db524';
 
 const LP_WALLETS = [
@@ -178,13 +177,7 @@ const LP_WALLETS = [
   { address: '0x5f3245e22bEc4ff546e97B6a0362507d90dffDb9', label: 'LP Gamma', initials: 'LG' },
 ];
 
-// ABI-encoded calls
-function encodeCall(sig, ...args) {
-  const keccak4 = (s) => {
-    // Simple selector — we'll use known selectors directly
-  };
-  return null;
-}
+// No separate DataProvider needed — we use Pool.getReserveData() directly
 
 // eth_call helper
 async function ethCall(to, data) {
@@ -236,15 +229,15 @@ async function getReservesList() {
   return addrs;
 }
 
-// getReserveTokensAddresses(address asset) selector: 0xd2493b6c
+// getReserveData(address asset) selector: 0x35ea6a75 — returns full ReserveData struct from Pool
+// aTokenAddress at slot 8, variableDebtTokenAddress at slot 10
 async function getReserveTokensAddresses(asset) {
   const padded = asset.toLowerCase().replace('0x','').padStart(64,'0');
-  const res = await ethCall(DATA_PROVIDER, '0xd2493b6c' + padded);
+  const res = await ethCall(POOL, '0x35ea6a75' + padded);
   const hex = res.slice(2);
   return {
-    aToken:    '0x' + hex.slice(24, 64),
-    stableDebt:'0x' + hex.slice(64 + 24, 64 + 64),
-    varDebt:   '0x' + hex.slice(128 + 24, 128 + 64),
+    aToken:  '0x' + hex.slice(8*64 + 24, 8*64 + 64),
+    varDebt: '0x' + hex.slice(10*64 + 24, 10*64 + 64),
   };
 }
 
@@ -288,14 +281,8 @@ async function getStaking(addr) {
   } catch { return { balance: 0n, durationSec: 0n }; }
 }
 
-// Oracle getAssetPrice(address) selector: 0xb3596f07
-// We'll get oracle addr from pool's getPriceOracle: 0xfca513a8
-async function getPriceOracle() {
-  // Pool.ADDRESSES_PROVIDER → getPoolAddressesProvider: 0x0542975c
-  // Then provider.getPriceOracle: 0x569e75fc
-  // Shortcut: use known oracle address
-  return '0x54586bE62E3c3580375aE3723C145253060Ca0C2'; // Aave oracle on Igra mainnet (standard)
-}
+// Oracle — known address from protocol info
+const PRICE_ORACLE = '0xcf5C2E2509e28a225115FD51Fad1a45c7E91A08A';
 
 // Format utils
 const fmt = (n, dec=8) => {
@@ -352,8 +339,11 @@ async function getReserveInfo() {
   if (reserveCache) return reserveCache;
   const addrs = await getReservesList();
   const infos = await Promise.all(addrs.map(async (a) => {
-    const tokens = await getReserveTokensAddresses(a);
-    const [sym, dec] = await Promise.all([getSymbol(a), getDecimals(a)]);
+    const [tokens, sym, dec] = await Promise.all([
+      getReserveTokensAddresses(a),
+      getSymbol(a),
+      getDecimals(a)
+    ]);
     return { asset: a, sym, dec, ...tokens };
   }));
   reserveCache = infos;
@@ -369,9 +359,11 @@ async function fetchWalletData(wallet) {
 
   // Fetch per-asset balances
   const positions = await Promise.all(reserves.map(async (r) => {
+    const aTokenOk = r.aToken && r.aToken !== '0x0000000000000000000000000000000000000000';
+    const varDebtOk = r.varDebt && r.varDebt !== '0x0000000000000000000000000000000000000000';
     const [supplyBal, debtBal] = await Promise.all([
-      balanceOf(r.aToken, wallet.address),
-      balanceOf(r.varDebt, wallet.address),
+      aTokenOk ? balanceOf(r.aToken, wallet.address) : Promise.resolve(0n),
+      varDebtOk ? balanceOf(r.varDebt, wallet.address) : Promise.resolve(0n),
     ]);
     return { ...r, supplyBal, debtBal };
   }));
