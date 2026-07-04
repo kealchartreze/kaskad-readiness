@@ -169,6 +169,7 @@ h1 span{color:var(--teal)}
 <script>
 const RPC = 'https://rpc.igralabs.com:8545';
 const POOL = '0x1Fc4f91E99eFDC90c4B2B8F69fE0b4BFd819a330'; // Kaskad Pool (Igra mainnet)
+const DATA_PROVIDER = '0xFEaD8E14e58ecF72B5cD585458f07523F173E2F4'; // AaveProtocolDataProvider (same as TVL Tracker)
 const STKSKD_VAULT = '0xC86764586f2cF1D1014B88E51956965C6d7db524';
 
 const LP_WALLETS = [
@@ -177,7 +178,7 @@ const LP_WALLETS = [
   { address: '0x5f3245e22bEc4ff546e97B6a0362507d90dffDb9', label: 'LP Gamma', initials: 'LG' },
 ];
 
-// No separate DataProvider needed — we use Pool.getReserveData() directly
+// ABI-encoded calls
 
 // eth_call helper
 async function ethCall(to, data) {
@@ -229,15 +230,14 @@ async function getReservesList() {
   return addrs;
 }
 
-// getReserveData(address asset) selector: 0x35ea6a75 — returns full ReserveData struct from Pool
-// aTokenAddress at slot 8, variableDebtTokenAddress at slot 10
+// getReserveTokensAddresses(address asset) selector: 0xd2493b6c
 async function getReserveTokensAddresses(asset) {
   const padded = asset.toLowerCase().replace('0x','').padStart(64,'0');
-  const res = await ethCall(POOL, '0x35ea6a75' + padded);
+  const res = await ethCall(DATA_PROVIDER, '0xd2493b6c' + padded);
   const hex = res.slice(2);
   return {
-    aToken:  '0x' + hex.slice(8*64 + 24, 8*64 + 64),
-    varDebt: '0x' + hex.slice(10*64 + 24, 10*64 + 64),
+    aToken:   '0x' + hex.slice(24, 64),
+    varDebt:  '0x' + hex.slice(128 + 24, 128 + 64),
   };
 }
 
@@ -282,7 +282,7 @@ async function getStaking(addr) {
 }
 
 // Oracle — known address from protocol info
-const PRICE_ORACLE = '0xcf5C2E2509e28a225115FD51Fad1a45c7E91A08A';
+// const PRICE_ORACLE = '0xcf5C2E2509e28a225115FD51Fad1a45c7E91A08A';
 
 // Format utils
 const fmt = (n, dec=8) => {
