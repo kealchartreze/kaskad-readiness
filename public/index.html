@@ -1095,6 +1095,7 @@ canvas { position: absolute; top:0; left:0; pointer-events:none; z-index:1; }
     <button class="nav-tab" onclick="switchTab('squad')">🤖 Squad</button>
     <button class="nav-tab" onclick="switchTab('team')">💼 Team Wallets</button>
     <button class="nav-tab" onclick="switchTab('tvl')">📊 TVL Tracker</button>
+    <button class="nav-tab" onclick="switchTab('lp')">🔍 LP Monitor</button>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode">
       <span class="tt-icon" id="themeIcon">🌙</span>
       <span id="themeLabel">Dark</span>
@@ -4813,7 +4814,154 @@ window.twRefresh = twRefresh;
 // === End Keal Skills Hover Panel ===
 
 </script>
+
+    <!-- ===== LP MONITOR TAB ===== -->
+    <div id="tab-lp" style="display:none;">
+    <style>
+    #lp-root .lp-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+    @media(max-width:900px){#lp-root .lp-summary-grid{grid-template-columns:repeat(2,1fr)}}
+    #lp-root .lp-stat-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px}
+    #lp-root .lp-stat-label{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:8px}
+    #lp-root .lp-stat-value{font-size:26px;font-weight:800;letter-spacing:-0.04em;font-variant-numeric:tabular-nums}
+    #lp-root .lp-stat-sub{font-size:12px;color:rgba(255,255,255,0.45);margin-top:4px}
+    #lp-root .lp-cards{display:flex;flex-direction:column;gap:20px}
+    #lp-root .lp-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden}
+    #lp-root .lp-card-header{padding:20px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;gap:12px}
+    #lp-root .lp-name-row{display:flex;align-items:center;gap:12px}
+    #lp-root .lp-avatar{width:38px;height:38px;border-radius:10px;background:rgba(0,184,150,0.15);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#00B896;flex-shrink:0}
+    #lp-root .lp-name{font-size:15px;font-weight:700}
+    #lp-root .lp-addr{font-size:11px;color:rgba(255,255,255,0.35);font-family:monospace;margin-top:2px}
+    #lp-root .lp-header-stats{display:flex;gap:20px;flex-wrap:wrap}
+    #lp-root .lp-hstat-val{font-size:17px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;text-align:right}
+    #lp-root .lp-hstat-lbl{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);text-align:right;margin-top:2px}
+    #lp-root .lp-card-body{padding:20px 24px}
+    #lp-root .lp-positions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+    #lp-root .lp-pos-item{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px}
+    #lp-root .lp-pos-asset{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:5px}
+    #lp-root .lp-pos-supply{font-size:14px;font-weight:700;color:#00B896}
+    #lp-root .lp-pos-borrow{font-size:14px;font-weight:700;color:#D97706}
+    #lp-root .lp-pos-usd{font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px}
+    #lp-root .lp-alert-banner{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:#EF4444}
+    #lp-root .lp-warn-banner{background:rgba(217,119,6,0.1);border:1px solid rgba(217,119,6,0.25);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:#D97706}
+    #lp-root .lp-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:0.06em;text-transform:uppercase}
+    #lp-root .lp-badge-ok{background:rgba(34,197,94,0.12);color:#22C55E}
+    #lp-root .lp-badge-warn{background:rgba(217,119,6,0.12);color:#D97706}
+    #lp-root .lp-badge-danger{background:rgba(239,68,68,0.12);color:#EF4444}
+    #lp-root .lp-badge-neutral{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35)}
+    #lp-root .lp-hf-safe{color:#22C55E}
+    #lp-root .lp-hf-warn{color:#D97706}
+    #lp-root .lp-hf-danger{color:#EF4444}
+    #lp-root .lp-staking-row{display:flex;align-items:center;gap:14px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);flex-wrap:wrap}
+    #lp-root .lp-error-state{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:16px;text-align:center;color:#EF4444;font-size:13px}
+    #lp-root .lp-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    #lp-root .lp-refresh-btn{font-size:12px;font-weight:600;color:#00B896;background:rgba(0,184,150,0.1);border:1px solid rgba(0,184,150,0.2);padding:6px 14px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px}
+    #lp-root .lp-skeleton{background:linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%);background-size:200% 100%;animation:lpShimmer 1.4s infinite;border-radius:8px;height:26px;width:120px;display:inline-block}
+    @keyframes lpShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    </style>
+    <div id="lp-root" style="max-width:1100px;margin:0 auto;padding:32px 0 60px">
+      <div style="margin-bottom:28px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#00B896;margin-bottom:8px">LIVE MAINNET</div>
+        <div style="font-size:28px;font-weight:800;letter-spacing:-0.03em">LP <span style="color:#00B896">Monitor</span></div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.45);margin-top:6px">Real-time position tracking for Kaskad liquidity providers</div>
+      </div>
+      <div class="lp-summary-grid" id="lp-summary-grid">
+        <div class="lp-stat-card"><div class="lp-stat-label">Total LP Supplied</div><div class="lp-stat-value"><span class="lp-skeleton" id="lp-s-supply"></span></div><div class="lp-stat-sub" id="lp-s-supply-sub">Loading...</div></div>
+        <div class="lp-stat-card"><div class="lp-stat-label">Total LP Borrowed</div><div class="lp-stat-value"><span class="lp-skeleton" id="lp-s-borrow"></span></div><div class="lp-stat-sub" id="lp-s-borrow-sub">Loading...</div></div>
+        <div class="lp-stat-card"><div class="lp-stat-label">Active LPs</div><div class="lp-stat-value"><span class="lp-skeleton" id="lp-s-active"></span></div><div class="lp-stat-sub" id="lp-s-active-sub">Loading...</div></div>
+        <div class="lp-stat-card"><div class="lp-stat-label">HF Alerts</div><div class="lp-stat-value"><span class="lp-skeleton" id="lp-s-hf"></span></div><div class="lp-stat-sub" id="lp-s-hf-sub">Loading...</div></div>
+      </div>
+      <div class="lp-section-header"><div style="font-size:15px;font-weight:700">LP Positions</div><button class="lp-refresh-btn" id="lp-refresh-btn" onclick="lpLoadAll()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>Refresh</button></div>
+      <div class="lp-cards" id="lp-cards"><div style="text-align:center;padding:40px;color:rgba(255,255,255,0.3);font-size:14px">Loading positions...</div></div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.3);text-align:right;margin-top:10px" id="lp-last-updated"></div>
+    </div>
+    <script>
+    (function(){
+      const LP_RPC="https://rpc.igralabs.com:8545";
+      const LP_POOL="0x1Fc4f91E99eFDC90c4B2B8F69fE0b4BFd819a330";
+      const LP_DP="0xFEaD8E14e58ecF72B5cD585458f07523F173E2F4";
+      const LP_STKSKD="0xC86764586f2cF1D1014B88E51956965C6d7db524";
+      const LP_WALLETS=[
+        {address:"0x8fce63D524eE52Ad4e5838F5B9Cb9224ec867fb6",label:"LP Alpha",initials:"LA"},
+        {address:"0x3C5E4f556C902237960300968BBf8a98E688144b",label:"LP Beta",initials:"LB"},
+        {address:"0x5f3245e22bEc4ff546e97B6a0362507d90dffDb9",label:"LP Gamma",initials:"LG"},
+      ];
+      async function lpR(m,p){const r=await fetch(LP_RPC,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:m,params:p})});const j=await r.json();if(j.error)throw new Error(j.error.message);return j.result;}
+      const lpPad=a=>a.toLowerCase().replace("0x","").padStart(64,"0");
+      const lpDec=(h,o=0)=>BigInt("0x"+h.slice(2+o*64,2+(o+1)*64));
+      async function lpAcct(a){const r=await lpR("eth_call",[{to:LP_POOL,data:"0xbf92857c"+lpPad(a)},"latest"]);return{collateral:lpDec(r,0),debt:lpDec(r,1),hf:lpDec(r,5)};}
+      async function lpReserves(){const r=await lpR("eth_call",[{to:LP_POOL,data:"0xd1946dbc"},"latest"]);const h=r.slice(2),c=Number(BigInt("0x"+h.slice(64,128)));return Array.from({length:c},(_,i)=>"0x"+h.slice(128+i*64+24,128+(i+1)*64));}
+      async function lpTokens(a){const r=await lpR("eth_call",[{to:LP_DP,data:"0xd2493b6c"+lpPad(a)},"latest"]);const h=r.slice(2);return{aToken:"0x"+h.slice(24,64),varDebt:"0x"+h.slice(152,192)};}
+      async function lpSym(a){try{const r=await lpR("eth_call",[{to:a,data:"0x95d89b41"},"latest"]);const h=r.slice(2),l=Number(BigInt("0x"+h.slice(64,128)));if(!l)return"???";return decodeURIComponent(h.slice(128,128+l*2).replace(/../g,"%$&"));}catch{return"???";}};
+      async function lpDec2(a){try{return Number(lpDec(await lpR("eth_call",[{to:a,data:"0x313ce567"},"latest"])));}catch{return 18;}};
+      async function lpBal(t,a){const r=await lpR("eth_call",[{to:t,data:"0x70a08231"+lpPad(a)},"latest"]);return lpDec(r);}
+      async function lpStake(a){try{const[b,d]=await Promise.all([lpBal(LP_STKSKD,a),lpR("eth_call",[{to:LP_STKSKD,data:"0x9ded06df"+lpPad(a)},"latest"])]);return{balance:b,durationSec:lpDec(d)};}catch{return{balance:0n,durationSec:0n};}}
+      let _rc=null;
+      async function lpResInfo(){if(_rc)return _rc;const addrs=await lpReserves();_rc=await Promise.all(addrs.map(async a=>{const[t,s,d]=await Promise.all([lpTokens(a),lpSym(a),lpDec2(a)]);return{asset:a,sym:s,dec:d,...t};}));return _rc;}
+      async function lpFetch(w){
+        const[acct,res,stk]=await Promise.all([lpAcct(w.address),lpResInfo(),lpStake(w.address)]);
+        const pos=await Promise.all(res.map(async r=>{
+          const aOk=r.aToken&&r.aToken!="0x0000000000000000000000000000000000000000";
+          const dOk=r.varDebt&&r.varDebt!="0x0000000000000000000000000000000000000000";
+          const[sb,db]=await Promise.all([aOk?lpBal(r.aToken,w.address):Promise.resolve(0n),dOk?lpBal(r.varDebt,w.address):Promise.resolve(0n)]);
+          return{...r,supplyBal:sb,debtBal:db};
+        }));
+        return{...w,acct,pos,stk};
+      }
+      const lpU=(v,d=8)=>"$"+(Number(v)/10**d).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+      const lpHF=v=>{const n=Number(v)/1e18;return(!isFinite(n)||n>999)?"inf":n.toFixed(2);};
+      const lpHC=v=>{const n=Number(v)/1e18;return n>2?"lp-hf-safe":n>1.3?"lp-hf-warn":"lp-hf-danger";};
+      const lpBdg=(v,has)=>{if(!has)return["lp-badge-neutral","No position"];const n=Number(v)/1e18;return n>2?["lp-badge-ok","Safe"]:n>1.3?["lp-badge-warn","Warning"]:["lp-badge-danger","Danger"];};
+      const lpSh=a=>a.slice(0,6)+"..."+a.slice(-4);
+      const lpKSKD=v=>{const n=Number(v)/1e18;return n>=1e6?(n/1e6).toFixed(2)+"M":n>=1e3?(n/1e3).toFixed(1)+"K":n.toFixed(2);};
+      const lpDur=s=>{const n=Number(s);return n<3600?Math.round(n/60)+"m":n<86400?(n/3600).toFixed(1)+"h":(n/86400).toFixed(1)+"d";};
+      function lpCard(data){
+        const{label,address,initials,acct,pos,stk}=data;
+        const has=acct.collateral>0n||acct.debt>0n;
+        const hfN=Number(acct.hf)/1e18;
+        const[bCls,bTxt]=lpBdg(acct.hf,has);
+        const alert=hfN<1.3&&has?"<div class=\\"lp-alert-banner\\">Health factor critically low - liquidation risk</div>":hfN>=1.3&&hfN<=2.0&&has?"<div class=\\"lp-warn-banner\\">Health factor below 2.0 - monitor closely</div>":"";
+        const active=pos.filter(p=>p.supplyBal>0n||p.debtBal>0n);
+        const posH=active.length===0?"<div style=\\"color:rgba(255,255,255,0.3);font-size:13px;padding:16px 0;text-align:center;grid-column:1/-1\\">No active positions</div>"
+          :active.map(p=>{const s=Number(p.supplyBal)/10**p.dec,d=Number(p.debtBal)/10**p.dec;
+            return "<div class=\\"lp-pos-item\\"><div class=\\"lp-pos-asset\\">"+p.sym+"</div>"+(p.supplyBal>0n?"<div class=\\"lp-pos-supply\\">+$"+s.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+"</div><div class=\\"lp-pos-usd\\">Supplied</div>":"")+(p.debtBal>0n?"<div class=\\"lp-pos-borrow\\">-$"+d.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+"</div><div class=\\"lp-pos-usd\\">Borrowed</div>":"")+"</div>";
+          }).join("");
+        const stkH=stk.balance>0n?"<div class=\\"lp-staking-row\\"><div style=\\"font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35)\\">stKSKD</div><div style=\\"font-size:13px;font-weight:700;color:#00B896\\">"+lpKSKD(stk.balance)+"</div><div style=\\"font-size:12px;color:rgba(255,255,255,0.4)\\">staked "+lpDur(stk.durationSec)+"</div></div>"
+          :"<div class=\\"lp-staking-row\\"><div style=\\"font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35)\\">stKSKD</div><div style=\\"font-size:13px;color:rgba(255,255,255,0.3)\\">No stake</div></div>";
+        return "<div class=\\"lp-card\\"><div class=\\"lp-card-header\\"><div class=\\"lp-name-row\\"><div class=\\"lp-avatar\\">"+initials+"</div><div><div class=\\"lp-name\\">"+label+"</div><div class=\\"lp-addr\\">"+lpSh(address)+"</div></div></div><div class=\\"lp-header-stats\\"><div><div class=\\"lp-hstat-val\\">"+(has?lpU(acct.collateral):"--")+"</div><div class=\\"lp-hstat-lbl\\">Supplied</div></div><div><div class=\\"lp-hstat-val\\" style=\\"color:"+(acct.debt>0n?"#D97706":"inherit")+"\\">"+(has?lpU(acct.debt):"--")+"</div><div class=\\"lp-hstat-lbl\\">Borrowed</div></div><div><div class=\\"lp-hstat-val "+lpHC(acct.hf)+"\\">"+(has?lpHF(acct.hf):"--")+"</div><div class=\\"lp-hstat-lbl\\">Health Factor</div></div><div><span class=\\"lp-badge "+bCls+"\\">"+bTxt+"</span><div class=\\"lp-hstat-lbl\\">Status</div></div></div></div><div class=\\"lp-card-body\\">"+alert+"<div class=\\"lp-positions-grid\\">"+posH+"</div>"+stkH+"</div></div>";
+      }
+      window.lpLoadAll=async function(){
+        const btn=document.getElementById("lp-refresh-btn");
+        if(btn)btn.disabled=true;
+        try{
+          const rs=await Promise.allSettled(LP_WALLETS.map(lpFetch));
+          let ts=0n,td=0n,ac=0,ha=0;
+          const html=rs.map((r,i)=>{
+            if(r.status==="rejected")return"<div class=\\"lp-card\\"><div class=\\"lp-card-body\\"><div class=\\"lp-error-state\\">Failed: "+LP_WALLETS[i].label+": "+(r.reason&&r.reason.message||"RPC error")+"</div></div></div>";
+            const d=r.value;
+            if(d.acct.collateral>0n||d.acct.debt>0n)ac++;
+            ts+=d.acct.collateral;td+=d.acct.debt;
+            if((d.acct.collateral>0n||d.acct.debt>0n)&&Number(d.acct.hf)/1e18<1.5)ha++;
+            return lpCard(d);
+          }).join("");
+          document.getElementById("lp-cards").innerHTML=html;
+          const clr=id=>{const e=document.getElementById(id);e.classList.remove("lp-skeleton");e.style.width="";e.style.height="";e.style.display="";return e;};
+          clr("lp-s-supply").textContent=lpU(ts); document.getElementById("lp-s-supply-sub").textContent="across "+ac+" active LP"+(ac!==1?"s":"");
+          clr("lp-s-borrow").textContent=lpU(td); document.getElementById("lp-s-borrow-sub").textContent=td>0n?"total outstanding":"no borrows";
+          clr("lp-s-active").textContent=ac+" / "+LP_WALLETS.length; document.getElementById("lp-s-active-sub").textContent="with open positions";
+          const he=clr("lp-s-hf"); he.textContent=ha; he.style.color=ha>0?"#EF4444":"#22C55E"; document.getElementById("lp-s-hf-sub").textContent=ha>0?"HF below 1.5":"All healthy";
+          document.getElementById("lp-last-updated").textContent="Last updated: "+new Date().toLocaleTimeString();
+        }catch(e){document.getElementById("lp-cards").innerHTML="<div class=\\"lp-error-state\\">RPC error: "+e.message+"</div>";}
+        finally{if(btn)btn.disabled=false;}
+      };
+      const _os=window.switchTab;
+      window.switchTab=function(t){_os&&_os(t);if(t==="lp"&&!window._lpLoaded){window._lpLoaded=true;lpLoadAll();}};
+      setInterval(()=>{const el=document.getElementById("tab-lp");if(el&&el.style.display!=="none")lpLoadAll();},60000);
+    })();
+    </script>
+    </div>
+    <!-- ===== END LP MONITOR TAB ===== -->
 </body>
 </html>
+
 
 
